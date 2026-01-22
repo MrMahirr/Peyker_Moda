@@ -95,14 +95,14 @@ src/
 - [x] Gün sonu (Z-Raporu) ekranı.
 
 #### 6. Marketing (Kampanya & Fiyat)
-- [ ] Kampanya oluşturma (İndirim, Kupon).
-- [ ] Özel fiyat listeleri (Müşteri grubu bazlı).
-- [ ] Toplu SMS/E-posta gönderimi.
+- [x] Kampanya oluşturma (İndirim, Kupon).
+- [x] Özel fiyat listeleri (Müşteri grubu bazlı).
+- [x] Toplu SMS/E-posta gönderimi.
 
 #### 7. Settings (Ayarlar)
-- [ ] Mağaza genel ayarları.
-- [ ] Yazıcı ve fiş tasarımı düzenleyici.
-- [ ] Kullanıcı profil ve şifre işlemleri.
+- [x] Mağaza genel ayarları.
+- [x] Yazıcı ve fiş tasarımı düzenleyici.
+- [x] Kullanıcı profil ve şifre işlemleri.
 
 #### 8. Dashboard (Genel Bakış)
 - [ ] Ana sayfa widget'ları (Günlük özet, Kritik stok, Çok satanlar).

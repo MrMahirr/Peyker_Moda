@@ -11,6 +11,14 @@ import { CRMPage } from '@/features/crm/CRMPage';
 import { CustomerDetail } from '@/features/crm/components/CustomerDetail';
 import { ReturnRequests } from '@/features/sales/returns/ReturnRequests';
 import { AccountingPage } from '@/features/accounting/AccountingPage';
+import { StoreSettings } from '@/features/settings/general/StoreSettings';
+import { ReceiptDesigner } from '@/features/settings/printer/ReceiptDesigner';
+import { UserProfile } from '@/features/settings/profile/UserProfile';
+import { CampaignList } from '@/features/marketing/campaigns/CampaignList';
+import { CampaignForm } from '@/features/marketing/campaigns/CampaignForm';
+import { PriceListManager } from '@/features/marketing/price-lists/PriceListManager';
+import { BulkMessageSender } from '@/features/marketing/messaging/BulkMessageSender';
+import { DashboardPage } from '@/features/dashboard/DashboardPage';
 
 export const AppRoutes = () => {
     return useRoutes([
@@ -32,7 +40,7 @@ export const AppRoutes = () => {
             children: [
                 {
                     index: true,
-                    element: <div className="p-8"><h1 className="text-2xl font-bold">Dashboard (Coming Soon)</h1></div>,
+                    element: <DashboardPage />,
                 },
                 {
                     path: 'staff',
@@ -59,6 +67,23 @@ export const AppRoutes = () => {
                 {
                     path: 'accounting',
                     element: <AccountingPage />
+                },
+                {
+                    path: 'marketing',
+                    children: [
+                        { path: 'campaigns', element: <CampaignList /> },
+                        { path: 'campaigns/new', element: <CampaignForm /> },
+                        { path: 'price-lists', element: <PriceListManager /> },
+                        { path: 'bulk-messages', element: <BulkMessageSender /> },
+                    ]
+                },
+                {
+                    path: 'settings',
+                    children: [
+                        { path: 'general', element: <StoreSettings /> },
+                        { path: 'printer', element: <ReceiptDesigner /> },
+                        { path: 'profile', element: <UserProfile /> },
+                    ]
                 }
             ],
         },

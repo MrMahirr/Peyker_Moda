@@ -29,5 +29,24 @@ export const navigation = [
         path: '/accounting',
         icon: 'banknote',
     },
-    // TODO: Add more navigation items
+    {
+        title: 'Pazarlama',
+        path: '/marketing',
+        icon: 'megaphone',
+        children: [
+            { title: 'Kampanyalar', path: '/marketing/campaigns' },
+            { title: 'Fiyat Listeleri', path: '/marketing/price-lists' },
+            { title: 'Toplu Mesaj', path: '/marketing/bulk-messages' }
+        ]
+    },
+    {
+        title: 'Ayarlar',
+        path: '/settings',
+        icon: 'settings',
+        children: [
+            { title: 'Genel', path: '/settings/general' },
+            { title: 'Fiş/Yazıcı', path: '/settings/printer' },
+            { title: 'Profilim', path: '/settings/profile' }
+        ]
+    }
 ];

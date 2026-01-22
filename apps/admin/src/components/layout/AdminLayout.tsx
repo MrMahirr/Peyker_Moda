@@ -1,9 +1,12 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { navigation } from '../../router/navigation';
 import { cn } from '../../lib/utils';
-import { LayoutDashboard, Users, Shirt, LogOut, Menu, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, Users, Shirt, LogOut, Menu, ShoppingCart, Megaphone, RefreshCcw, Banknote, Settings } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
+import { SidebarItem } from './SidebarItem';
+import { NotificationCenter } from '@/features/dashboard/components/NotificationCenter';
 
 // Map icon strings (from navigation.ts) to Lucide components
 const IconMap: Record<string, React.ElementType> = {
@@ -11,11 +14,16 @@ const IconMap: Record<string, React.ElementType> = {
   users: Users,
   shirt: Shirt,
   'shopping-cart': ShoppingCart,
+  megaphone: Megaphone,
+  'refresh-ccw': RefreshCcw,
+  banknote: Banknote,
+  settings: Settings,
 };
 
 export const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
 
   const handleLogout = () => {
@@ -44,23 +52,24 @@ export const AdminLayout = () => {
           <ul className="space-y-1 px-3">
             {navigation.map((item) => {
               const Icon = IconMap[item.icon] || LayoutDashboard;
+              const isActiveParent = item.children?.some(child => location.pathname.startsWith(child.path));
+              const hasChildren = item.children && item.children.length > 0;
+              const [isOpen, setIsOpen] = useState(isActiveParent);
+
+              // Update open state if path changes and it becomes active
+              // Note: This might need a useEffect at component level if we want auto-expand on navigation
+              // for now keeping it simple with local state per item if possible, but map iteration creates new state on re-render?
+              // No, better to pull state up or use a stable simple approach.
+              // Let's use a state at AdminLayout level for all menus.
               return (
-                <li key={item.path}>
-                  <NavLink
-                    to={item.path}
-                    className={({ isActive }) =>
-                      cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
-                        isActive
-                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/20"
-                          : "text-slate-400 hover:text-white hover:bg-slate-800"
-                      )
-                    }
-                  >
-                    <Icon className="h-5 w-5 shrink-0" />
-                    {isSidebarOpen && <span>{item.title}</span>}
-                  </NavLink>
-                </li>
+                <SidebarItem
+                  key={item.path}
+                  item={item}
+                  isSidebarOpen={isSidebarOpen}
+                  Icon={Icon}
+                  isActiveParent={isActiveParent}
+                  location={location}
+                />
               );
             })}
           </ul>
@@ -91,6 +100,7 @@ export const AdminLayout = () => {
           </button>
 
           <div className="flex items-center gap-4">
+            <NotificationCenter />
             <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200">
               A
             </div>

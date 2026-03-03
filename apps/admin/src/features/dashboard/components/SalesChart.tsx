@@ -12,20 +12,20 @@ const data = [
 
 export const SalesChart = () => {
     return (
-        <div className="lg:col-span-2 bg-surface rounded-xl border border-slate-200/80 flex flex-col">
+        <div className="lg:col-span-2 bg-surface rounded-xl border border-zinc-200/80 flex flex-col">
             <div className="p-5 pb-0 flex items-center justify-between">
                 <div>
-                    <h3 className="text-sm font-semibold text-slate-800">Satış Analizi</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Son 7 günlük gelir ve gider</p>
+                    <h3 className="text-sm font-semibold text-zinc-800">Satış Analizi</h3>
+                    <p className="text-xs text-zinc-400 mt-0.5">Son 7 günlük gelir ve gider</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-primary" />
-                        <span className="text-xs text-slate-500">Gelir</span>
+                        <span className="text-xs text-zinc-500">Gelir</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-amber-400" />
-                        <span className="text-xs text-slate-500">Gider</span>
+                        <span className="text-xs text-zinc-500">Gider</span>
                     </div>
                 </div>
             </div>

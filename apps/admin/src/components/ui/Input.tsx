@@ -14,13 +14,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
+          <label htmlFor={inputId} className="block text-sm font-medium text-zinc-700">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <div className="absolute left-3 top-1/2 -tranzinc-y-1/2 text-zinc-400">
               {icon}
             </div>
           )}
@@ -28,7 +28,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              "w-full h-10 rounded-lg border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400",
+              "w-full h-10 rounded-lg border border-zinc-200 bg-white text-sm text-zinc-800 placeholder:text-zinc-400",
               "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all",
               icon ? "pl-10 pr-4" : "px-4",
               error && "border-red-300 focus:ring-red-200 focus:border-red-400",

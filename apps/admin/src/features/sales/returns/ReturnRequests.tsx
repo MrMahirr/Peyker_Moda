@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { RefundModal } from './RefundModal';
+import { Badge } from '@/components/ui/Badge';
 
 const MOCK_RETURNS = [
     { id: 'RET-1001', orderId: 'TR-45920', customer: 'Ayşe Yılmaz', date: '2024-01-22', amount: 450.00, status: 'Bekliyor', reason: 'Beden Uymadı' },
@@ -16,17 +17,20 @@ const MOCK_RETURNS = [
 export const ReturnRequests = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [selectedReturn, setSelectedReturn] = useState<any>(null);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleApprove = (ret: any) => {
         setSelectedReturn(ret);
         setIsRefundModalOpen(true);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleReject = (ret: any) => {
         showDeleteConfirm('İadeyi Reddet?', `${ret.id} numaralı iade talebi reddedilecek.`).then((result) => {
             if (result.isConfirmed) {
-                toast.info('İade talebi reddedildi.');
+                toast.info('İade talebi reddedildi.', { className: 'font-medium' });
             }
         });
     };
@@ -35,52 +39,63 @@ export const ReturnRequests = () => {
         {
             header: 'İade No',
             accessorKey: 'id',
-            cell: (info: any) => <span className="font-mono font-medium text-indigo-600">{info.getValue()}</span>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => <span className="font-mono text-[13px] font-bold text-zinc-900">{info.getValue()}</span>
         },
         {
             header: 'Sipariş No',
             accessorKey: 'orderId',
-            cell: (info: any) => <span className="font-mono text-slate-500">{info.getValue()}</span>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => <span className="font-mono text-[13px] text-zinc-500 font-medium">{info.getValue()}</span>
         },
         {
             header: 'Müşteri',
             accessorKey: 'customer',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => <span className="font-semibold text-zinc-900 text-[14px]">{info.getValue()}</span>
         },
         {
             header: 'Sebep',
             accessorKey: 'reason',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => <span className="text-[13px] font-medium text-zinc-700">{info.getValue()}</span>
         },
         {
             header: 'Tutar',
             accessorKey: 'amount',
-            cell: (info: any) => <span className="font-bold text-slate-900">{info.getValue()} ₺</span>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => <span className="font-bold text-[15px] font-mono text-zinc-900">{info.getValue().toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</span>
         },
         {
             header: 'Durum',
             accessorKey: 'status',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: (info: any) => {
                 const status = info.getValue() as string;
+                let variant: 'neutral' | 'info' | 'success' | 'warning' | 'error' = 'neutral';
+                if (status === 'Onaylandı') variant = 'success';
+                if (status === 'Reddedildi') variant = 'error';
+                if (status === 'Bekliyor') variant = 'warning';
+                
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'Onaylandı' ? 'bg-green-100 text-green-800' :
-                        status === 'Reddedildi' ? 'bg-red-100 text-red-800' :
-                            'bg-amber-100 text-amber-800'
-                        }`}>
+                    <Badge variant={variant} dot>
                         {status}
-                    </span>
+                    </Badge>
                 );
             }
         },
         {
             header: 'İşlemler',
             id: 'actions',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: (info: any) => (
-                <div className="flex items-center gap-1">
+                <div className="flex justify-end items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     {info.row.original.status === 'Bekliyor' && (
                         <>
                             <Button
                                 variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-slate-500 hover:text-green-600"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50"
                                 onClick={() => handleApprove(info.row.original)}
                                 title="Onayla"
                             >
@@ -88,8 +103,8 @@ export const ReturnRequests = () => {
                             </Button>
                             <Button
                                 variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-slate-500 hover:text-red-600"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
                                 onClick={() => handleReject(info.row.original)}
                                 title="Reddet"
                             >
@@ -99,8 +114,8 @@ export const ReturnRequests = () => {
                     )}
                     <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-slate-500 hover:text-indigo-600"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50"
                         title="Detay"
                     >
                         <FileText className="h-4 w-4" />
@@ -117,31 +132,31 @@ export const ReturnRequests = () => {
     );
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">İade Talepleri</h1>
-                    <p className="text-slate-500">Müşteri iade ve değişim süreçlerini yönetin.</p>
+                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">İade Talepleri</h1>
+                    <p className="text-[13px] font-medium text-zinc-500 mt-1">Müşteri iade ve değişim süreçlerini yönetin.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline">
+                    <Button variant="secondary" className="shadow-sm border border-zinc-200/80 bg-white hover:bg-zinc-50">
                         <Filter className="mr-2 h-4 w-4" />
                         Filtrele
                     </Button>
-                    <Button className="bg-indigo-600 hover:bg-indigo-700">
+                    <Button variant="primary" className="shadow-md">
                         Manuel İade Oluştur
                     </Button>
                 </div>
             </div>
 
-            <div className="flex items-center gap-4 bg-white p-4 rounded-lg border border-slate-200">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <div className="flex items-center gap-4 bg-zinc-50 p-2 rounded-xl border border-zinc-200/80 shadow-sm">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                     <Input
                         placeholder="İade No, Sipariş No veya Müşteri Ara..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 bg-slate-50"
+                        className="w-full h-10 pl-10 pr-4 bg-white border border-zinc-200/80 rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-zinc-900 placeholder:text-zinc-400 transition-all shadow-sm"
                     />
                 </div>
             </div>

@@ -5,14 +5,12 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { BasicInfo } from './components/ProductForm/BasicInfo';
 import { VariantMatrix } from './components/ProductForm/VariantMatrix';
-import { ChevronLeft, Save, Loader2 } from 'lucide-react';
+import { ChevronLeft, Save, Loader2, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
-import { Card } from '@/components/ui/Card';
 import { productsService } from './services/products.service';
 
-// Validation Schema
 const productSchema = z.object({
     name: z.string().min(3, 'Ürün adı en az 3 karakter olmalıdır'),
     description: z.string().optional(),
@@ -40,8 +38,8 @@ type ProductFormData = z.infer<typeof productSchema>;
 
 const STEPS = [
     { id: 1, title: 'Temel Bilgiler' },
-    { id: 2, title: 'Varyantlar & Stok' },
-    { id: 3, title: 'Medya & SEO' },
+    { id: 2, title: 'Varyant Özellikleri' },
+    { id: 3, title: 'Görseller & SEO' },
 ];
 
 export const AddProductPage = () => {
@@ -85,7 +83,7 @@ export const AddProductPage = () => {
             });
             navigate('/catalog');
         } catch (err: any) {
-            setSubmitError(err.response?.data?.message || 'Ürün kaydedilemedi');
+            setSubmitError(err.response?.data?.message || 'Ürün kaydedilirken sunucu hatası oluştu');
             console.error('Product create error:', err);
         } finally {
             setIsSubmitting(false);
@@ -110,103 +108,131 @@ export const AddProductPage = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6 pb-20">
+        <div className="max-w-4xl mx-auto space-y-8 pb-20">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate('/catalog')}>
-                        <ChevronLeft className="h-5 w-5" />
-                    </Button>
+                <div className="flex items-center gap-3">
+                    <button 
+                        onClick={() => navigate('/catalog')}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-900 transition-colors shadow-sm"
+                    >
+                        <ChevronLeft className="w-4 h-4" />
+                    </button>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Yeni Ürün Ekle</h1>
-                        <p className="text-sm text-slate-500">Ürün bilgilerini girerek kataloğa ekleyin.</p>
+                        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Yeni Ürün Ekle</h1>
+                        <p className="text-sm font-medium text-zinc-500">Ürün detaylarını doldurarak kataloğunuza işleyin.</p>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => navigate('/catalog')}>İptal</Button>
-                    <Button onClick={handleSubmit(onSubmit)}>
-                        <Save className="mr-2 h-4 w-4" />
+                <div className="flex items-center gap-3">
+                    <Button variant="secondary" onClick={() => navigate('/catalog')}>İptal</Button>
+                    <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isSubmitting}>
+                        {!isSubmitting && <Save className="w-4 h-4 mr-1.5" />}
                         Kaydet
                     </Button>
                 </div>
             </div>
 
-            {/* Stepper */}
-            <div className="flex items-center justify-between px-10 py-4 bg-white border border-slate-200 rounded-lg shadow-sm">
-                {STEPS.map((step, index) => (
-                    <div key={step.id} className="flex items-center">
-                        <div className={cn(
-                            "flex items-center justify-center w-8 h-8 rounded-full border-2 font-semibold text-sm",
-                            currentStep >= step.id
-                                ? "border-indigo-600 bg-indigo-600 text-white"
-                                : "border-slate-300 text-slate-500"
-                        )}>
-                            {step.id}
-                        </div>
-                        <span className={cn(
-                            "ml-3 text-sm font-medium",
-                            currentStep >= step.id ? "text-indigo-900" : "text-slate-500"
-                        )}>{step.title}</span>
+            {/* Premium Stepper */}
+            <div className="flex items-center justify-between px-8 py-5 bg-surface border border-zinc-200/80 rounded-xl shadow-sm">
+                {STEPS.map((step, index) => {
+                    const isActive = currentStep === step.id;
+                    const isCompleted = currentStep > step.id;
+                    return (
+                        <div key={step.id} className="flex items-center relative w-full">
+                            <div className="flex items-center gap-3 z-10 bg-white pr-4">
+                                <div className={cn(
+                                    "flex items-center justify-center w-7 h-7 rounded-full text-[13px] font-bold transition-all duration-300",
+                                    isActive ? "bg-zinc-900 text-white shadow-md shadow-zinc-900/20" : 
+                                    isCompleted ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-400"
+                                )}>
+                                    {isCompleted ? <Check className="w-3.5 h-3.5" /> : step.id}
+                                </div>
+                                <span className={cn(
+                                    "text-[13px] font-semibold transition-colors duration-300",
+                                    isActive ? "text-zinc-900" : isCompleted ? "text-zinc-700" : "text-zinc-400"
+                                )}>
+                                    {step.title}
+                                </span>
+                            </div>
 
-                        {index < STEPS.length - 1 && (
-                            <div className={cn(
-                                "w-24 h-0.5 mx-4",
-                                currentStep > step.id ? "bg-indigo-600" : "bg-slate-200"
-                            )} />
-                        )}
-                    </div>
-                ))}
+                            {index < STEPS.length - 1 && (
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full px-6 z-0">
+                                    <div className="w-full h-[2px] bg-zinc-100 rounded-full overflow-hidden">
+                                        <div className={cn(
+                                            "h-full bg-zinc-900 transition-all duration-500",
+                                            isCompleted ? "w-full" : "w-0"
+                                        )} />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
 
-            {/* Form Content */}
+            {/* Content Area */}
             <div className="min-h-[400px]">
-                {currentStep === 1 && <BasicInfo form={form} />}
+                {submitError && (
+                    <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm font-medium rounded-lg border border-red-100">
+                        {submitError}
+                    </div>
+                )}
+
+                {currentStep === 1 && (
+                    <div className="bg-surface border border-zinc-200/80 rounded-xl p-6 shadow-sm">
+                        <BasicInfo form={form} />
+                    </div>
+                )}
 
                 {currentStep === 2 && (
-                    hasVariants ? (
-                        <VariantMatrix form={form} />
-                    ) : (
-                        <Card className="p-8 text-center">
-                            <div className="max-w-md mx-auto space-y-4">
-                                <h3 className="text-lg font-medium">Bu ürünün varyantı yok</h3>
-                                <p className="text-slate-500">
-                                    "Temel Bilgiler" adımında "Varyant var" seçeneğini işaretlemediniz.
-                                    Eğer bu ürünün renk/beden gibi seçenekleri varsa geri dönüp işaretleyin.
+                    <div className="bg-surface border border-zinc-200/80 rounded-xl p-6 shadow-sm">
+                        {hasVariants ? (
+                            <VariantMatrix form={form} />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-16 text-center max-w-sm mx-auto">
+                                <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mb-4">
+                                    <Check className="w-8 h-8 text-zinc-300" />
+                                </div>
+                                <h3 className="text-base font-semibold text-zinc-900 mb-2">Varyantsız Ürün</h3>
+                                <p className="text-[13px] text-zinc-500 mb-6">
+                                    "Temel Bilgiler" adımında bu ürünün varyantsız olduğunu belirttiniz. Renk veya beden yapılandırmasına ihtiyacınız varsa önceki adıma dönebilirsiniz.
                                 </p>
-                                <Button variant="outline" onClick={prevStep}>Geri Dön</Button>
+                                <Button variant="secondary" onClick={prevStep}>
+                                    Önceki Adıma Dön
+                                </Button>
                             </div>
-                        </Card>
-                    )
+                        )}
+                    </div>
                 )}
 
                 {currentStep === 3 && (
-                    <div className="space-y-6">
-                        <Card title="Ürün Görselleri" className="p-6">
-                            <ImageUpload
-                                value={watch('images')}
-                                onChange={(urls) => setValue('images', urls)}
-                                className="w-full"
-                            />
-                        </Card>
+                    <div className="bg-surface border border-zinc-200/80 rounded-xl p-6 shadow-sm">
+                        <div className="mb-4">
+                            <h3 className="text-base font-semibold text-zinc-900">Ürün Görselleri</h3>
+                            <p className="text-xs text-zinc-500 mt-1">Yüksek çözünürlüklü ve 1:1 oranlı kare fotoğraflar yükleyin.</p>
+                        </div>
+                        <ImageUpload
+                            value={watch('images')}
+                            onChange={(urls) => setValue('images', urls)}
+                            className="w-full"
+                        />
                     </div>
                 )}
             </div>
 
-            {/* Navigation Footer */}
-            <div className="flex justify-between pt-6 border-t border-slate-200">
-                <Button
-                    variant="outline"
-                    onClick={prevStep}
-                    disabled={currentStep === 1}
-                >
-                    Önceki
+            {/* Footer Navigation Box */}
+            <div className="flex items-center justify-between p-4 bg-surface rounded-xl border border-zinc-200/80 shadow-sm mt-4">
+                <Button variant="secondary" onClick={prevStep} disabled={currentStep === 1}>
+                    Geri Gel
                 </Button>
 
                 {currentStep < STEPS.length ? (
-                    <Button onClick={nextStep}>Sonraki Adım</Button>
+                    <Button variant="primary" onClick={nextStep}>
+                        Sonraki Adım
+                    </Button>
                 ) : (
-                    <Button onClick={handleSubmit(onSubmit)} className="bg-emerald-600 hover:bg-emerald-700">
-                        Tamamla & Kaydet
+                    <Button variant="primary" className="bg-emerald-600 hover:bg-emerald-700 text-white border-transparent" onClick={handleSubmit(onSubmit)} loading={isSubmitting}>
+                        Kataloğa Ekle
                     </Button>
                 )}
             </div>

@@ -40,20 +40,20 @@ export const SidebarItem = ({ item, isSidebarOpen, Icon, isActiveParent, locatio
         <button
           onClick={handleToggle}
           className={cn(
-            "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 group",
+            "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-bold transition-all duration-150 group",
             isActiveParent
-              ? "text-white bg-sidebar-hover"
-              : "text-slate-400 hover:text-slate-200 hover:bg-sidebar-hover"
+              ? "text-zinc-900 bg-sidebar-hover shadow-sm"
+              : "text-zinc-500 hover:text-zinc-900 hover:bg-sidebar-hover"
           )}
         >
           <div className="flex items-center gap-3">
-            <Icon className="h-[18px] w-[18px] shrink-0" />
+            <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActiveParent ? 2.5 : 2} />
             {isSidebarOpen && <span>{item.title}</span>}
           </div>
           {isSidebarOpen && (
             <ChevronDown
               className={cn(
-                "h-3.5 w-3.5 opacity-40 transition-transform duration-200",
+                "h-4 w-4 opacity-50 transition-transform duration-200",
                 isOpen && "rotate-180"
               )}
             />
@@ -67,17 +67,17 @@ export const SidebarItem = ({ item, isSidebarOpen, Icon, isActiveParent, locatio
               isOpen ? "max-h-40 opacity-100 mt-1" : "max-h-0 opacity-0"
             )}
           >
-            <ul className="ml-[30px] border-l border-slate-700/50 pl-3 space-y-0.5">
+            <ul className="ml-[30px] border-l-2 border-zinc-200 pl-3 space-y-1 py-1">
               {item.children.map((child) => (
                 <li key={child.path}>
                   <NavLink
                     to={child.path}
                     className={({ isActive }) =>
                       cn(
-                        "block px-3 py-2 rounded-md text-[13px] font-medium transition-all duration-150",
+                        "block px-3 py-2 rounded-md text-[13px] font-semibold transition-all duration-150",
                         isActive
-                          ? "text-primary-light bg-sidebar-active"
-                          : "text-slate-500 hover:text-slate-300 hover:bg-sidebar-hover"
+                          ? "text-zinc-900 bg-sidebar-active/50 shadow-sm"
+                          : "text-zinc-500 hover:text-zinc-900 hover:bg-sidebar-hover"
                       )
                     }
                   >
@@ -99,15 +99,19 @@ export const SidebarItem = ({ item, isSidebarOpen, Icon, isActiveParent, locatio
         to={item.path}
         className={({ isActive }) =>
           cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 group",
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-bold transition-all duration-150 group",
             isActive
-              ? "text-white bg-primary/15 border-l-2 border-primary-light -ml-px"
-              : "text-slate-400 hover:text-slate-200 hover:bg-sidebar-hover"
+              ? "text-primary-dark bg-white border border-sidebar-active shadow-sm"
+              : "text-zinc-500 hover:text-zinc-900 hover:bg-sidebar-hover"
           )
         }
       >
-        <Icon className="h-[18px] w-[18px] shrink-0" />
-        {isSidebarOpen && <span>{item.title}</span>}
+        {({ isActive }) => (
+            <>
+                <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.5 : 2} />
+                {isSidebarOpen && <span>{item.title}</span>}
+            </>
+        )}
       </NavLink>
     </li>
   );

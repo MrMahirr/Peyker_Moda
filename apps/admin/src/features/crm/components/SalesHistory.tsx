@@ -33,7 +33,7 @@ export const SalesHistory = () => {
                 return (
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'Tamamlandı' ? 'bg-green-100 text-green-800' :
                             status === 'İade Edildi' ? 'bg-red-100 text-red-800' :
-                                'bg-slate-100 text-slate-800'
+                                'bg-zinc-100 text-zinc-800'
                         }`}>
                         {status}
                     </span>
@@ -44,7 +44,7 @@ export const SalesHistory = () => {
             header: 'Toplam',
             accessorKey: 'total',
             cell: (info: any) => (
-                <span className="font-bold text-slate-900">
+                <span className="font-bold text-zinc-900">
                     {info.getValue().toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
                 </span>
             )
@@ -54,10 +54,10 @@ export const SalesHistory = () => {
             id: 'actions',
             cell: () => (
                 <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-indigo-600">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-indigo-600">
                         <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-slate-900" title="Fiş Görüntüle">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-900" title="Fiş Görüntüle">
                         <FileText className="h-4 w-4" />
                     </Button>
                 </div>
@@ -67,7 +67,7 @@ export const SalesHistory = () => {
 
     return (
         <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900">Satış Geçmişi</h3>
+            <h3 className="text-lg font-semibold text-zinc-900">Satış Geçmişi</h3>
             <DataGrid
                 data={MOCK_SALES}
                 columns={columns}

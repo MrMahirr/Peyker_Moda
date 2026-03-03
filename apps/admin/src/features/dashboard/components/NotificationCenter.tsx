@@ -24,7 +24,7 @@ export const NotificationCenter = () => {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+                className="relative p-2 rounded-full hover:bg-zinc-100 text-zinc-500 transition-colors"
             >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
@@ -38,9 +38,9 @@ export const NotificationCenter = () => {
                         className="fixed inset-0 z-40 bg-transparent"
                         onClick={() => setIsOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden">
-                        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                            <h3 className="font-semibold text-slate-900">Bildirimler</h3>
+                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-zinc-200 z-50 overflow-hidden">
+                        <div className="p-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
+                            <h3 className="font-semibold text-zinc-900">Bildirimler</h3>
                             {unreadCount > 0 && (
                                 <button
                                     onClick={handleMarkAsRead}
@@ -52,16 +52,16 @@ export const NotificationCenter = () => {
                         </div>
                         <div className="max-h-[400px] overflow-y-auto">
                             {notifications.length === 0 ? (
-                                <div className="p-8 text-center text-slate-500 text-sm">
+                                <div className="p-8 text-center text-zinc-500 text-sm">
                                     Bildiriminiz yok.
                                 </div>
                             ) : (
-                                <div className="divide-y divide-slate-50">
+                                <div className="divide-y divide-zinc-50">
                                     {notifications.map((notification) => (
                                         <div
                                             key={notification.id}
                                             className={cn(
-                                                "p-4 hover:bg-slate-50 transition-colors cursor-pointer",
+                                                "p-4 hover:bg-zinc-50 transition-colors cursor-pointer",
                                                 !notification.read && "bg-indigo-50/30"
                                             )}
                                         >
@@ -79,9 +79,9 @@ export const NotificationCenter = () => {
                                                     {notification.type === 'error' && <AlertTriangle className="w-4 h-4" />}
                                                 </div>
                                                 <div className="flex-1 space-y-1">
-                                                    <p className="text-sm font-medium text-slate-900 leading-none">{notification.title}</p>
-                                                    <p className="text-xs text-slate-500 line-clamp-2">{notification.message}</p>
-                                                    <p className="text-[10px] text-slate-400 font-medium">{notification.time}</p>
+                                                    <p className="text-sm font-medium text-zinc-900 leading-none">{notification.title}</p>
+                                                    <p className="text-xs text-zinc-500 line-clamp-2">{notification.message}</p>
+                                                    <p className="text-[10px] text-zinc-400 font-medium">{notification.time}</p>
                                                 </div>
                                                 {!notification.read && (
                                                     <div className="h-2 w-2 rounded-full bg-indigo-500 mt-1" />

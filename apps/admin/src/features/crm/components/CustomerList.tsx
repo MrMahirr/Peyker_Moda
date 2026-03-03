@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { showDeleteConfirm } from '@/utils/swal';
 import { customersService, Customer } from '../api/customerService';
+import { Badge } from '@/components/ui/Badge';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -25,7 +26,7 @@ export const CustomerList = () => {
                 setCustomers(response.data || []);
             } catch (err) {
                 console.error('Customers fetch error:', err);
-                toast.error('Müşteriler yüklenemedi');
+                toast.error('Müşteriler yüklenemedi', { className: 'font-medium' });
             } finally {
                 setLoading(false);
             }
@@ -39,10 +40,10 @@ export const CustomerList = () => {
             try {
                 await customersService.delete(id);
                 setCustomers(customers.filter(c => c.id !== id));
-                toast.success('Müşteri silindi');
+                toast.success('Müşteri silindi', { className: 'font-medium' });
             } catch (err) {
                 console.error('Delete error:', err);
-                toast.error('Müşteri silinemedi');
+                toast.error('Müşteri silinemedi', { className: 'font-medium' });
             }
         }
     };
@@ -51,74 +52,90 @@ export const CustomerList = () => {
         {
             header: 'Müşteri Adı',
             accessorKey: 'firstName',
-            cell: (info: any) => (
-                <div className="flex flex-col">
-                    <span className="font-medium text-slate-900">
-                        {info.row.original.firstName} {info.row.original.lastName}
-                    </span>
-                    <span className="text-xs text-slate-500">{info.row.original.group?.name || 'Standart'}</span>
-                </div>
-            )
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => {
+                const customer = info.row.original;
+                return (
+                    <div className="flex flex-col py-1">
+                        <span className="font-semibold text-[14px] text-zinc-900">
+                            {customer.firstName} {customer.lastName}
+                        </span>
+                        <div className="mt-1">
+                            {customer.group?.name ? (
+                                <Badge variant="info" dot>{customer.group.name}</Badge>
+                            ) : (
+                                <Badge variant="neutral">Standart</Badge>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
         },
         {
-            header: 'İletişim',
+            header: 'İletişim Bilgileri',
             accessorKey: 'contact',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: (info: any) => (
-                <div className="flex flex-col text-sm text-slate-600 gap-1">
+                <div className="flex flex-col text-[13px] text-zinc-600 gap-1.5 justify-center py-1">
                     {info.row.original.email && (
-                        <div className="flex items-center gap-1">
-                            <Mail className="h-3 w-3 text-slate-400" />
+                        <div className="flex items-center gap-1.5 font-medium">
+                            <Mail className="h-3.5 w-3.5 text-zinc-400" />
                             {info.row.original.email}
                         </div>
                     )}
-                    <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3 text-slate-400" />
+                    <div className="flex items-center gap-1.5 font-medium">
+                        <Phone className="h-3.5 w-3.5 text-zinc-400" />
                         {info.row.original.phone}
                     </div>
                 </div>
             )
         },
         {
-            header: 'Toplam Harcama',
+            header: 'Hacim',
             accessorKey: 'totalSpent',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: (info: any) => (
-                <span className="font-semibold text-indigo-600">
+                <span className="font-bold font-mono text-[15px] text-zinc-900">
                     {formatCurrency(info.row.original.totalSpent || 0)}
                 </span>
             )
         },
         {
-            header: 'Sipariş',
+            header: 'Siparişler',
             accessorKey: 'orderCount',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: (info: any) => (
-                <span className="text-slate-600">{info.row.original.orderCount || 0} sipariş</span>
+                <span className="text-[13px] font-semibold text-zinc-700 bg-zinc-100 px-2.5 py-1 rounded-md border border-zinc-200/80 shadow-sm">
+                    {info.row.original.orderCount || 0} Adet
+                </span>
             )
         },
         {
             header: 'İşlemler',
             id: 'actions',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: (info: any) => (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-slate-500 hover:text-indigo-600"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50"
                         onClick={() => navigate(`/crm/${info.row.original.id}`)}
                     >
                         <Eye className="h-4 w-4" />
                     </Button>
                     <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-slate-500 hover:text-amber-600"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
                         onClick={() => navigate(`/crm/${info.row.original.id}/edit`)}
                     >
                         <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-slate-500 hover:text-red-500"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
                         onClick={() => handleDelete(info.row.original.id)}
                     >
                         <Trash className="h-4 w-4" />
@@ -136,33 +153,33 @@ export const CustomerList = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
+                <p className="text-[13px] font-medium text-zinc-500">Müşteriler yükleniyor...</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Müşteri Listesi</h1>
-                    <p className="text-slate-500">Müşterilerinizi yönetin ve satışlarını takip edin.</p>
+                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">Müşteri Portföyü</h1>
+                    <p className="text-[13px] font-medium text-zinc-500 mt-1">Müşteri ilişkilerinizi ve satış geçmişlerini yönetin.</p>
                 </div>
-                <Button className="bg-indigo-600 hover:bg-indigo-700">
-                    <Plus className="mr-2 h-4 w-4" />
+                <Button className="font-semibold shadow-md active:scale-[0.98] transition-all" icon={<Plus className="w-4 h-4" />}>
                     Yeni Müşteri
                 </Button>
             </div>
 
-            <div className="flex items-center gap-4 bg-white p-4 rounded-lg border border-slate-200">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <div className="flex items-center gap-4 bg-zinc-50 p-2 rounded-xl border border-zinc-200/80 shadow-sm">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                     <Input
-                        placeholder="İsim, E-posta veya Telefon ile ara..."
+                        placeholder="İsim, E-posta veya Telefon Ara..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 bg-slate-50"
+                        className="w-full h-10 pl-10 pr-4 bg-white border border-zinc-200/80 rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-zinc-900 placeholder:text-zinc-400 transition-all shadow-sm"
                     />
                 </div>
             </div>

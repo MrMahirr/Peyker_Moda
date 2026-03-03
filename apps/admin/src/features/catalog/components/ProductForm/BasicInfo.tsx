@@ -22,7 +22,7 @@ export const BasicInfo = ({ form }: BasicInfoProps) => {
 
     return (
         <div className="space-y-6">
-            <Card title="Temel Bilgiler" className="border-slate-200 shadow-sm">
+            <Card title="Temel Bilgiler" className="border-zinc-200 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                         <Input
@@ -77,7 +77,7 @@ export const BasicInfo = ({ form }: BasicInfoProps) => {
                 </div>
             </Card>
 
-            <Card title="Stok Ayarları" className="border-slate-200 shadow-sm">
+            <Card title="Stok Ayarları" className="border-zinc-200 shadow-sm">
                 <div className="space-y-4">
                     <div className="flex items-center space-x-2">
                         <input
@@ -86,7 +86,7 @@ export const BasicInfo = ({ form }: BasicInfoProps) => {
                             className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                             {...register('manageStock')}
                         />
-                        <label htmlFor="manageStock" className="text-sm font-medium text-slate-700">Bu ürün için stok takibi yap</label>
+                        <label htmlFor="manageStock" className="text-sm font-medium text-zinc-700">Bu ürün için stok takibi yap</label>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -96,7 +96,7 @@ export const BasicInfo = ({ form }: BasicInfoProps) => {
                             className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                             {...register('hasVariants')}
                         />
-                        <label htmlFor="hasVariants" className="text-sm font-medium text-slate-700">Bu ürünün renk/beden gibi varyantları var</label>
+                        <label htmlFor="hasVariants" className="text-sm font-medium text-zinc-700">Bu ürünün renk/beden gibi varyantları var</label>
                     </div>
                 </div>
             </Card>

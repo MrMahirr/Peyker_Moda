@@ -51,7 +51,7 @@ export function DataGrid<TData, TValue>({
             {searchKey && (
                 <div className="flex items-center">
                     <div className="relative w-full max-w-sm">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
                         <Input
                             placeholder="Ara..."
                             value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
@@ -63,9 +63,9 @@ export function DataGrid<TData, TValue>({
                     </div>
                 </div>
             )}
-            <div className="rounded-md border border-slate-200 bg-white">
+            <div className="rounded-md border border-zinc-200 bg-white">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+                    <thead className="bg-zinc-50 text-zinc-700 font-medium border-b border-zinc-200">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
@@ -90,7 +90,7 @@ export function DataGrid<TData, TValue>({
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
                                     className={cn(
-                                        "border-b border-slate-100 transition-colors hover:bg-slate-50/50 data-[state=selected]:bg-slate-50",
+                                        "border-b border-zinc-100 transition-colors hover:bg-zinc-50/50 data-[state=selected]:bg-zinc-50",
                                         onRowClick && "cursor-pointer"
                                     )}
                                     onClick={() => onRowClick && onRowClick(row.original)}
@@ -104,7 +104,7 @@ export function DataGrid<TData, TValue>({
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={columns.length} className="h-24 text-center text-slate-500">
+                                <td colSpan={columns.length} className="h-24 text-center text-zinc-500">
                                     Kayıt bulunamadı.
                                 </td>
                             </tr>

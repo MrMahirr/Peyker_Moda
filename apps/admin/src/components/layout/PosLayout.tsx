@@ -8,27 +8,28 @@ export const PosLayout = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex flex-col h-screen bg-background">
       {/* Compact POS Header */}
-      <header className="h-12 bg-sidebar flex items-center justify-between px-4 shrink-0">
+      <header className="h-14 bg-surface border-b border-zinc-200 flex items-center justify-between px-6 shrink-0 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-white text-xs font-bold">
+          <div className="w-8 h-8 rounded-lg bg-primary-dark flex items-center justify-center text-white text-[14px] font-black shadow-sm">
             P
           </div>
-          <span className="text-white text-sm font-semibold tracking-wide">POS</span>
+          <span className="text-zinc-900 text-[15px] font-black tracking-tight">POS EKRANI</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-400 text-xs font-medium hover:text-white hover:bg-white/10 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-zinc-600 text-[13px] font-bold hover:text-zinc-900 hover:bg-zinc-100 border border-transparent transition-all shadow-sm"
           >
-            <Store className="h-3.5 w-3.5" />
+            <Store className="h-4 w-4" />
             <span>Yönetim Paneli</span>
           </button>
+          <div className="h-5 w-px bg-zinc-200 mx-1" />
           <button
             onClick={() => { logout(); navigate('/auth/login'); }}
-            className="p-1.5 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+            className="p-2 rounded-lg text-zinc-500 hover:text-red-600 hover:bg-red-50 transition-all"
           >
             <LogOut className="h-4 w-4" />
           </button>

@@ -78,10 +78,10 @@ export const OrderDetail = () => {
                         <ChevronLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">
+                        <h1 className="text-2xl font-bold text-zinc-900">
                             Sipariş #{order.orderNumber}
                         </h1>
-                        <p className="text-sm text-slate-500">{formatDate(order.createdAt)}</p>
+                        <p className="text-sm text-zinc-500">{formatDate(order.createdAt)}</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -133,7 +133,7 @@ export const OrderDetail = () => {
                 <div className="lg:col-span-2">
                     <Card className="p-6">
                         <div className="flex items-center gap-2 mb-4">
-                            <Package className="w-5 h-5 text-slate-600" />
+                            <Package className="w-5 h-5 text-zinc-600" />
                             <h3 className="font-semibold">Ürünler</h3>
                         </div>
                         <div className="space-y-4">
@@ -141,14 +141,14 @@ export const OrderDetail = () => {
                                 <div key={idx} className="flex justify-between items-center py-3 border-b last:border-0">
                                     <div>
                                         <div className="font-medium">{item.productName}</div>
-                                        <div className="text-sm text-slate-500">{item.variantInfo}</div>
+                                        <div className="text-sm text-zinc-500">{item.variantInfo}</div>
                                     </div>
                                     <div className="text-right">
                                         <div className="font-medium">{formatCurrency(item.total)}</div>
-                                        <div className="text-sm text-slate-500">{item.quantity} x {formatCurrency(item.unitPrice)}</div>
+                                        <div className="text-sm text-zinc-500">{item.quantity} x {formatCurrency(item.unitPrice)}</div>
                                     </div>
                                 </div>
-                            )) || <p className="text-slate-500">Ürün bilgisi yok</p>}
+                            )) || <p className="text-zinc-500">Ürün bilgisi yok</p>}
                         </div>
                         <div className="mt-4 pt-4 border-t space-y-2">
                             <div className="flex justify-between"><span>Ara Toplam</span><span>{formatCurrency(order.subtotal)}</span></div>
@@ -163,31 +163,31 @@ export const OrderDetail = () => {
                     {/* Customer */}
                     <Card className="p-6">
                         <div className="flex items-center gap-2 mb-4">
-                            <User className="w-5 h-5 text-slate-600" />
+                            <User className="w-5 h-5 text-zinc-600" />
                             <h3 className="font-semibold">Müşteri</h3>
                         </div>
                         {order.customer ? (
                             <div className="space-y-2 text-sm">
                                 <p className="font-medium">{order.customer.firstName} {order.customer.lastName}</p>
-                                <p className="text-slate-600">{order.customer.phone}</p>
-                                {order.customer.email && <p className="text-slate-600">{order.customer.email}</p>}
+                                <p className="text-zinc-600">{order.customer.phone}</p>
+                                {order.customer.email && <p className="text-zinc-600">{order.customer.email}</p>}
                             </div>
-                        ) : <p className="text-slate-500 text-sm">Müşteri bilgisi yok</p>}
+                        ) : <p className="text-zinc-500 text-sm">Müşteri bilgisi yok</p>}
                     </Card>
 
                     {/* Shipping */}
                     <Card className="p-6">
                         <div className="flex items-center gap-2 mb-4">
-                            <Truck className="w-5 h-5 text-slate-600" />
+                            <Truck className="w-5 h-5 text-zinc-600" />
                             <h3 className="font-semibold">Teslimat Adresi</h3>
                         </div>
-                        <p className="text-sm text-slate-600">{order.shippingAddress || 'Adres bilgisi yok'}</p>
+                        <p className="text-sm text-zinc-600">{order.shippingAddress || 'Adres bilgisi yok'}</p>
                     </Card>
 
                     {/* Payment */}
                     <Card className="p-6">
                         <div className="flex items-center gap-2 mb-4">
-                            <CreditCard className="w-5 h-5 text-slate-600" />
+                            <CreditCard className="w-5 h-5 text-zinc-600" />
                             <h3 className="font-semibold">Ödeme</h3>
                         </div>
                         <p className="text-sm">

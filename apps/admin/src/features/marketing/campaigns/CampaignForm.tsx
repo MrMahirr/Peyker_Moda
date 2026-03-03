@@ -14,13 +14,13 @@ export const CampaignForm = () => {
                     Geri
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Yeni Kampanya</h1>
-                    <p className="text-slate-500">Kampanya detaylarını giriniz</p>
+                    <h1 className="text-2xl font-bold text-zinc-900">Yeni Kampanya</h1>
+                    <p className="text-zinc-500">Kampanya detaylarını giriniz</p>
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg border border-slate-200">
-                <p className="text-slate-500 italic">Form yapısı henüz oluşturulmadı.</p>
+            <div className="bg-white p-6 rounded-lg border border-zinc-200">
+                <p className="text-zinc-500 italic">Form yapısı henüz oluşturulmadı.</p>
             </div>
         </div>
     );

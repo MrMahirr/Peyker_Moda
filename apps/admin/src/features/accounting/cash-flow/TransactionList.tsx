@@ -3,6 +3,7 @@ import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Search, Plus, ArrowUpRight, ArrowDownLeft, Filter } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
 
 const MOCK_TRANSACTIONS = [
     { id: 'TRX-5001', type: 'income', category: 'Satış', description: 'Nakit Satış (#12345)', amount: 450.00, date: '2024-01-22 14:30', updatedBy: 'Kasa-1' },
@@ -19,20 +20,22 @@ export const TransactionList = () => {
         {
             header: 'Tarih',
             accessorKey: 'date',
-            cell: (info: any) => <span className="text-slate-500 text-xs">{info.getValue()}</span>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => <span className="text-zinc-500 text-[13px] font-medium">{info.getValue()}</span>
         },
         {
             header: 'Tür',
             accessorKey: 'type',
-            cell: (info: any) => {
-                const type = info.getValue() as string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: ({ row }: any) => {
+                const type = row.getValue('type') as string;
                 return type === 'income' ? (
-                    <div className="flex items-center text-green-600 text-xs font-bold uppercase tracking-wider">
-                        <ArrowUpRight className="h-3 w-3 mr-1" /> Gelir
+                    <div className="flex items-center text-emerald-600 text-[11px] font-bold uppercase tracking-wider">
+                        <ArrowUpRight className="h-3.5 w-3.5 mr-1" /> Gelir
                     </div>
                 ) : (
-                    <div className="flex items-center text-red-600 text-xs font-bold uppercase tracking-wider">
-                        <ArrowDownLeft className="h-3 w-3 mr-1" /> Gider
+                    <div className="flex items-center text-red-600 text-[11px] font-bold uppercase tracking-wider">
+                        <ArrowDownLeft className="h-3.5 w-3.5 mr-1" /> Gider
                     </div>
                 );
             }
@@ -40,20 +43,24 @@ export const TransactionList = () => {
         {
             header: 'Kategori',
             accessorKey: 'category',
-            cell: (info: any) => <span className="font-medium text-slate-700">{info.getValue()}</span>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => <Badge variant="neutral">{info.getValue()}</Badge>
         },
         {
             header: 'Açıklama',
             accessorKey: 'description',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => <span className="text-[14px] font-semibold text-zinc-900">{info.getValue()}</span>
         },
         {
             header: 'Tutar',
             accessorKey: 'amount',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: (info: any) => {
                 const type = info.row.original.type;
                 return (
-                    <span className={`font-mono font-bold ${type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                        {type === 'income' ? '+' : '-'}{info.getValue().toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
+                    <span className={`font-mono text-[15px] font-bold ${type === 'income' ? 'text-emerald-600' : 'text-zinc-900'}`}>
+                        {type === 'income' ? '+' : '-'}{info.getValue().toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
                     </span>
                 )
             }
@@ -61,7 +68,8 @@ export const TransactionList = () => {
         {
             header: 'İşlem Yapan',
             accessorKey: 'updatedBy',
-            cell: (info: any) => <span className="text-slate-500 text-xs">{info.getValue()}</span>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            cell: (info: any) => <span className="text-zinc-500 text-[13px] font-medium">{info.getValue()}</span>
         }
     ];
 
@@ -71,29 +79,29 @@ export const TransactionList = () => {
     );
 
     return (
-        <div className="p-6 space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg text-slate-800">Son Hareketler</h3>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+        <div className="p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h3 className="font-semibold text-[17px] text-zinc-900 tracking-tight">Kasa Hareketleri</h3>
+                <div className="flex items-center gap-2">
+                    <Button variant="secondary" size="sm">
                         <Filter className="mr-2 h-4 w-4" />
                         Filtrele
                     </Button>
-                    <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
-                        <Plus className="mr-2 h-4 w-4" />
+                    <Button variant="primary" size="sm">
+                        <Plus className="mr-1.5 h-4 w-4" />
                         Yeni İşlem Ekle
                     </Button>
                 </div>
             </div>
 
-            <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
+            <div className="flex items-center gap-4 bg-zinc-50 p-2 rounded-xl border border-zinc-200/80 shadow-sm">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                    <input
                         placeholder="Açıklama veya Kategori Ara..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 bg-white"
+                        className="w-full h-10 pl-10 pr-4 bg-white border border-zinc-200/80 rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-zinc-900 placeholder:text-zinc-400 transition-all shadow-sm"
                     />
                 </div>
             </div>

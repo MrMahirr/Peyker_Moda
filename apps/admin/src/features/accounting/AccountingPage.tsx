@@ -11,80 +11,90 @@ export const AccountingPage = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Ön Muhasebe</h1>
-                    <p className="text-slate-500">Gelir/Gider takibi, faturalar ve finansal raporlar.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Ön Muhasebe</h1>
+                    <p className="text-sm font-medium text-zinc-500 mt-1">Gelir/Gider takibi, faturalar ve finansal raporlar.</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button
-                        variant={activeTab === 'transactions' ? 'primary' : 'outline'}
+                <div className="flex bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50 shadow-inner">
+                    <button
                         onClick={() => setActiveTab('transactions')}
-                        className={activeTab === 'transactions' ? 'bg-indigo-600' : ''}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                            activeTab === 'transactions' 
+                                ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' 
+                                : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50 border border-transparent'
+                        }`}
                     >
-                        <Wallet className="mr-2 h-4 w-4" />
+                        <Wallet className="w-4 h-4" />
                         Kasa Hareketleri
-                    </Button>
-                    <Button
-                        variant={activeTab === 'invoices' ? 'primary' : 'outline'}
+                    </button>
+                    <button
                         onClick={() => setActiveTab('invoices')}
-                        className={activeTab === 'invoices' ? 'bg-indigo-600' : ''}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                            activeTab === 'invoices' 
+                                ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' 
+                                : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50 border border-transparent'
+                        }`}
                     >
-                        <FileText className="mr-2 h-4 w-4" />
+                        <FileText className="w-4 h-4" />
                         Faturalar
-                    </Button>
-                    <Button
-                        variant={activeTab === 'reports' ? 'primary' : 'outline'}
+                    </button>
+                    <button
                         onClick={() => setActiveTab('reports')}
-                        className={activeTab === 'reports' ? 'bg-indigo-600' : ''}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                            activeTab === 'reports' 
+                                ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' 
+                                : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50 border border-transparent'
+                        }`}
                     >
-                        <PieChart className="mr-2 h-4 w-4" />
+                        <PieChart className="w-4 h-4" />
                         Raporlar
-                    </Button>
+                    </button>
                 </div>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="p-6 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white border-0 shadow-lg shadow-indigo-200">
-                    <div className="flex justify-between items-start">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="bg-zinc-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-colors duration-500" />
+                    <div className="relative z-10 flex justify-between items-start">
                         <div>
-                            <p className="text-indigo-100 text-sm font-medium">Toplam Bakiye</p>
-                            <h3 className="text-3xl font-bold mt-2">124.500 ₺</h3>
+                            <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">Kasa Bakiyesi</p>
+                            <h3 className="text-[32px] font-black mt-2 tracking-tight">124.500 ₺</h3>
                         </div>
-                        <div className="p-2 bg-indigo-400/30 rounded-lg">
-                            <Wallet className="h-6 w-6 text-white" />
+                        <div className="p-3 bg-zinc-800 rounded-xl shadow-inner border border-zinc-700/50">
+                            <Wallet className="h-6 w-6 text-zinc-300" />
                         </div>
                     </div>
-                </Card>
+                </div>
 
-                <Card className="p-6">
+                <div className="bg-white rounded-2xl p-6 border border-zinc-200/80 shadow-sm">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-slate-500 text-sm font-medium">Bu Ay Gelir</p>
-                            <h3 className="text-2xl font-bold mt-2 text-green-600">+45.250 ₺</h3>
+                            <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Bu Ay Giren</p>
+                            <h3 className="text-2xl font-black mt-2 text-emerald-600 tracking-tight">+45.250 ₺</h3>
                         </div>
-                        <div className="p-2 bg-green-50 rounded-lg">
-                            <TrendingUp className="h-6 w-6 text-green-600" />
+                        <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-100/50">
+                            <TrendingUp className="h-5 w-5 text-emerald-600" />
                         </div>
                     </div>
-                </Card>
+                </div>
 
-                <Card className="p-6">
+                <div className="bg-white rounded-2xl p-6 border border-zinc-200/80 shadow-sm">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-slate-500 text-sm font-medium">Bu Ay Gider</p>
-                            <h3 className="text-2xl font-bold mt-2 text-red-600">-12.800 ₺</h3>
+                            <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Bu Ay Çıkan</p>
+                            <h3 className="text-2xl font-black mt-2 text-red-600 tracking-tight">-12.800 ₺</h3>
                         </div>
-                        <div className="p-2 bg-red-50 rounded-lg">
-                            <TrendingDown className="h-6 w-6 text-red-600" />
+                        <div className="p-2.5 bg-red-50 rounded-xl border border-red-100/50">
+                            <TrendingDown className="h-5 w-5 text-red-600" />
                         </div>
                     </div>
-                </Card>
+                </div>
             </div>
 
             {/* Content Area */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm min-h-[400px]">
+            <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm min-h-[400px] overflow-hidden">
                 {activeTab === 'transactions' && <TransactionList />}
                 {activeTab === 'invoices' && <InvoiceList />}
                 {activeTab === 'reports' && <ZReport />}

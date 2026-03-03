@@ -78,7 +78,7 @@ export function ImageUpload({
             <div
                 {...getRootProps()}
                 className={cn(
-                    "border-2 border-dashed border-slate-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-slate-50 relative",
+                    "border-2 border-dashed border-zinc-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-zinc-50 relative",
                     isDragActive && "border-indigo-500 bg-indigo-50",
                     (previews.length >= maxFiles || loading) && "opacity-50 cursor-not-allowed"
                 )}
@@ -87,17 +87,17 @@ export function ImageUpload({
                 {loading ? (
                     <div className="flex flex-col items-center">
                         <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-2" />
-                        <p className="text-sm text-slate-500">Yükleniyor...</p>
+                        <p className="text-sm text-zinc-500">Yükleniyor...</p>
                     </div>
                 ) : (
                     <>
-                        <div className="bg-slate-100 p-3 rounded-full mb-3">
-                            <Upload className="h-6 w-6 text-slate-500" />
+                        <div className="bg-zinc-100 p-3 rounded-full mb-3">
+                            <Upload className="h-6 w-6 text-zinc-500" />
                         </div>
-                        <p className="text-sm font-medium text-slate-900">
+                        <p className="text-sm font-medium text-zinc-900">
                             Resim yüklemek için tıklayın veya sürükleyin
                         </p>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-xs text-zinc-500 mt-1">
                             (Max {maxFiles} resim)
                         </p>
                     </>
@@ -107,7 +107,7 @@ export function ImageUpload({
             {previews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {previews.map((url, index) => (
-                        <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-slate-200">
+                        <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-zinc-200">
                             <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
                                     type="button"

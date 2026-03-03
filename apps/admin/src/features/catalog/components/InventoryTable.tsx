@@ -1,6 +1,6 @@
-import React from 'react';
-import { MoreVertical, Edit, Trash2, Copy, AlertCircle } from 'lucide-react';
+import { MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/Badge';
 
 interface Product {
     id: string;
@@ -17,56 +17,56 @@ interface Product {
 const mockProducts: Product[] = [
     {
         id: '1',
-        name: 'Silk Floral Midi Dress',
+        name: 'İpek Çiçekli Midi Elbise',
         sku: 'DR-0012',
-        category: 'Dresses',
+        category: 'Elbiseler',
         stock: 45,
         maxStock: 100,
-        price: 189.00,
+        price: 1890.00,
         image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=150&auto=format&fit=crop',
         status: 'IN_STOCK',
     },
     {
         id: '2',
-        name: 'Wool Trench Coat',
+        name: 'Yün Trençkot',
         sku: 'OW-4490',
-        category: 'Outerwear',
+        category: 'Dış Giyim',
         stock: 3,
         maxStock: 50,
-        price: 295.00,
+        price: 2950.00,
         image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=150&auto=format&fit=crop',
         status: 'LOW_STOCK',
     },
     {
         id: '3',
-        name: 'Gold Link Necklace',
+        name: 'Altın Zincir Kolye',
         sku: 'AC-8821',
-        category: 'Accessories',
+        category: 'Aksesuarlar',
         stock: 0,
         maxStock: 30,
-        price: 85.00,
+        price: 850.00,
         image: 'https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=150&auto=format&fit=crop',
         status: 'OUT_OF_STOCK',
     },
     {
         id: '4',
-        name: 'Leather Crossbody Bag',
+        name: 'Deri Çapraz Çanta',
         sku: 'BG-1024',
-        category: 'Accessories',
+        category: 'Aksesuarlar',
         stock: 12,
         maxStock: 40,
-        price: 145.50,
+        price: 1450.50,
         image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=150&auto=format&fit=crop',
         status: 'LOW_STOCK',
     },
     {
         id: '5',
-        name: 'Summer Linen Shirt',
+        name: 'Yazlık Keten Gömlek',
         sku: 'TS-3321',
-        category: 'Tops',
+        category: 'Üst Giyim',
         stock: 85,
         maxStock: 120,
-        price: 59.90,
+        price: 590.90,
         image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=150&auto=format&fit=crop',
         status: 'IN_STOCK',
     },
@@ -75,10 +75,10 @@ const mockProducts: Product[] = [
 export const InventoryTable = () => {
     const getStockColor = (status: Product['status']) => {
         switch (status) {
-            case 'IN_STOCK': return 'bg-green-500';
+            case 'IN_STOCK': return 'bg-emerald-500';
             case 'LOW_STOCK': return 'bg-amber-500';
             case 'OUT_OF_STOCK': return 'bg-red-500';
-            default: return 'bg-slate-500';
+            default: return 'bg-zinc-300';
         }
     };
 
@@ -87,79 +87,77 @@ export const InventoryTable = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-surface rounded-xl border border-zinc-200/80 shadow-sm overflow-hidden flex flex-col">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                    <thead className="bg-zinc-50/50 border-b border-zinc-100">
                         <tr>
-                            <th className="p-4 w-10">
-                                <input type="checkbox" className="rounded border-slate-300 text-primary focus:ring-primary" />
+                            <th className="p-4 w-12 pl-6">
+                                <input type="checkbox" className="rounded border-zinc-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer" />
                             </th>
-                            <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Product</th>
-                            <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Category</th>
-                            <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Stock Level</th>
-                            <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Price</th>
-                            <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                            <th className="p-4 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Ürün</th>
+                            <th className="p-4 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Kategori</th>
+                            <th className="p-4 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider text-center">Stok Durumu</th>
+                            <th className="p-4 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Fiyat</th>
+                            <th className="p-4 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider text-right pr-6">İşlemler</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                    <tbody className="divide-y divide-zinc-50">
                         {mockProducts.map((product) => (
-                            <tr key={product.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
-                                <td className="p-4">
-                                    <input type="checkbox" className="rounded border-slate-300 text-primary focus:ring-primary" />
+                            <tr key={product.id} className="hover:bg-zinc-50/50 transition-colors group relative">
+                                <td className="p-4 pl-6">
+                                    <input type="checkbox" className="rounded border-zinc-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer" />
                                 </td>
                                 <td className="p-4">
                                     <div className="flex items-center gap-3">
                                         <div
                                             className={cn(
-                                                "w-12 h-12 rounded-lg bg-cover bg-center border border-slate-200 dark:border-slate-700",
-                                                product.status === 'OUT_OF_STOCK' && "grayscale opacity-70"
+                                                "w-[42px] h-[52px] rounded-md bg-cover bg-center border border-zinc-200/80",
+                                                product.status === 'OUT_OF_STOCK' && "grayscale opacity-50"
                                             )}
                                             style={{ backgroundImage: `url('${product.image}')` }}
-                                        ></div>
+                                        />
                                         <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-slate-900 dark:text-white">{product.name}</span>
-                                            <span className="text-xs text-slate-500">SKU: {product.sku}</span>
+                                            <span className="text-sm font-semibold text-zinc-900">{product.name}</span>
+                                            <span className="text-[11px] text-zinc-400 font-medium">SKU: {product.sku}</span>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="p-4">
-                                    <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold">
-                                        {product.category}
-                                    </span>
+                                    <Badge variant="neutral">{product.category}</Badge>
                                 </td>
-                                <td className="p-4 text-center">
-                                    <div className="flex flex-col items-center gap-1 w-24 mx-auto">
+                                <td className="p-4">
+                                    <div className="flex flex-col items-center gap-1.5 w-24 mx-auto">
                                         {product.status === 'OUT_OF_STOCK' ? (
-                                            <span className="text-xs font-bold text-red-600 px-2 py-0.5 bg-red-50 dark:bg-red-900/20 rounded uppercase">Out of Stock</span>
+                                            <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Tükendi</span>
                                         ) : (
                                             <span className={cn(
-                                                "text-sm font-bold",
-                                                product.status === 'LOW_STOCK' ? "text-amber-600" : "text-slate-900 dark:text-white"
+                                                "text-[13px] font-bold",
+                                                product.status === 'LOW_STOCK' ? "text-amber-600" : "text-zinc-700"
                                             )}>
-                                                {product.stock} units
+                                                {product.stock} Adet
                                             </span>
                                         )}
-                                        <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <div className="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden shrink-0">
                                             <div
-                                                className={cn("h-full transition-all duration-500", getStockColor(product.status))}
+                                                className={cn("h-full rounded-full transition-all duration-500", getStockColor(product.status))}
                                                 style={{ width: `${getStockPercentage(product.stock, product.maxStock)}%` }}
-                                            ></div>
+                                            />
                                         </div>
                                     </div>
                                 </td>
-                                <td className="p-4 font-bold text-sm text-slate-900 dark:text-white">
-                                    ${product.price.toFixed(2)}
+                                <td className="p-4 text-[13px] font-semibold text-zinc-900">
+                                    ₺{product.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                 </td>
-                                <td className="p-4 text-right">
+                                <td className="p-4 pr-6 text-right">
                                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                                        <button className="p-1.5 text-zinc-400 hover:text-primary hover:bg-zinc-100 rounded-md transition-colors">
                                             <Edit className="w-4 h-4" />
                                         </button>
-                                        <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                        <button className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
-                                        <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                                        <button className="p-1.5 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-md transition-colors">
                                             <MoreVertical className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -170,12 +168,17 @@ export const InventoryTable = () => {
                 </table>
             </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                <p className="text-sm text-slate-500">Showing <span className="font-bold text-slate-900 dark:text-white">1-5</span> of <span className="font-bold text-slate-900 dark:text-white">1,240</span> products</p>
+            <div className="flex items-center justify-between p-4 px-6 border-t border-zinc-100 bg-surface text-sm">
+                <p className="text-zinc-500">
+                    <span className="font-semibold text-zinc-900">1-5</span> / <span className="font-semibold text-zinc-900">1,240</span> ürün gösteriliyor
+                </p>
                 <div className="flex gap-2">
-                    <button className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-500 text-sm hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50" disabled>Previous</button>
-                    <button className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-500 text-sm hover:bg-white dark:hover:bg-slate-800">Next</button>
+                    <button className="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-500 text-[13px] font-medium hover:bg-zinc-50 disabled:opacity-50 transition-colors" disabled>
+                        Önceki
+                    </button>
+                    <button className="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-700 text-[13px] font-medium hover:bg-zinc-50 transition-colors">
+                        Sonraki
+                    </button>
                 </div>
             </div>
         </div>

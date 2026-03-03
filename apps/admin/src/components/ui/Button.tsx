@@ -15,8 +15,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants: Record<string, string> = {
       primary: 'bg-primary text-white hover:bg-primary-dark shadow-sm shadow-primary/20',
-      secondary: 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300',
-      ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-800',
+      secondary: 'border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300',
+      ghost: 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-800',
       danger: 'bg-red-500 text-white hover:bg-red-600 shadow-sm shadow-red-500/20',
     };
 

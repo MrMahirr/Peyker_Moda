@@ -1,69 +1,74 @@
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Shield } from 'lucide-react';
+import { Shield, Plus, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
 const roles = [
     {
         id: 1,
-        name: 'Admin',
-        description: 'Tüm sisteme tam erişim',
+        name: 'Sistem Yöneticisi',
+        description: 'Tüm modüllere ve ayarlara tam erişim yetkisi.',
         permissions: ['all'],
+        usersCount: 2
     },
     {
         id: 2,
-        name: 'Satış Temsilcisi (Sales)',
-        description: 'Sadece POS ve Müşteri ekranlarına erişim',
+        name: 'Satış Temsilcisi',
+        description: 'POS, Kasa işlemleri ve Müşteri listesi ekranlarına erişim.',
         permissions: ['pos.read', 'pos.write', 'crm.read'],
+        usersCount: 5
     },
     {
         id: 3,
         name: 'Depo Sorumlusu',
-        description: 'Ürün ve Stok yönetimi',
+        description: 'Ürün yönetimi, stok takibi ve katalog düzenlemesi.',
         permissions: ['catalog.read', 'catalog.write'],
+        usersCount: 3
     },
 ];
 
 export const RoleManager = () => {
     return (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {roles.map((role) => (
-                <Card key={role.id} title={role.name} className="relative overflow-hidden">
-                    <div className="flex flex-col h-full">
-                        <p className="text-sm text-slate-500 mb-6">{role.description}</p>
-
-                        <div className="mt-auto space-y-4">
-                            <div className="flex items-center gap-2 text-sm text-slate-700 bg-slate-50 p-2 rounded">
-                                <Shield className="h-4 w-4 text-indigo-500" />
-                                <span className="font-medium">{role.permissions.length} Yetki Tanımlı</span>
-                            </div>
-
-                            <div className="flex gap-2">
-                                <Button variant="outline" className="w-full" onClick={() => toast.info('Düzenleme özelliği yakında gelecek.')}>Düzenle</Button>
-                            </div>
+                <div key={role.id} className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm flex flex-col p-6 hover:shadow-md transition-all duration-200 group">
+                    <div className="flex items-start justify-between mb-4">
+                        <div className="w-12 h-12 bg-zinc-50 border border-zinc-200/80 rounded-xl flex items-center justify-center text-zinc-900 shadow-sm group-hover:scale-105 transition-transform">
+                            {role.id === 1 ? <Shield className="w-6 h-6" /> : <Lock className="w-6 h-6 text-zinc-500" />}
                         </div>
+                        <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 px-2 py-1 rounded">
+                            {role.usersCount} Personel
+                        </span>
                     </div>
-                </Card>
+                    
+                    <h3 className="text-[16px] font-bold text-zinc-900 mb-1.5">{role.name}</h3>
+                    <p className="text-[13px] font-medium text-zinc-500 leading-relaxed min-h-[40px] mb-6">
+                        {role.description}
+                    </p>
+
+                    <div className="mt-auto space-y-4">
+                        <div className="flex items-center gap-2 p-3 bg-zinc-50 border border-zinc-200/50 rounded-xl">
+                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                            <span className="text-[13px] font-bold text-zinc-700">{role.permissions.length} Yetki Tanımlı</span>
+                        </div>
+
+                        <Button 
+                            variant="secondary" 
+                            className="w-full h-11 bg-white border border-zinc-200/80 shadow-sm hover:bg-zinc-50 font-bold text-zinc-700" 
+                            onClick={() => toast.info('Düzenleme özelliği yakında gelecek.', { className: 'font-medium' })}
+                        >
+                            İzinleri Düzenle
+                        </Button>
+                    </div>
+                </div>
             ))}
 
-            <Card className="border-dashed border-2 flex items-center justify-center p-6 bg-slate-50/50 hover:bg-slate-50 transition-colors cursor-pointer group">
-                <div className="text-center">
-                    <div className="h-10 w-10 bg-white rounded-full border border-slate-200 flex items-center justify-center mx-auto mb-3 shadow-sm group-hover:border-indigo-500 transition-colors">
-                        <PlusIcon className="h-5 w-5 text-slate-500 group-hover:text-indigo-500" />
-                    </div>
-                    <h3 className="font-medium text-slate-900">Yeni Rol Oluştur</h3>
-                    <p className="text-xs text-slate-500 mt-1">Özel yetkilerle yeni bir rol tanımla</p>
+            <button className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/50 hover:bg-zinc-50 hover:border-zinc-300 transition-all group min-h-[300px]">
+                <div className="h-14 w-14 bg-white rounded-full border border-zinc-200 flex items-center justify-center mb-4 shadow-sm group-hover:border-zinc-900 group-hover:text-zinc-900 transition-colors">
+                    <Plus className="h-6 w-6 text-zinc-400 group-hover:text-zinc-900" />
                 </div>
-            </Card>
+                <h3 className="text-[16px] font-bold text-zinc-900">Özel Rol Oluştur</h3>
+                <p className="text-[13px] font-medium text-zinc-500 mt-1 max-w-[200px] text-center">İhtiyacınıza göre özel izinlere sahip yeni bir rol tanımlayın.</p>
+            </button>
         </div>
     );
 };
-
-function PlusIcon({ className }: { className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-        </svg>
-    )
-}

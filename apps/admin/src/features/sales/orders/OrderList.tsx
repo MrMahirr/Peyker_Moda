@@ -5,6 +5,7 @@ import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
 import { Eye, Loader2 } from 'lucide-react';
 import { ordersService, Order } from '../services/orders.service';
+import { Badge } from '@/components/ui/Badge';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -16,19 +17,19 @@ const formatDate = (date: string) => {
     });
 };
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-    PENDING: { label: 'Beklemede', color: 'bg-amber-100 text-amber-800' },
-    PROCESSING: { label: 'Hazırlanıyor', color: 'bg-blue-100 text-blue-800' },
-    SHIPPED: { label: 'Kargoda', color: 'bg-purple-100 text-purple-800' },
-    DELIVERED: { label: 'Teslim Edildi', color: 'bg-emerald-100 text-emerald-800' },
-    CANCELLED: { label: 'İptal', color: 'bg-red-100 text-red-800' },
+const STATUS_MAP: Record<string, { label: string; variant: 'neutral' | 'info' | 'success' | 'warning' | 'error' }> = {
+    PENDING: { label: 'Beklemede', variant: 'warning' },
+    PROCESSING: { label: 'Hazırlanıyor', variant: 'info' },
+    SHIPPED: { label: 'Kargoda', variant: 'neutral' }, // Ideally purple, but neutral is fine
+    DELIVERED: { label: 'Teslim Edildi', variant: 'success' },
+    CANCELLED: { label: 'İptal', variant: 'error' },
 };
 
-const PAYMENT_MAP: Record<string, { label: string; color: string }> = {
-    PENDING: { label: 'Bekliyor', color: 'bg-amber-100 text-amber-800' },
-    PAID: { label: 'Ödendi', color: 'bg-emerald-100 text-emerald-800' },
-    FAILED: { label: 'Başarısız', color: 'bg-red-100 text-red-800' },
-    REFUNDED: { label: 'İade', color: 'bg-slate-100 text-slate-800' },
+const PAYMENT_MAP: Record<string, { label: string; variant: 'neutral' | 'info' | 'success' | 'warning' | 'error' }> = {
+    PENDING: { label: 'Bekliyor', variant: 'warning' },
+    PAID: { label: 'Ödendi', variant: 'success' },
+    FAILED: { label: 'Başarısız', variant: 'error' },
+    REFUNDED: { label: 'İade', variant: 'neutral' },
 };
 
 export const OrderList = () => {
@@ -57,7 +58,7 @@ export const OrderList = () => {
             accessorKey: 'orderNumber',
             header: 'Sipariş No',
             cell: ({ row }) => (
-                <span className="font-mono font-medium text-indigo-600">{row.getValue('orderNumber')}</span>
+                <span className="font-mono text-[13px] font-bold text-zinc-900 bg-zinc-100/80 px-2 py-1 rounded-md border border-zinc-200/50">{row.getValue('orderNumber')}</span>
             ),
         },
         {
@@ -66,18 +67,18 @@ export const OrderList = () => {
             cell: ({ row }) => {
                 const customer = row.original.customer;
                 return customer ? (
-                    <div>
-                        <div className="font-medium">{customer.firstName} {customer.lastName}</div>
-                        <div className="text-xs text-slate-500">{customer.phone}</div>
+                    <div className="flex flex-col py-1">
+                        <div className="font-semibold text-[14px] text-zinc-900">{customer.firstName} {customer.lastName}</div>
+                        <div className="text-[11px] font-medium text-zinc-500">{customer.phone}</div>
                     </div>
-                ) : <span className="text-slate-400">-</span>;
+                ) : <span className="text-zinc-400 font-medium">-</span>;
             },
         },
         {
             accessorKey: 'total',
             header: 'Tutar',
             cell: ({ row }) => (
-                <span className="font-medium">{formatCurrency(row.original.total)}</span>
+                <span className="font-bold text-[15px] font-mono text-zinc-900">{formatCurrency(row.original.total)}</span>
             ),
         },
         {
@@ -85,11 +86,11 @@ export const OrderList = () => {
             header: 'Sipariş Durumu',
             cell: ({ row }) => {
                 const status = row.original.status;
-                const statusInfo = STATUS_MAP[status] || { label: status, color: 'bg-slate-100' };
+                const statusInfo = STATUS_MAP[status] || { label: status, variant: 'neutral' };
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                    <Badge variant={statusInfo.variant} dot>
                         {statusInfo.label}
-                    </span>
+                    </Badge>
                 );
             },
         },
@@ -98,11 +99,11 @@ export const OrderList = () => {
             header: 'Ödeme',
             cell: ({ row }) => {
                 const status = row.original.paymentStatus;
-                const statusInfo = PAYMENT_MAP[status] || { label: status, color: 'bg-slate-100' };
+                const statusInfo = PAYMENT_MAP[status] || { label: status, variant: 'neutral' };
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                    <Badge variant={statusInfo.variant}>
                         {statusInfo.label}
-                    </span>
+                    </Badge>
                 );
             },
         },
@@ -110,41 +111,48 @@ export const OrderList = () => {
             accessorKey: 'createdAt',
             header: 'Tarih',
             cell: ({ row }) => (
-                <span className="text-sm text-slate-600">{formatDate(row.original.createdAt)}</span>
+                <span className="text-[13px] font-medium text-zinc-500">{formatDate(row.original.createdAt)}</span>
             ),
         },
         {
             id: 'actions',
             cell: ({ row }) => (
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:text-indigo-600"
-                    onClick={() => navigate(`/sales/orders/${row.original.id}`)}
-                >
-                    <Eye className="h-4 w-4" />
-                </Button>
+                <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50"
+                        onClick={() => navigate(`/sales/orders/${row.original.id}`)}
+                    >
+                        <Eye className="h-4 w-4" />
+                    </Button>
+                </div>
             ),
         },
     ];
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
+                <p className="text-[13px] font-medium text-zinc-500">Siparişler yükleniyor...</p>
             </div>
         );
     }
 
     if (error) {
-        return <div className="text-center py-12 text-red-600">{error}</div>;
+        return (
+            <div className="text-center py-12 bg-red-50 text-red-600 rounded-xl border border-red-200 font-medium">
+                {error}
+            </div>
+        );
     }
 
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">Siparişler</h2>
-                <p className="text-sm text-slate-500">Tüm siparişleri buradan yönetebilirsiniz.</p>
+                <h2 className="text-2xl font-black tracking-tight text-zinc-900">Sipariş Yönetimi</h2>
+                <p className="text-[13px] font-medium text-zinc-500 mt-1">E-ticaret ve mağaza siparişlerinizi tek merkezden takip edin.</p>
             </div>
 
             <DataGrid

@@ -5,6 +5,7 @@ import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
 import { Plus, Edit, Trash, Eye, Loader2 } from 'lucide-react';
 import { productsService, Product } from '../services/products.service';
+import { Badge } from '@/components/ui/Badge';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -50,7 +51,7 @@ export const ProductList = () => {
                 const images = row.getValue('images') as string[] | undefined;
                 const imageUrl = images?.[0] || 'https://via.placeholder.com/100';
                 return (
-                    <div className="h-12 w-12 rounded-md overflow-hidden bg-slate-100 border border-slate-200">
+                    <div className="h-[52px] w-[42px] rounded-md overflow-hidden bg-zinc-50 border border-zinc-200/80">
                         <img src={imageUrl} alt={row.original.name} className="h-full w-full object-cover" />
                     </div>
                 );
@@ -60,16 +61,18 @@ export const ProductList = () => {
             accessorKey: 'name',
             header: 'Ürün Adı',
             cell: ({ row }) => (
-                <div>
-                    <div className="font-medium text-slate-900">{row.getValue('name')}</div>
-                    <div className="text-xs text-slate-500">{row.original.sku}</div>
+                <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-zinc-900">{row.getValue('name')}</span>
+                    <span className="text-[11px] text-zinc-400 font-medium">SKU: {row.original.sku}</span>
                 </div>
             ),
         },
         {
             accessorKey: 'category',
             header: 'Kategori',
-            cell: ({ row }) => row.original.category?.name || '-',
+            cell: ({ row }) => (
+                <Badge variant="neutral">{row.original.category?.name || 'Kategorisiz'}</Badge>
+            ),
         },
         {
             accessorKey: 'basePrice',
@@ -78,9 +81,9 @@ export const ProductList = () => {
                 const basePrice = row.original.basePrice;
                 const salePrice = row.original.salePrice;
                 return (
-                    <div>
-                        <div className="font-medium">{formatCurrency(salePrice || basePrice)}</div>
-                        {salePrice && <div className="text-xs text-slate-400 line-through">{formatCurrency(basePrice)}</div>}
+                    <div className="flex flex-col">
+                        <span className="text-[13px] font-semibold text-zinc-900">{formatCurrency(salePrice || basePrice)}</span>
+                        {salePrice && <span className="text-[11px] text-zinc-400 line-through font-medium">{formatCurrency(basePrice)}</span>}
                     </div>
                 );
             }
@@ -91,9 +94,9 @@ export const ProductList = () => {
             cell: ({ row }) => {
                 const stock = row.original.totalStock || 0;
                 return (
-                    <div className={stock < 10 ? 'text-red-600 font-medium' : 'text-slate-700'}>
-                        {stock} adet
-                    </div>
+                    <span className={stock < 10 ? 'text-[13px] font-bold text-red-600' : 'text-[13px] font-semibold text-zinc-700'}>
+                        {stock} Adet
+                    </span>
                 );
             }
         },
@@ -103,10 +106,9 @@ export const ProductList = () => {
             cell: ({ row }) => {
                 const isActive = row.original.isActive;
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-800'
-                        }`}>
+                    <Badge variant={isActive ? 'success' : 'neutral'} dot>
                         {isActive ? 'Yayında' : 'Taslak'}
-                    </span>
+                    </Badge>
                 );
             },
         },
@@ -114,27 +116,27 @@ export const ProductList = () => {
             id: 'actions',
             cell: ({ row }) => {
                 return (
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 hover:text-indigo-600"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-zinc-400 hover:text-primary hover:bg-zinc-50"
                             onClick={() => navigate(`/catalog/${row.original.id}`)}
                         >
                             <Eye className="h-4 w-4" />
                         </Button>
                         <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 hover:text-orange-600"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
                             onClick={() => navigate(`/catalog/${row.original.id}/edit`)}
                         >
                             <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
                             onClick={() => handleDelete(row.original.id)}
                         >
                             <Trash className="h-4 w-4" />
@@ -147,33 +149,35 @@ export const ProductList = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-sm font-medium text-zinc-500">Ürünler yükleniyor...</p>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="text-center py-12 text-red-600">
+            <div className="text-center py-12 text-red-600 font-medium">
                 {error}
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="bg-surface rounded-xl border border-zinc-200/80 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-slate-900">Ürün Kataloğu</h2>
-                    <p className="text-sm text-slate-500">Mağaza ve internet sitenizdeki ürünleri buradan yönetebilirsiniz.</p>
+                    <h2 className="text-base font-semibold text-zinc-900">Ürün Kataloğu</h2>
+                    <p className="text-xs font-medium text-zinc-500 mt-0.5">Tüm ürünlerinizi buradan yönetebilirsiniz.</p>
                 </div>
                 <Button
-                    className="bg-slate-900 hover:bg-slate-800"
+                    variant="primary"
+                    size="sm"
+                    icon={<Plus className="w-4 h-4" />}
                     onClick={() => navigate('/catalog/new')}
                 >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Yeni Ürün Ekle
+                    Yeni Ürün
                 </Button>
             </div>
 

@@ -8,6 +8,8 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Receipt } from './Receipt';
 import { posService } from '../services/pos.service';
+import { cn } from '@/lib/utils';
+import { Modal } from '@/components/ui/Modal';
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -57,7 +59,7 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
                 paymentMethod: paymentMethod === 'cash' ? 'CASH' as const :
                     paymentMethod === 'credit_card' ? 'CARD' as const : 'CASH' as const,
                 cashAmount: paymentMethod === 'cash' ? Number(receivedAmount) || total : undefined,
-                notes: `POS Sale - ${new Date().toLocaleString('tr-TR')}`,
+                notes: `POS Ödemesi - ${new Date().toLocaleString('tr-TR')}`,
             };
 
             const result = await posService.createSale(saleData);
@@ -66,11 +68,11 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
             setReceiptNo(result.saleNumber || `TR-${Math.floor(Math.random() * 100000)}`);
             setReceiptCart(cart);
 
-            toast.success(`Ödeme Başarılı: ${total.toLocaleString('tr-TR')} ₺`);
+            toast.success(`Ödeme Başarılı: ${total.toLocaleString('tr-TR')} ₺`, { className: 'font-medium py-3 px-4 shadow-xl' });
             clearCart();
         } catch (error) {
             console.error('Sale creation failed:', error);
-            toast.error('Satış kaydedilemedi. Lütfen tekrar deneyin.');
+            toast.error('Satış kaydedilemedi. Lütfen ağ bağlantısını kontrol edin.', { className: 'font-medium' });
         } finally {
             setProcessing(false);
         }
@@ -88,34 +90,32 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
 
     if (isSuccess) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm overflow-hidden">
-                <Card className="w-full max-w-lg h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 bg-slate-100">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4">
+                <div className="w-full max-w-lg h-[90vh] sm:h-auto max-h-[90vh] flex flex-col bg-zinc-100 rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
 
                     {/* Success Header */}
-                    <div className="bg-white p-6 pb-4 text-center border-b border-slate-200 shrink-0">
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2 text-green-600">
-                            <CheckCircle2 className="h-6 w-6" />
+                    <div className="bg-white p-8 text-center shrink-0 shadow-sm relative z-10">
+                        <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-500 ring-4 ring-emerald-50/50">
+                            <CheckCircle2 className="h-8 w-8" />
                         </div>
-                        <h2 className="text-xl font-bold text-slate-900">Ödeme Başarılı!</h2>
-                        <p className="text-sm text-slate-500">Satış tamamlandı.</p>
+                        <h2 className="text-2xl font-black text-zinc-900 tracking-tight">Ödeme Tamamlandı!</h2>
+                        <p className="text-[13px] font-medium text-zinc-500 mt-1 mb-6">Satış belgesi oluşturuldu ve kaydedildi.</p>
 
                         {/* Action Buttons */}
-                        <div className="grid grid-cols-2 gap-3 mt-4">
-                            <Button variant="outline" onClick={handlePrint} className="h-10 border-slate-300 hover:bg-slate-50">
-                                <Printer className="mr-2 h-4 w-4" />
-                                Yazdır
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <Button variant="secondary" onClick={handlePrint} className="h-12 flex-1 font-bold text-[13px] bg-zinc-100 border-transparent hover:bg-zinc-200">
+                                <Printer className="mr-2 h-4 w-4 text-zinc-500" />
+                                Fişi Gör/Yazdır
                             </Button>
-                            <Button onClick={handleClose} className="h-10 bg-indigo-600 hover:bg-indigo-700">
-                                Yeni Satış <ArrowRight className="ml-2 h-4 w-4" />
+                            <Button variant="primary" onClick={handleClose} className="h-12 flex-1 font-bold text-[13px] bg-zinc-900 hover:bg-zinc-800 text-white border-transparent">
+                                Yeni Satış <ArrowRight className="ml-2 h-4 w-4 opacity-70" />
                             </Button>
                         </div>
                     </div>
 
                     {/* Receipt Preview Area (Scrollable) */}
-                    <div className="flex-1 overflow-y-auto p-4 bg-slate-200/50 flex flex-col items-center">
-                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Fiş Önizleme</p>
-
-                        <div className="shadow-lg rounded-sm overflow-hidden pointer-events-none select-none origin-top transition-transform">
+                    <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-zinc-100/80 bg-blend-soft-light hide-scrollbar">
+                        <div className="shadow-2xl rounded-sm overflow-hidden pointer-events-none select-none origin-top transition-transform scale-95 border border-zinc-200/50">
                             <Receipt
                                 cart={receiptCart}
                                 total={total}
@@ -127,102 +127,118 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
                         </div>
                     </div>
 
-                </Card>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <Card className="w-full max-w-2xl p-0 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
-                    <h2 className="text-lg font-bold text-slate-900">Ödeme Al</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-                        <X className="h-5 w-5" />
-                    </button>
-                </div>
-
-                <div className="flex flex-col md:flex-row h-[500px]">
+        <Modal 
+            isOpen={isOpen} 
+            onClose={onClose} 
+            title="Ödeme İşlemi"
+            size="lg"
+            className="p-0 overflow-hidden" 
+        >
+                <div className="flex flex-col md:flex-row h-[560px] max-h-[85vh] bg-white">
                     {/* Left: Payment Methods */}
-                    <div className="w-full md:w-1/3 border-r border-slate-200 bg-slate-50 p-4 space-y-3">
-                        <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Ödeme Yöntemi</p>
+                    <div className="w-full md:w-[32%] border-r border-zinc-200/80 bg-zinc-50/50 p-5 space-y-2">
+                        <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-4">Ödeme Yöntemi</p>
 
                         <button
                             onClick={() => setPaymentMethod('cash')}
-                            className={`nav-button w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all ${paymentMethod === 'cash'
-                                ? 'bg-white text-indigo-600 shadow ring-1 ring-indigo-200'
-                                : 'text-slate-600 hover:bg-slate-200'
-                                }`}
+                            className={cn(
+                                "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-[14px] font-bold transition-all duration-200",
+                                paymentMethod === 'cash'
+                                    ? "bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 translate-x-1"
+                                    : "bg-transparent text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                            )}
                         >
-                            <Banknote className="h-5 w-5" />
-                            Nakit
+                            <Banknote className={cn("h-5 w-5", paymentMethod === 'cash' ? "text-emerald-400" : "text-zinc-400")} />
+                            Nakit Tahsilat
                         </button>
 
                         <button
                             onClick={() => setPaymentMethod('credit_card')}
-                            className={`nav-button w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all ${paymentMethod === 'credit_card'
-                                ? 'bg-white text-indigo-600 shadow ring-1 ring-indigo-200'
-                                : 'text-slate-600 hover:bg-slate-200'
-                                }`}
+                            className={cn(
+                                "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-[14px] font-bold transition-all duration-200",
+                                paymentMethod === 'credit_card'
+                                    ? "bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 translate-x-1"
+                                    : "bg-transparent text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                            )}
                         >
-                            <CreditCard className="h-5 w-5" />
+                            <CreditCard className={cn("h-5 w-5", paymentMethod === 'credit_card' ? "text-indigo-400" : "text-zinc-400")} />
                             Kredi Kartı
                         </button>
 
                         <button
                             onClick={() => setPaymentMethod('iban')}
-                            className={`nav-button w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all ${paymentMethod === 'iban'
-                                ? 'bg-white text-indigo-600 shadow ring-1 ring-indigo-200'
-                                : 'text-slate-600 hover:bg-slate-200'
-                                }`}
+                            className={cn(
+                                "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-[14px] font-bold transition-all duration-200",
+                                paymentMethod === 'iban'
+                                    ? "bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 translate-x-1"
+                                    : "bg-transparent text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                            )}
                         >
-                            <Wallet className="h-5 w-5" />
+                            <Wallet className={cn("h-5 w-5", paymentMethod === 'iban' ? "text-amber-400" : "text-zinc-400")} />
                             Havale / EFT
                         </button>
                     </div>
 
                     {/* Right: Payment Details */}
-                    <div className="flex-1 p-6 flex flex-col">
-                        <div className="mb-8 text-center">
-                            <p className="text-sm text-slate-500 mb-1">Toplam Tutar</p>
-                            <div className="text-4xl font-bold text-slate-900">
+                    <div className="flex-1 p-8 flex flex-col bg-white overflow-y-auto">
+                        <div className="mb-8 p-6 bg-zinc-50 border border-zinc-200/50 rounded-2xl text-center shadow-sm">
+                            <p className="text-[13px] font-semibold text-zinc-500 uppercase tracking-widest mb-1.5">Ödenecek Tutar</p>
+                            <div className="text-[40px] leading-none font-black text-zinc-900 tracking-tight">
                                 {total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
                             </div>
                         </div>
 
                         <div className="flex-1">
                             {paymentMethod === 'cash' && (
-                                <div className="space-y-4">
-                                    <Input
-                                        label="Alınan Tutar"
-                                        placeholder="0.00"
-                                        className="text-lg"
-                                        value={receivedAmount}
-                                        onChange={(e) => setReceivedAmount(e.target.value)}
-                                        autoFocus
-                                    />
-                                    <div className="grid grid-cols-4 gap-2 mb-4">
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Müşteriden Alınan Tutar</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                className="w-full text-2xl font-bold p-4 bg-white border-2 border-zinc-200 rounded-xl focus:border-zinc-900 focus:ring-0 transition-colors pr-12"
+                                                placeholder="0.00"
+                                                value={receivedAmount}
+                                                onChange={(e) => setReceivedAmount(e.target.value)}
+                                                autoFocus
+                                            />
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-zinc-400 pointer-events-none">₺</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-5 gap-2">
                                         {[10, 20, 50, 100, 200].map((amount) => (
                                             <button
                                                 key={amount}
+                                                type="button"
                                                 onClick={() => setReceivedAmount(amount.toString())}
-                                                className="py-2 px-1 bg-slate-100 rounded text-sm font-medium hover:bg-slate-200 transition-colors"
+                                                className="py-3 px-1 bg-zinc-50 border border-zinc-200/80 rounded-lg text-[15px] font-bold text-zinc-700 hover:bg-zinc-100 hover:border-zinc-300 transition-all shadow-sm active:scale-95"
                                             >
-                                                {amount}₺
+                                                {amount}
                                             </button>
                                         ))}
-                                        <button
-                                            onClick={() => setReceivedAmount(total.toFixed(2))}
-                                            className="py-2 px-1 bg-indigo-50 text-indigo-700 rounded text-sm font-medium hover:bg-indigo-100 transition-colors col-span-2"
-                                        >
-                                            Tam Tutar
-                                        </button>
                                     </div>
+                                    
+                                    <button
+                                        type="button"
+                                        onClick={() => setReceivedAmount(total.toFixed(2))}
+                                        className="w-full py-3 bg-zinc-900 text-white border border-transparent rounded-lg text-[14px] font-bold shadow-md hover:bg-zinc-800 transition-all active:scale-[0.98]"
+                                    >
+                                        Tam Tutar Alındı
+                                    </button>
 
-                                    <div className="p-4 bg-slate-100 rounded-lg flex justify-between items-center">
-                                        <span className="font-medium text-slate-700">Para Üstü</span>
-                                        <span className="font-bold text-xl text-emerald-600">
+                                    <div className="p-5 mt-4 bg-zinc-50 border border-zinc-200/80 rounded-2xl flex justify-between items-center shadow-inner">
+                                        <span className="font-semibold text-zinc-500 tracking-wide text-sm">Para Üstü</span>
+                                        <span className={cn(
+                                            "font-black text-2xl tracking-tight transition-colors",
+                                            change > 0 ? "text-emerald-500" : "text-zinc-300"
+                                        )}>
                                             {change.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
                                         </span>
                                     </div>
@@ -230,30 +246,47 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
                             )}
 
                             {paymentMethod === 'credit_card' && (
-                                <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center animate-pulse">
-                                        <CreditCard className="h-8 w-8 text-slate-400" />
+                                <div className="h-full flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
+                                    <div className="relative">
+                                        <div className="w-24 h-24 bg-zinc-50 border border-zinc-200/50 rounded-full flex items-center justify-center animate-pulse shadow-inner relative z-10">
+                                            <CreditCard className="h-10 w-10 text-zinc-400" />
+                                        </div>
+                                        <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl scale-150 animate-pulse delay-150"></div>
                                     </div>
                                     <div>
-                                        <p className="font-medium text-slate-900">POS Cihazından İşlem Bekleniyor</p>
-                                        <p className="text-sm text-slate-500">Lütfen kartı okutunuz.</p>
+                                        <p className="text-xl font-bold text-zinc-900 mb-2">POS Cihazından İşlem Bekleniyor</p>
+                                        <p className="text-[15px] font-medium text-zinc-500">Lütfen temassız veya çip ile kartı okutunuz.</p>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {paymentMethod === 'iban' && (
+                                <div className="h-full flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
+                                    <div className="w-20 h-20 bg-zinc-50 border border-zinc-200/50 rounded-2xl flex items-center justify-center shadow-sm -rotate-6">
+                                        <Wallet className="h-10 w-10 text-amber-500 rotate-6" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xl font-bold text-zinc-900 mb-2">Banka Hesabına Havale</p>
+                                        <p className="text-[14px] font-medium text-zinc-500 max-w-sm mx-auto">
+                                            Müşterinin belirttiğiniz tutarı hesaplarınıza gönderdiğini doğruladıktan sonra ödemeyi tamamlayın.
+                                        </p>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <div className="mt-auto pt-6 border-t border-slate-100">
+                        <div className="mt-8 pt-4">
                             <Button
                                 size="lg"
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-lg"
+                                className="w-full bg-emerald-500 hover:bg-emerald-600 focus:ring-emerald-500 text-white h-14 text-lg font-black tracking-wide shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all rounded-xl"
                                 onClick={handleComplete}
+                                loading={processing}
                             >
-                                Ödemeyi Tamamla
+                                ÖDEMEYİ TAMAMLA
                             </Button>
                         </div>
                     </div>
                 </div>
-            </Card>
-        </div>
+        </Modal>
     );
 };

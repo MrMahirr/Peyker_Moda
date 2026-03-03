@@ -23,44 +23,48 @@ export const Sidebar = () => {
     ];
 
     return (
-        <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full shrink-0 transition-colors duration-200">
+        <aside className="w-64 bg-sidebar border-r border-sidebar-hover flex flex-col h-full shrink-0 transition-colors duration-200">
             <div className="p-6 flex items-center gap-3">
-                <div className="bg-primary/10 p-2 rounded-lg">
+                <div className="bg-primary/10 p-2 rounded-xl">
                     <Store className="text-primary w-8 h-8" />
                 </div>
                 <div className="flex flex-col">
-                    <h1 className="text-slate-900 dark:text-white text-lg font-bold leading-tight font-display">
-                        Boutique Admin
+                    <h1 className="text-primary-dark text-lg font-black leading-tight tracking-tight">
+                        Peyker Admin
                     </h1>
-                    <p className="text-slate-500 text-xs font-normal">Management Portal</p>
+                    <p className="text-primary/70 text-[11px] font-bold uppercase tracking-widest mt-0.5">Yönetim Paneli</p>
                 </div>
             </div>
 
-            <nav className="flex-1 px-4 space-y-1 overflow-y-auto mt-4">
+            <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto mt-4">
                 {navItems.map((item) => (
                     <NavLink
                         key={item.name}
                         to={item.path}
                         className={({ isActive }) => cn(
-                            "flex items-center gap-3 px-3 py-3 rounded-lg transition-colors group",
+                            "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group",
                             isActive
-                                ? "bg-primary/10 text-primary border-r-3 border-primary"
-                                : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                                ? "bg-white text-primary border border-sidebar-active shadow-sm font-bold"
+                                : "text-primary-dark/60 hover:bg-sidebar-hover hover:text-primary-dark font-semibold"
                         )}
                     >
-                        <item.icon className="w-5 h-5" />
-                        <p className="text-sm font-semibold">{item.name}</p>
+                        {({ isActive }) => (
+                            <>
+                                <item.icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                                <p className="text-[14px]">{item.name}</p>
+                            </>
+                        )}
                     </NavLink>
                 ))}
             </nav>
 
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="p-4 border-t border-sidebar-hover bg-white/50">
                 <NavLink
                     to="/pos"
-                    className="w-full flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl h-12 bg-primary text-white text-[14px] font-bold shadow-md shadow-primary/20 hover:bg-primary-dark transition-all active:scale-[0.98]"
                 >
                     <Calculator className="w-5 h-5" />
-                    <span className="truncate">Go to POS</span>
+                    <span className="truncate">POS Ekranı</span>
                 </NavLink>
             </div>
         </aside>

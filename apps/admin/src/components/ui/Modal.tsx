@@ -57,12 +57,12 @@ export const Modal = ({ isOpen, onClose, title, description, children, size = 'm
         {(title || description) && (
           <div className="flex items-start justify-between p-6 pb-0">
             <div>
-              {title && <h2 className="text-lg font-semibold text-slate-800">{title}</h2>}
-              {description && <p className="text-sm text-slate-400 mt-1">{description}</p>}
+              {title && <h2 className="text-lg font-semibold text-zinc-800">{title}</h2>}
+              {description && <p className="text-sm text-zinc-400 mt-1">{description}</p>}
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
             >
               <X className="h-5 w-5" />
             </button>

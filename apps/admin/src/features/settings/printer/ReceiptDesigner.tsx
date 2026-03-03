@@ -31,8 +31,8 @@ export const ReceiptDesigner = () => {
         <div className="p-8 space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Fiş Tasarımı</h1>
-                    <p className="text-slate-500">Müşteri fişlerinin görünümünü özelleştirin</p>
+                    <h1 className="text-2xl font-bold text-zinc-900">Fiş Tasarımı</h1>
+                    <p className="text-zinc-500">Müşteri fişlerinin görünümünü özelleştirin</p>
                 </div>
                 <div className="flex space-x-2">
                     <Button variant="outline">
@@ -45,31 +45,31 @@ export const ReceiptDesigner = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Editor Settings */}
-                <div className="space-y-6 bg-white p-6 rounded-lg border border-slate-200 h-fit">
-                    <h3 className="font-medium text-slate-900">Tasarım Ayarları</h3>
+                <div className="space-y-6 bg-white p-6 rounded-lg border border-zinc-200 h-fit">
+                    <h3 className="font-medium text-zinc-900">Tasarım Ayarları</h3>
 
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Başlık Metni</label>
+                            <label className="text-sm font-medium text-zinc-700">Başlık Metni</label>
                             <Input value={headerText} onChange={(e) => setHeaderText(e.target.value)} />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Adres</label>
+                            <label className="text-sm font-medium text-zinc-700">Adres</label>
                             <textarea
-                                className="flex w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
+                                className="flex w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
                                 value={address}
                                 onChange={(e) => setAddress(e.target.value)}
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Telefon</label>
+                            <label className="text-sm font-medium text-zinc-700">Telefon</label>
                             <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">KDV Oranı (%)</label>
+                            <label className="text-sm font-medium text-zinc-700">KDV Oranı (%)</label>
                             <Input
                                 type="number"
                                 value={taxRate}
@@ -79,7 +79,7 @@ export const ReceiptDesigner = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Altbilgi Metni (Footer)</label>
+                            <label className="text-sm font-medium text-zinc-700">Altbilgi Metni (Footer)</label>
                             <Input value={footerText} onChange={(e) => setFooterText(e.target.value)} />
                         </div>
 
@@ -89,20 +89,20 @@ export const ReceiptDesigner = () => {
                                 id="showLogo"
                                 checked={showLogo}
                                 onChange={(e) => setShowLogo(e.target.checked)}
-                                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                                className="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-600"
                             />
-                            <label htmlFor="showLogo" className="text-sm font-medium text-slate-700">Logoyu Göster</label>
+                            <label htmlFor="showLogo" className="text-sm font-medium text-zinc-700">Logoyu Göster</label>
                         </div>
                     </div>
                 </div>
 
                 {/* Live Preview */}
-                <div className="bg-slate-100 p-8 rounded-lg border border-slate-200 flex justify-center">
+                <div className="bg-zinc-100 p-8 rounded-lg border border-zinc-200 flex justify-center">
                     <div className="bg-white w-[300px] shadow-sm p-4 text-xs font-mono space-y-4">
-                        <div className="text-center space-y-2 border-b border-dashed border-slate-300 pb-4">
+                        <div className="text-center space-y-2 border-b border-dashed border-zinc-300 pb-4">
                             {showLogo && (
-                                <div className="mx-auto h-12 w-12 bg-slate-200 rounded-full flex items-center justify-center">
-                                    <Ticket className="w-6 h-6 text-slate-400" />
+                                <div className="mx-auto h-12 w-12 bg-zinc-200 rounded-full flex items-center justify-center">
+                                    <Ticket className="w-6 h-6 text-zinc-400" />
                                 </div>
                             )}
                             <h2 className="font-bold text-lg">{headerText}</h2>
@@ -110,7 +110,7 @@ export const ReceiptDesigner = () => {
                             <p>Tel: {phone}</p>
                         </div>
 
-                        <div className="space-y-2 border-b border-dashed border-slate-300 pb-4">
+                        <div className="space-y-2 border-b border-dashed border-zinc-300 pb-4">
                             <div className="flex justify-between">
                                 <span>Tarih: 22.01.2024</span>
                                 <span>Saat: 14:30</span>
@@ -121,7 +121,7 @@ export const ReceiptDesigner = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-2 pb-4 border-b border-dashed border-slate-300">
+                        <div className="space-y-2 pb-4 border-b border-dashed border-zinc-300">
                             <div className="flex justify-between">
                                 <span>1 x Keten Gömlek (M)</span>
                                 <span>450.00 tl</span>
@@ -147,7 +147,7 @@ export const ReceiptDesigner = () => {
                             </div>
                         </div>
 
-                        <div className="text-center pt-4 text-slate-500">
+                        <div className="text-center pt-4 text-zinc-500">
                             <p>{footerText}</p>
                         </div>
                     </div>

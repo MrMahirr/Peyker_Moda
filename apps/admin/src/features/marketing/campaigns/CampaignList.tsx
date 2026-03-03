@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
-import { Plus, Loader2, Trash, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Loader2, Trash, ToggleLeft, ToggleRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { campaignsService, Campaign } from '../services/campaigns.service';
+import { Badge } from '@/components/ui/Badge';
 
 export const CampaignList = () => {
     const navigate = useNavigate();
@@ -23,7 +24,7 @@ export const CampaignList = () => {
             setCampaigns(data || []);
         } catch (err) {
             console.error('Campaigns fetch error:', err);
-            toast.error('Kampanyalar yüklenemedi');
+            toast.error('Kampanyalar yüklenemedi', { className: 'font-medium' });
         } finally {
             setLoading(false);
         }
@@ -34,11 +35,11 @@ export const CampaignList = () => {
         if (result.isConfirmed) {
             try {
                 await campaignsService.deleteCampaign(id);
-                toast.success('Kampanya silindi');
+                toast.success('Kampanya silindi', { className: 'font-medium' });
                 fetchCampaigns();
             } catch (err) {
                 console.error('Delete error:', err);
-                toast.error('Kampanya silinemedi');
+                toast.error('Kampanya silinemedi', { className: 'font-medium' });
             }
         }
     };
@@ -46,25 +47,29 @@ export const CampaignList = () => {
     const handleToggleStatus = async (campaign: Campaign) => {
         try {
             await campaignsService.updateCampaign(campaign.id, { isActive: !campaign.isActive });
-            toast.success(campaign.isActive ? 'Kampanya deactivate edildi' : 'Kampanya aktifleştirildi');
+            toast.success(campaign.isActive ? 'Kampanya durduruldu.' : 'Kampanya aktifleştirildi.', { className: 'font-medium py-3 px-4 shadow-xl' });
             fetchCampaigns();
         } catch (err) {
             console.error('Toggle error:', err);
-            toast.error('Durum değiştirilemedi');
+            toast.error('Durum değiştirilemedi', { className: 'font-medium' });
         }
     };
 
-    const formatDate = (date: string) => new Date(date).toLocaleDateString('tr-TR');
+    const formatDate = (date: string) => new Date(date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
     const columns: ColumnDef<Campaign>[] = [
         {
             accessorKey: 'name',
-            header: 'Kampanya Adı',
+            header: 'Kampanya Detayı',
             cell: ({ row }) => (
-                <div>
-                    <div className="font-medium text-slate-900">{row.original.name}</div>
+                <div className="flex flex-col py-1">
+                    <div className="font-bold text-[14px] text-zinc-900">{row.original.name}</div>
                     {row.original.code && (
-                        <span className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded">{row.original.code}</span>
+                        <div className="mt-1">
+                            <span className="text-[11px] font-mono font-bold tracking-widest bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded border border-zinc-200/80">
+                                {row.original.code}
+                            </span>
+                        </div>
                     )}
                 </div>
             )
@@ -74,13 +79,14 @@ export const CampaignList = () => {
             header: 'Tür',
             cell: ({ row }) => {
                 const type = row.original.type;
-                const typeMap: Record<string, { label: string; color: string }> = {
-                    PERCENTAGE: { label: 'Yüzde', color: 'bg-blue-100 text-blue-700' },
-                    FIXED_AMOUNT: { label: 'Sabit', color: 'bg-purple-100 text-purple-700' },
-                    BUY_X_GET_Y: { label: 'Al-Kazan', color: 'bg-amber-100 text-amber-700' },
-                };
-                const info = typeMap[type] || { label: type, color: 'bg-slate-100' };
-                return <span className={`px-2 py-1 rounded-full text-xs font-medium ${info.color}`}>{info.label}</span>;
+                let variant: 'neutral' | 'info' | 'success' | 'warning' | 'error' = 'neutral';
+                let label = type;
+                
+                if (type === 'PERCENTAGE') { label = 'Yüzdelik'; variant = 'info'; }
+                if (type === 'FIXED_AMOUNT') { label = 'Sabit Tutar'; variant = 'warning'; }
+                if (type === 'BUY_X_GET_Y') { label = 'Al-Kazan'; variant = 'success'; }
+                
+                return <Badge variant={variant}>{label}</Badge>;
             }
         },
         {
@@ -89,46 +95,58 @@ export const CampaignList = () => {
             cell: ({ row }) => {
                 const type = row.original.type;
                 const value = row.original.discountValue;
-                return <span className="font-semibold text-indigo-600">{type === 'PERCENTAGE' ? `%${value}` : `₺${value}`}</span>;
+                return (
+                    <span className="font-black text-[15px] font-mono text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">
+                        {type === 'PERCENTAGE' ? `%${value}` : `${value} ₺`}
+                    </span>
+                );
             }
         },
         {
             accessorKey: 'isActive',
             header: 'Durum',
             cell: ({ row }) => (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${row.original.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                <Badge variant={row.original.isActive ? 'success' : 'error'} dot className={row.original.isActive ? '' : 'opacity-70'}>
                     {row.original.isActive ? 'Aktif' : 'Pasif'}
-                </span>
+                </Badge>
             )
         },
         {
             accessorKey: 'startDate',
             header: 'Tarih Aralığı',
             cell: ({ row }) => (
-                <span className="text-sm text-slate-600">{formatDate(row.original.startDate)} - {formatDate(row.original.endDate)}</span>
+                <div className="flex flex-col text-[12px] font-medium text-zinc-500 gap-0.5">
+                    <span>{formatDate(row.original.startDate)}</span>
+                    <span className="text-zinc-400">to {formatDate(row.original.endDate)}</span>
+                </div>
             )
         },
         {
             accessorKey: 'usageCount',
             header: 'Kullanım',
-            cell: ({ row }) => <span>{row.original.usageCount} / {row.original.maxUsage || '∞'}</span>
+            cell: ({ row }) => (
+                <span className="font-semibold text-[13px] text-zinc-700">
+                    {row.original.usageCount} <span className="text-zinc-400 font-normal">/ {row.original.maxUsage || 'Sınırsız'}</span>
+                </span>
+            )
         },
         {
             id: 'actions',
             cell: ({ row }) => (
-                <div className="flex gap-1">
+                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
+                        size="sm"
+                        className={`h-8 w-8 p-0 ${row.original.isActive ? 'text-emerald-600 hover:bg-emerald-50' : 'text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50'}`}
                         onClick={() => handleToggleStatus(row.original)}
+                        title={row.original.isActive ? "Durdur" : "Başlat"}
                     >
-                        {row.original.isActive ? <ToggleRight className="h-4 w-4 text-green-600" /> : <ToggleLeft className="h-4 w-4 text-slate-400" />}
+                        {row.original.isActive ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
                     </Button>
                     <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-500 hover:text-red-600"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
                         onClick={() => handleDelete(row.original.id)}
                     >
                         <Trash className="h-4 w-4" />
@@ -140,30 +158,34 @@ export const CampaignList = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
+                <p className="text-[13px] font-medium text-zinc-500">Kampanyalar yükleniyor...</p>
             </div>
         );
     }
 
     return (
-        <div className="p-8 space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Kampanyalar</h1>
-                    <p className="text-slate-500">İndirim ve kupon yönetimi</p>
+                    <h1 className="text-2xl font-black tracking-tight text-zinc-900 flex items-center gap-2">
+                        Pazarlama Kampanyaları <Sparkles className="w-5 h-5 text-amber-500" />
+                    </h1>
+                    <p className="text-[13px] font-medium text-zinc-500 mt-1">İndirimleri, fırsatları ve kupon kodlarını yönetin.</p>
                 </div>
-                <Button onClick={() => navigate('new')} className="bg-indigo-600 hover:bg-indigo-700">
-                    <Plus className="w-4 h-4 mr-2" />
+                <Button onClick={() => navigate('new')} variant="primary" className="shadow-md" icon={<Plus className="w-4 h-4" />}>
                     Yeni Kampanya
                 </Button>
             </div>
 
-            <DataGrid
-                columns={columns}
-                data={campaigns}
-                searchKey="name"
-            />
+            <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden p-1">
+                <DataGrid
+                    columns={columns}
+                    data={campaigns}
+                    searchKey="name"
+                />
+            </div>
         </div>
     );
 };

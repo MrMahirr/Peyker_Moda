@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import { useEffect, useState } from 'react';
 import { StatCard } from './components/StatCard';
 import { SalesChart } from './components/SalesChart';
 import { InventoryAlerts } from './components/InventoryAlerts';
 import { RecentTransactions } from './components/RecentTransactions';
-import { Banknote, ShoppingBag, Users, TrendingUp, Loader2 } from 'lucide-react';
+import { Banknote, ShoppingBag, Users, TrendingUp, Loader2, Download, Calendar } from 'lucide-react';
 import { dashboardService, DashboardSummary } from './services/dashboard.service';
+import { Button } from '@/components/ui/Button';
 
 const formatCurrency = (value: number) => {
     return '₺' + new Intl.NumberFormat('tr-TR', { style: 'decimal' }).format(value);
@@ -16,108 +16,97 @@ export const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState<string>('');
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const data = await dashboardService.getSummary();
-                setSummary(data);
-                setLastUpdate(new Date().toLocaleTimeString('tr-TR'));
-            } catch (err) {
-                console.error('Dashboard summary error:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fetchData = async () => {
+        try {
+            const data = await dashboardService.getSummary();
+            setSummary(data);
+            setLastUpdate(new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }));
+        } catch (err) {
+            console.error('Dashboard summary error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        const interval = setInterval(fetchData, 30000);
+    useEffect(() => {
+        fetchData();
+        const interval = setInterval(fetchData, 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchData]);
 
     if (loading) {
         return (
-            <DashboardLayout>
-                <div className="flex items-center justify-center h-64">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-            </DashboardLayout>
+            <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
+                <p className="text-[13px] font-medium text-zinc-500">Gösterge tablosu hazırlanıyor...</p>
+            </div>
         );
     }
 
     return (
-        <DashboardLayout>
-            {/* Breadcrumbs */}
-            <nav className="flex items-center gap-2 mb-4 text-sm font-medium">
-                <a className="text-slate-500 hover:text-primary transition-colors" href="#">Home</a>
-                <span className="text-slate-500 text-xs">{'>'}</span>
-                <span className="text-slate-900 dark:text-white">Admin Dashboard</span>
-            </nav>
-
-            {/* Page Heading */}
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+        <div className="space-y-6">
+            {/* Header Area */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                    <h2 className="text-slate-900 dark:text-white text-3xl font-black tracking-tight font-display">Bonjour, Yönetici</h2>
-                    <p className="text-slate-500 text-base font-normal mt-1">İşte mağazanızın bugün ({new Date().toLocaleDateString('tr-TR')}) gösterdiği performans.</p>
+                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">Genel Bakış</h1>
+                    <p className="text-[13px] font-medium text-zinc-500 mt-1">
+                        Mağazanızın bugünkü performansı. Son güncellenme: <span className="font-bold text-zinc-700">{lastUpdate}</span>
+                    </p>
                 </div>
-                <div className="flex gap-3">
-                    <div className="text-sm text-slate-500 self-center mr-4">
-                        Son güncelleme: {lastUpdate}
-                    </div>
-                    <button className="flex items-center gap-2 rounded-lg h-10 px-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-bold hover:bg-slate-50 transition-colors">
-                        <span>Bu Hafta</span>
-                    </button>
-                    <button className="flex items-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-md hover:bg-primary/90 transition-all">
-                        <span>Rapor İndir</span>
-                    </button>
+                <div className="flex items-center gap-2">
+                    <Button variant="secondary" className="bg-white" icon={<Calendar className="w-4 h-4" />}>
+                        Bu Hafta
+                    </Button>
+                    <Button variant="primary" className="shadow-md" icon={<Download className="w-4 h-4" />}>
+                        Rapor İndir
+                    </Button>
                 </div>
             </div>
 
-            {/* KPI Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <StatCard
-                    title="Günlük Satış"
+                    title="Günlük Satış (Brüt)"
                     value={summary ? formatCurrency(summary.todaySales.amount) : '₺0'}
-                    change="+12.5%"
+                    change="+12.5% düne göre"
                     icon={Banknote}
-                    trend="up"
-                    color="green"
-                />
-                <StatCard
-                    title="Toplam Kar (Tahmini)"
-                    value={summary ? formatCurrency(summary.todaySales.amount * 0.4) : '₺0'} // Mock calculation
-                    change="+8.2%"
-                    icon={TrendingUp}
                     trend="up"
                     color="blue"
                 />
                 <StatCard
-                    title="Aktif Siparişler"
+                    title="Satış Adedi Bugün"
+                    value={String(summary?.todaySales.count || 0)}
+                    change="+8.2% hedefe göre"
+                    icon={TrendingUp}
+                    trend="up"
+                    color="indigo"
+                />
+                <StatCard
+                    title="Bekleyen Sipariş"
                     value={String(summary?.pendingOrders || 0)}
-                    change={`${summary?.pendingOrders || 0} Bekleyen`}
+                    change={`${summary?.pendingOrders || 0} Sipariş işlenmedi`}
                     icon={ShoppingBag}
                     trend="neutral"
                     color="orange"
                 />
                 <StatCard
-                    title="Yeni Müşteriler"
+                    title="Yeni Müşteri (Haftalık)"
                     value={String(summary?.newCustomersThisWeek || 0)}
-                    change="+5.7%"
+                    change="+5.7% artış"
                     icon={Users}
                     trend="up"
-                    color="pink"
+                    color="emerald"
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                {/* Sales Chart Area */}
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <SalesChart />
-
-                {/* Side Widget: Inventory Alerts */}
                 <InventoryAlerts />
             </div>
 
-            {/* Recent Orders Table Section */}
             <RecentTransactions />
-        </DashboardLayout>
+        </div>
     );
 };

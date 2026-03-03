@@ -91,6 +91,6 @@ export const staffService = {
             'CASHIER': 'bg-green-100 text-green-800',
             'STOCK_MANAGER': 'bg-amber-100 text-amber-800',
         };
-        return colors[role] || 'bg-slate-100 text-slate-800';
+        return colors[role] || 'bg-zinc-100 text-zinc-800';
     }
 };

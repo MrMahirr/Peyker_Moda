@@ -128,19 +128,19 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                 </div>
 
                 {optionFields.length === 0 && (
-                    <p className="text-sm text-center text-slate-500 py-4 border-2 border-dashed rounded-md">
+                    <p className="text-sm text-center text-zinc-500 py-4 border-2 border-dashed rounded-md">
                         Henüz seçenek eklenmemiş (Örn: Renk, Beden).
                     </p>
                 )}
 
                 <div className="space-y-6">
                     {optionFields.map((field, index) => (
-                        <div key={field.id} className="bg-slate-50 p-4 rounded-md border border-slate-200 relative">
+                        <div key={field.id} className="bg-zinc-50 p-4 rounded-md border border-zinc-200 relative">
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 type="button"
-                                className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
+                                className="absolute top-2 right-2 text-zinc-400 hover:text-red-500"
                                 onClick={() => removeOption(index)}
                             >
                                 <Trash className="h-4 w-4" />
@@ -156,8 +156,8 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                                 </div>
                                 <div className="md:col-span-2">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-slate-700">Değerler</label>
-                                        <div className="flex flex-wrap gap-2 p-3 bg-white border border-slate-200 rounded min-h-[42px]">
+                                        <label className="text-sm font-medium text-zinc-700">Değerler</label>
+                                        <div className="flex flex-wrap gap-2 p-3 bg-white border border-zinc-200 rounded min-h-[42px]">
                                             {watchedOptions[index]?.values?.map((val: string, vIndex: number) => (
                                                 <span key={vIndex} className="inline-flex items-center px-2 py-1 rounded bg-indigo-50 text-indigo-700 text-sm border border-indigo-100">
                                                     {val}
@@ -193,7 +193,7 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                     <h3 className="text-lg font-medium mb-4">Varyant Listesi ({watch('variants')?.length})</h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-50 text-slate-700 font-medium">
+                            <thead className="bg-zinc-50 text-zinc-700 font-medium">
                                 <tr>
                                     <th className="p-3 border-b">Varyant Adı</th>
                                     <th className="p-3 border-b w-48">SKU</th>
@@ -201,11 +201,11 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                                     <th className="p-3 border-b w-32">Stok</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-zinc-100">
                                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                 {form.getValues('variants').map((_: any, index: number) => (
                                     <tr key={index}>
-                                        <td className="p-3 font-medium text-slate-900">
+                                        <td className="p-3 font-medium text-zinc-900">
                                             {watch(`variants.${index}.name`)}
                                         </td>
                                         <td className="p-3">

@@ -77,33 +77,33 @@ export const CategoryList = () => {
     const renderCategory = (category: Category, depth: number = 0) => (
         <div key={category.id}>
             <div
-                className={`flex items-center justify-between py-3 px-4 hover:bg-slate-50 border-b border-slate-100`}
+                className={`flex items-center justify-between py-3 px-4 hover:bg-zinc-50/50 border-b border-zinc-100/50 transition-colors group`}
                 style={{ paddingLeft: `${depth * 24 + 16}px` }}
             >
                 <div className="flex items-center gap-2">
                     {category.children && category.children.length > 0 && (
-                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                        <ChevronRight className="h-4 w-4 text-zinc-300" />
                     )}
-                    <FolderTree className="h-4 w-4 text-indigo-500" />
-                    <span className="font-medium text-slate-900">{category.name}</span>
-                    <span className="text-xs text-slate-400">({category._count?.products || 0} ürün)</span>
+                    <FolderTree className="h-4 w-4 text-zinc-400" />
+                    <span className="font-medium text-[13px] text-zinc-800">{category.name}</span>
+                    <span className="text-[11px] font-medium text-zinc-400">({category._count?.products || 0} ürün)</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-slate-500 hover:text-amber-600"
+                        className="h-7 w-7 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
                         onClick={() => handleEdit(category)}
                     >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-slate-500 hover:text-red-500"
+                        className="h-7 w-7 text-zinc-400 hover:text-red-600 hover:bg-red-50"
                         onClick={() => handleDelete(category.id)}
                     >
-                        <Trash className="h-4 w-4" />
+                        <Trash className="h-3.5 w-3.5" />
                     </Button>
                 </div>
             </div>
@@ -113,81 +113,82 @@ export const CategoryList = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-sm font-medium text-zinc-500">Kategoriler yükleniyor...</p>
             </div>
         );
     }
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center sm:items-end">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Kategoriler</h2>
-                    <p className="text-sm text-slate-500">Ürün kategorilerini yönetin</p>
+                    <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Kategoriler</h2>
+                    <p className="text-sm text-zinc-500 mt-1">Ürün kategorilerini detaylı yönetin.</p>
                 </div>
-                <Button
-                    className="bg-indigo-600 hover:bg-indigo-700"
-                    onClick={() => {
-                        setEditingCategory(null);
-                        setFormData({ name: '', description: '', parentId: '' });
-                        setShowForm(true);
-                    }}
-                >
-                    <Plus className="h-4 w-4 mr-2" />
+                <Button variant="primary" onClick={() => {
+                    setEditingCategory(null);
+                    setFormData({ name: '', description: '', parentId: '' });
+                    setShowForm(true);
+                }}>
+                    <Plus className="h-4 w-4 mr-1.5" />
                     Yeni Kategori
                 </Button>
             </div>
 
             {showForm && (
-                <Card className="p-6">
-                    <h3 className="font-semibold mb-4">{editingCategory ? 'Kategori Düzenle' : 'Yeni Kategori'}</h3>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                <div className="bg-surface rounded-xl border border-zinc-200/80 p-6 shadow-sm">
+                    <h3 className="font-semibold text-zinc-900 mb-5">{editingCategory ? 'Kategori Düzenle' : 'Yeni Kategori Oluştur'}</h3>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <Input
                                 label="Kategori Adı"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 required
                             />
-                            <select
-                                value={formData.parentId}
-                                onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
-                                className="px-3 py-2 border rounded-lg text-sm"
-                            >
-                                <option value="">Üst Kategori (Yok)</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
-                            </select>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-zinc-700">Üst Kategori</label>
+                                <select
+                                    value={formData.parentId}
+                                    onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
+                                    className="w-full h-10 px-3 py-2 bg-white border border-zinc-200 rounded-lg text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                >
+                                    <option value="">(Ana Kategori)</option>
+                                    {categories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                         <Input
                             label="Açıklama"
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         />
-                        <div className="flex gap-2">
-                            <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
-                                {editingCategory ? 'Güncelle' : 'Oluştur'}
+                        <div className="flex items-center gap-3 pt-2">
+                            <Button type="submit" variant="primary">
+                                {editingCategory ? 'Değişiklikleri Kaydet' : 'Oluştur'}
                             </Button>
-                            <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                            <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
                                 İptal
                             </Button>
                         </div>
                     </form>
-                </Card>
+                </div>
             )}
 
-            <Card className="overflow-hidden">
+            <div className="bg-surface rounded-xl border border-zinc-200/80 overflow-hidden shadow-sm">
                 {categories.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500">
-                        <FolderTree className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-                        <p>Henüz kategori bulunmuyor</p>
+                    <div className="p-12 text-center flex flex-col items-center">
+                        <FolderTree className="h-10 w-10 text-zinc-300 mb-4" />
+                        <p className="text-zinc-500 font-medium">Henüz kategori bulunmuyor.</p>
                     </div>
                 ) : (
                     categories.map(cat => renderCategory(cat))
                 )}
-            </Card>
+            </div>
         </div>
     );
 };

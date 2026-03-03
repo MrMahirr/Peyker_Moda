@@ -29,10 +29,10 @@ function App() {
             fontFamily: "'Inter', system-ui, sans-serif",
           },
           classNames: {
-            title: 'text-slate-800 font-semibold text-sm',
-            description: 'text-slate-400 text-xs',
+            title: 'text-zinc-800 font-semibold text-sm',
+            description: 'text-zinc-400 text-xs',
             actionButton: 'bg-primary text-white font-medium text-xs py-2 px-4 rounded-lg',
-            cancelButton: 'bg-slate-100 text-slate-600 font-medium text-xs py-2 px-4 rounded-lg',
+            cancelButton: 'bg-zinc-100 text-zinc-600 font-medium text-xs py-2 px-4 rounded-lg',
             toast: 'font-sans'
           }
         }}

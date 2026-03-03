@@ -1,9 +1,5 @@
-// Peyker Moda - E-Ticaret Veritabanı Şeması
-// ==========================================
-
 generator client {
   provider = "prisma-client-js"
-
 }
 
 datasource db {
@@ -11,9 +7,358 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// ENUMS
-// ==========================================
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  password     String
+  firstName    String
+  lastName     String
+  phone        String?
+  avatar       String?
+  role         UserRole      @default(STAFF)
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  heldSales    HeldSale[]
+  orders       Order[]
+  posSessions  PosSession[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?
+  imageUrl    String?
+  parentId    String?
+  order       Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  sku         String    @unique
+  barcode     String?   @unique
+  basePrice   Decimal   @db.Decimal(10, 2)
+  salePrice   Decimal?  @db.Decimal(10, 2)
+  cost        Decimal?  @db.Decimal(10, 2)
+  categoryId  String
+  brand       String?
+  images      Json?     @default("[]")
+  viewCount   Int       @default(0)
+  isActive    Boolean   @default(true)
+  isFeatured  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  category    Category  @relation(fields: [categoryId], references: [id])
+  variants    Variant[]
+
+  @@index([categoryId])
+  @@index([barcode])
+  @@index([sku])
+  @@map("products")
+}
+
+model Variant {
+  id        String      @id @default(uuid())
+  productId String
+  sku       String      @unique
+  barcode   String?     @unique
+  price     Decimal?    @db.Decimal(10, 2)
+  stock     Int         @default(0)
+  size      String?
+  color     String?
+  colorCode String?
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  items     OrderItem[]
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([barcode])
+  @@map("variants")
+}
+
+model CustomerGroup {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  discount    Decimal?   @db.Decimal(5, 2)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  customers   Customer[]
+
+  @@map("customer_groups")
+}
+
+model Customer {
+  id            String         @id @default(uuid())
+  firstName     String
+  lastName      String
+  email         String?
+  phone         String?
+  address       String?
+  city          String?
+  district      String?
+  postalCode    String?
+  notes         String?
+  groupId       String?
+  totalSpent    Decimal        @default(0) @db.Decimal(12, 2)
+  orderCount    Int            @default(0)
+  lastOrderDate DateTime?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  birthDate     DateTime?
+  gender        Gender?
+  group         CustomerGroup? @relation(fields: [groupId], references: [id])
+  heldSales     HeldSale[]
+  orders        Order[]
+
+  @@index([groupId])
+  @@index([email])
+  @@index([phone])
+  @@map("customers")
+}
+
+model Order {
+  id                String        @id @default(uuid())
+  orderNumber       String        @unique
+  customerId        String?
+  userId            String?
+  status            OrderStatus   @default(PENDING)
+  paymentStatus     PaymentStatus @default(PENDING)
+  source            OrderSource   @default(POS)
+  subtotal          Decimal       @db.Decimal(12, 2)
+  discountAmount    Decimal       @default(0) @db.Decimal(12, 2)
+  shippingCost      Decimal       @default(0) @db.Decimal(12, 2)
+  totalAmount       Decimal       @db.Decimal(12, 2)
+  paidAmount        Decimal       @default(0) @db.Decimal(12, 2)
+  couponCode        String?
+  notes             String?
+  shippingAddress   Json?
+  cargoTrackingCode String?
+  cargoProvider     String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  invoice           Invoice?
+  items             OrderItem[]
+  customer          Customer?     @relation(fields: [customerId], references: [id])
+  user              User?         @relation(fields: [userId], references: [id])
+  payments          Payment[]
+  returns           Return[]
+  transactions      Transaction[]
+
+  @@index([customerId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  variantId String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  discount  Decimal @default(0) @db.Decimal(10, 2)
+  total     Decimal @db.Decimal(10, 2)
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant   Variant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  orderId   String
+  amount    Decimal       @db.Decimal(12, 2)
+  method    PaymentMethod
+  status    PaymentStatus @default(PENDING)
+  reference String?
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("payments")
+}
+
+model Return {
+  id           String       @id @default(uuid())
+  orderId      String
+  reason       String
+  status       ReturnStatus @default(PENDING)
+  refundAmount Decimal      @db.Decimal(12, 2)
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  items        ReturnItem[]
+  order        Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("returns")
+}
+
+model ReturnItem {
+  id        String  @id @default(uuid())
+  returnId  String
+  variantId String
+  quantity  Int
+  reason    String?
+  return    Return  @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@index([returnId])
+  @@map("return_items")
+}
+
+model PosSession {
+  id                String    @id @default(uuid())
+  userId            String
+  openingBalance    Decimal   @db.Decimal(12, 2)
+  closingBalance    Decimal?  @db.Decimal(12, 2)
+  expectedBalance   Decimal?  @db.Decimal(12, 2)
+  difference        Decimal?  @db.Decimal(12, 2)
+  totalSales        Decimal?  @db.Decimal(12, 2)
+  totalTransactions Int?
+  notes             String?
+  openedAt          DateTime  @default(now())
+  closedAt          DateTime?
+  user              User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("pos_sessions")
+}
+
+model HeldSale {
+  id         String    @id @default(uuid())
+  userId     String
+  customerId String?
+  items      Json
+  notes      String?
+  createdAt  DateTime  @default(now())
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@map("held_sales")
+}
+
+model Transaction {
+  id              String          @id @default(uuid())
+  type            TransactionType
+  category        String?
+  amount          Decimal         @db.Decimal(12, 2)
+  description     String?
+  reference       String?
+  paymentMethod   PaymentMethod?
+  orderId         String?
+  transactionDate DateTime        @default(now())
+  userId          String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  order           Order?          @relation(fields: [orderId], references: [id])
+  user            User            @relation(fields: [userId], references: [id])
+
+  @@index([type])
+  @@index([transactionDate])
+  @@map("transactions")
+}
+
+model Invoice {
+  id           String        @id @default(uuid())
+  invoiceNo    String        @unique
+  orderId      String        @unique
+  customerName String
+  taxId        String?
+  taxOffice    String?
+  amount       Decimal       @db.Decimal(10, 2)
+  taxRate      Int           @default(20)
+  taxAmount    Decimal       @db.Decimal(10, 2)
+  pdfUrl       String?
+  status       InvoiceStatus @default(DRAFT)
+  issueDate    DateTime      @default(now())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  order        Order         @relation(fields: [orderId], references: [id])
+
+  @@map("invoices")
+}
+
+model Campaign {
+  id            String       @id @default(uuid())
+  name          String
+  description   String?
+  discountType  DiscountType
+  discountValue Decimal      @db.Decimal(10, 2)
+  minPurchase   Decimal?     @db.Decimal(10, 2)
+  maxDiscount   Decimal?     @db.Decimal(10, 2)
+  categoryIds   Json?        @default("[]")
+  productIds    Json?        @default("[]")
+  startDate     DateTime
+  endDate       DateTime
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("campaigns")
+}
+
+model Coupon {
+  id                    String       @id @default(uuid())
+  code                  String       @unique
+  description           String?
+  discountType          DiscountType
+  discountValue         Decimal      @db.Decimal(10, 2)
+  minPurchase           Decimal?     @db.Decimal(10, 2)
+  maxDiscount           Decimal?     @db.Decimal(10, 2)
+  usageLimit            Int?
+  usageLimitPerCustomer Int?
+  usageCount            Int          @default(0)
+  startDate             DateTime
+  endDate               DateTime
+  isActive              Boolean      @default(true)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@map("coupons")
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
 
 enum UserRole {
   ADMIN
@@ -78,424 +423,8 @@ enum Gender {
   OTHER
 }
 
-// ==========================================
-// USER & AUTH
-// ==========================================
-
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
-  phone     String?
-  avatar    String?
-  role      UserRole @default(STAFF)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  orders       Order[]
-  posSessions  PosSession[]
-  transactions Transaction[]
-  heldSales    HeldSale[]
-
-  @@map("users")
-}
-
-model RefreshToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  userId    String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  @@map("refresh_tokens")
-}
-
-// ==========================================
-// CATALOG
-// ==========================================
-
-model Category {
-  id          String   @id @default(uuid())
-  name        String
-  slug        String   @unique
-  description String?
-  imageUrl    String?
-  parentId    String?
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Self-relation for tree structure
-  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
-  children Category[] @relation("CategoryTree")
-
-  // Relations
-  products Product[]
-
-  @@map("categories")
-}
-
-model Product {
-  id          String   @id @default(uuid())
-  name        String
-  slug        String   @unique
-  description String?
-  sku         String   @unique
-  barcode     String?  @unique
-  basePrice   Decimal  @db.Decimal(10, 2)
-  salePrice   Decimal? @db.Decimal(10, 2)
-  cost        Decimal? @db.Decimal(10, 2)
-  categoryId  String
-  brand       String?
-  images      Json?    @default("[]")
-  viewCount   Int      @default(0)
-  isActive    Boolean  @default(true)
-  isFeatured  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  category Category  @relation(fields: [categoryId], references: [id])
-  variants Variant[]
-
-  @@index([categoryId])
-  @@index([barcode])
-  @@index([sku])
-  @@map("products")
-}
-
-model Variant {
-  id        String   @id @default(uuid())
-  productId String
-  sku       String   @unique
-  barcode   String?  @unique
-  price     Decimal? @db.Decimal(10, 2)
-  stock     Int      @default(0)
-  size      String?
-  color     String?
-  colorCode String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  product Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  items   OrderItem[]
-
-  @@index([productId])
-  @@index([barcode])
-  @@map("variants")
-}
-
-// ==========================================
-// CRM - CUSTOMERS
-// ==========================================
-
-model CustomerGroup {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  discount    Decimal? @db.Decimal(5, 2)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  customers Customer[]
-
-  @@map("customer_groups")
-}
-
-model Customer {
-  id            String   @id @default(uuid())
-  firstName     String
-  lastName      String
-  email         String?
-  phone         String?
-  address       String?
-  city          String?
-  district      String?
-  postalCode    String?
-  notes         String?
-  groupId       String?
-  totalSpent    Decimal  @default(0) @db.Decimal(12, 2)
-  orderCount    Int      @default(0)
-  lastOrderDate DateTime?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  birthDate     DateTime?
-  gender        Gender?
-
-  // Relations
-  group     CustomerGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  orders    Order[]
-  heldSales HeldSale[]
-
-  @@index([groupId])
-  @@index([email])
-  @@index([phone])
-  @@map("customers")
-}
-
-// ==========================================
-// ORDERS & SALES
-// ==========================================
-
-model Order {
-  id              String        @id @default(uuid())
-  orderNumber     String        @unique
-  customerId      String?
-  userId          String?
-  status          OrderStatus   @default(PENDING)
-  paymentStatus   PaymentStatus @default(PENDING)
-  source          OrderSource   @default(POS)
-  subtotal        Decimal       @db.Decimal(12, 2)
-  discountAmount  Decimal       @default(0) @db.Decimal(12, 2)
-  shippingCost    Decimal       @default(0) @db.Decimal(12, 2)
-  totalAmount     Decimal       @db.Decimal(12, 2)
-  paidAmount      Decimal       @default(0) @db.Decimal(12, 2)
-  couponCode      String?
-  notes           String?
-  shippingAddress Json?
-  cargoTrackingCode String?
-  cargoProvider     String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  // Relations
-  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  user     User?     @relation(fields: [userId], references: [id])
-  items    OrderItem[]
-  payments Payment[]
-  returns  Return[]
-  transactions Transaction[]
-  invoice      Invoice?
-
-  @@index([customerId])
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-  @@map("orders")
-}
-
-model OrderItem {
-  id        String  @id @default(uuid())
-  orderId   String
-  variantId String
-  quantity  Int
-  unitPrice Decimal @db.Decimal(10, 2)
-  discount  Decimal @default(0) @db.Decimal(10, 2)
-  total     Decimal @db.Decimal(10, 2)
-
-  // Relations
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  variant Variant @relation(fields: [variantId], references: [id])
-
-  @@index([orderId])
-  @@map("order_items")
-}
-
-model Payment {
-  id        String        @id @default(uuid())
-  orderId   String
-  amount    Decimal       @db.Decimal(12, 2)
-  method    PaymentMethod
-  status    PaymentStatus @default(PENDING)
-  reference String?
-  notes     String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-
-  // Relations
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  @@index([orderId])
-  @@map("payments")
-}
-
-model Return {
-  id           String       @id @default(uuid())
-  orderId      String
-  reason       String
-  status       ReturnStatus @default(PENDING)
-  refundAmount Decimal      @db.Decimal(12, 2)
-  notes        String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-
-  // Relations
-  order Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  items ReturnItem[]
-
-  @@index([orderId])
-  @@map("returns")
-}
-
-model ReturnItem {
-  id        String @id @default(uuid())
-  returnId  String
-  variantId String
-  quantity  Int
-  reason    String?
-
-  // Relations
-  return Return @relation(fields: [returnId], references: [id], onDelete: Cascade)
-
-  @@index([returnId])
-  @@map("return_items")
-}
-
-// ==========================================
-// POS
-// ==========================================
-
-model PosSession {
-  id                String   @id @default(uuid())
-  userId            String
-  openingBalance    Decimal  @db.Decimal(12, 2)
-  closingBalance    Decimal? @db.Decimal(12, 2)
-  expectedBalance   Decimal? @db.Decimal(12, 2)
-  difference        Decimal? @db.Decimal(12, 2)
-  totalSales        Decimal? @db.Decimal(12, 2)
-  totalTransactions Int?
-  notes             String?
-  openedAt          DateTime @default(now())
-  closedAt          DateTime?
-
-  // Relations
-  user User @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@map("pos_sessions")
-}
-
-model HeldSale {
-  id         String   @id @default(uuid())
-  userId     String
-  customerId String?
-  items      Json
-  notes      String?
-  createdAt  DateTime @default(now())
-
-  // Relations
-  user     User      @relation(fields: [userId], references: [id])
-  customer Customer? @relation(fields: [customerId], references: [id])
-
-  @@map("held_sales")
-}
-
-// ==========================================
-// ACCOUNTING
-// ==========================================
-
-model Transaction {
-  id              String          @id @default(uuid())
-  type            TransactionType
-  category        String?
-  amount          Decimal         @db.Decimal(12, 2)
-  description     String?
-  reference       String?
-  paymentMethod   PaymentMethod?
-  orderId         String?
-  transactionDate DateTime        @default(now())
-  userId          String
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  // Relations
-  user  User   @relation(fields: [userId], references: [id])
-  order Order? @relation(fields: [orderId], references: [id])
-
-  @@index([type])
-  @@index([transactionDate])
-  @@map("transactions")
-}
-
-model Invoice {
-  id              String       @id @default(uuid())
-  invoiceNo       String       @unique
-  orderId         String       @unique
-  customerName    String
-  taxId           String?
-  taxOffice       String?
-  amount          Decimal      @db.Decimal(10, 2)
-  taxRate         Int          @default(20)
-  taxAmount       Decimal      @db.Decimal(10, 2)
-  pdfUrl          String?
-  status          InvoiceStatus @default(DRAFT)
-  issueDate       DateTime     @default(now())
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-
-  order Order @relation(fields: [orderId], references: [id])
-
-  @@map("invoices")
-}
-
 enum InvoiceStatus {
   DRAFT
   ISSUED
   CANCELLED
-}
-
-// ==========================================
-// MARKETING
-// ==========================================
-
-model Campaign {
-  id            String       @id @default(uuid())
-  name          String
-  description   String?
-  discountType  DiscountType
-  discountValue Decimal      @db.Decimal(10, 2)
-  minPurchase   Decimal?     @db.Decimal(10, 2)
-  maxDiscount   Decimal?     @db.Decimal(10, 2)
-  categoryIds   Json?        @default("[]")
-  productIds    Json?        @default("[]")
-  startDate     DateTime
-  endDate       DateTime
-  isActive      Boolean      @default(true)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  @@map("campaigns")
-}
-
-model Coupon {
-  id                    String       @id @default(uuid())
-  code                  String       @unique
-  description           String?
-  discountType          DiscountType
-  discountValue         Decimal      @db.Decimal(10, 2)
-  minPurchase           Decimal?     @db.Decimal(10, 2)
-  maxDiscount           Decimal?     @db.Decimal(10, 2)
-  usageLimit            Int?
-  usageLimitPerCustomer Int?
-  usageCount            Int          @default(0)
-  startDate             DateTime
-  endDate               DateTime
-  isActive              Boolean      @default(true)
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
-
-  @@map("coupons")
-}
-
-// ==========================================
-// SETTINGS & CONFIG
-// ==========================================
-
-model Setting {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  value     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("settings")
 }

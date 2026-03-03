@@ -1,34 +1,71 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { usePos } from '@/context/PosContext';
 import { toast } from 'sonner';
-
-// Mock Product Data (In real app, fetch from API)
-const MOCK_PRODUCTS = [
-    { id: '1', name: 'Yazlık Çiçekli Elbise', price: 899.90, image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=200&h=200&fit=crop', category: 'Elbise' },
-    { id: '2', name: 'Kot Ceket', price: 1250.00, image: 'https://images.unsplash.com/photo-1551537482-f20963253ecb?w=200&h=200&fit=crop', category: 'Dış Giyim' },
-    { id: '3', name: 'Beyaz Tişört', price: 299.90, image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop', category: 'Üst Giyim' },
-    { id: '4', name: 'Siyah Kumaş Pantolon', price: 599.90, image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=200&h=200&fit=crop', category: 'Alt Giyim' },
-    { id: '5', name: 'Desenli Gömlek', price: 450.00, image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=200&h=200&fit=crop', category: 'Üst Giyim' },
-    { id: '6', name: 'Jean Pantolon', price: 700.00, image: 'https://images.unsplash.com/photo-1542272617-08f086375082?w=200&h=200&fit=crop', category: 'Alt Giyim' },
-    { id: '7', name: 'Güneş Gözlüğü', price: 350.00, image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=200&h=200&fit=crop', category: 'Aksesuar' },
-    { id: '8', name: 'Deri Çanta', price: 1500.00, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200&h=200&fit=crop', category: 'Aksesuar' },
-];
-
-const CATEGORIES = ['Hepsi', 'Elbise', 'Üst Giyim', 'Alt Giyim', 'Dış Giyim', 'Aksesuar'];
+import { posService, PosProduct } from '../services/pos.service';
 
 export const PosProductGrid = () => {
     const { addToCart } = usePos();
+    const [products, setProducts] = useState<PosProduct[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory, setActiveCategory] = useState('Hepsi');
+    const [categories, setCategories] = useState<string[]>(['Hepsi']);
 
-    const filteredProducts = MOCK_PRODUCTS.filter(product => {
-        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = activeCategory === 'Hepsi' || product.category === activeCategory;
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [productsData, categoriesData] = await Promise.all([
+                    posService.getProducts(),
+                    posService.getCategories()
+                ]);
+                setProducts(productsData || []);
+                const catNames = categoriesData?.map((c: any) => c.name) || [];
+                setCategories(['Hepsi', ...catNames]);
+            } catch (err) {
+                console.error('POS products fetch error:', err);
+                toast.error('Ürünler yüklenemedi');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const filteredProducts = products.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.barcode?.includes(searchTerm);
+        const matchesCategory = activeCategory === 'Hepsi' || product.categoryName === activeCategory;
         return matchesSearch && matchesCategory;
     });
+
+    const handleAddToCart = (product: PosProduct) => {
+        if (product.stock <= 0) {
+            toast.error('Bu ürün stokta yok!');
+            return;
+        }
+        addToCart({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image
+        });
+        toast.success(`${product.name} sepete eklendi`, {
+            duration: 1500,
+            position: 'bottom-right'
+        });
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-full bg-white">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-full bg-white border-r border-slate-200">
@@ -46,7 +83,7 @@ export const PosProductGrid = () => {
                 </div>
 
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    {CATEGORIES.map(cat => (
+                    {categories.map(cat => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
@@ -67,22 +104,25 @@ export const PosProductGrid = () => {
                     {filteredProducts.map(product => (
                         <Card
                             key={product.id}
-                            className="cursor-pointer hover:shadow-md transition-shadow active:scale-95 duration-150 overflow-hidden group border-0 shadow-sm"
-                            onClick={() => {
-                                addToCart(product);
-                                toast.success(`${product.name} sepete eklendi`, {
-                                    duration: 1500,
-                                    position: 'bottom-right'
-                                });
-                            }}
+                            className={`cursor-pointer hover:shadow-md transition-shadow active:scale-95 duration-150 overflow-hidden group border-0 shadow-sm ${product.stock <= 0 ? 'opacity-50' : ''}`}
+                            onClick={() => handleAddToCart(product)}
                         >
                             <div className="aspect-square bg-slate-200 relative">
                                 <img
-                                    src={product.image}
+                                    src={product.image || 'https://via.placeholder.com/200'}
                                     alt={product.name}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                                {product.stock <= 0 && (
+                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                        <span className="text-white font-bold">Stok Yok</span>
+                                    </div>
+                                )}
+                                {product.stock > 0 && product.stock < 5 && (
+                                    <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
+                                        Son {product.stock}
+                                    </div>
+                                )}
                             </div>
                             <div className="p-3">
                                 <h3 className="text-sm font-medium text-slate-900 line-clamp-2 min-h-[40px]">{product.name}</h3>

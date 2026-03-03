@@ -1,0 +1,4 @@
+src/modules/dashboard/dashboard.service.ts(201,23): error TS18047: 'order.user' is possibly 'null'.
+src/modules/dashboard/dashboard.service.ts(201,47): error TS18047: 'order.user' is possibly 'null'.
+src/modules/transactions/transactions.service.ts(50,21): error TS2353: Object literal may only specify known properties, and 'order' does not exist in type 'TransactionInclude<DefaultArgs>'.
+src/modules/transactions/transactions.service.ts(71,17): error TS2353: Object literal may only specify known properties, and 'order' does not exist in type 'TransactionInclude<DefaultArgs>'.

@@ -1,87 +1,114 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-export const SidebarItem = ({ item, isSidebarOpen, Icon, isActiveParent, location }: any) => {
-    // Initialize open state based on whether it is currently active path
-    const [isOpen, setIsOpen] = useState(isActiveParent);
+interface NavChild {
+  title: string;
+  path: string;
+}
 
-    // Effect to auto-open if a child becomes active (e.g. via direct URL access)
-    useEffect(() => {
-        if (isActiveParent) {
-            setIsOpen(true);
-        }
-    }, [isActiveParent]);
+interface SidebarItemProps {
+  item: {
+    title: string;
+    path: string;
+    icon: string;
+    children?: NavChild[];
+  };
+  isSidebarOpen: boolean;
+  Icon: React.ElementType;
+  isActiveParent?: boolean;
+  location: ReturnType<typeof useLocation>;
+}
 
-    const handleToggle = (e: React.MouseEvent) => {
-        e.preventDefault();
-        setIsOpen(!isOpen);
-    };
+export const SidebarItem = ({ item, isSidebarOpen, Icon, isActiveParent, location }: SidebarItemProps) => {
+  const [isOpen, setIsOpen] = useState(!!isActiveParent);
 
-    if (item.children) {
-        return (
-            <li>
-                <div className="space-y-1">
-                    <button
-                        onClick={handleToggle}
-                        className={cn(
-                            "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors select-none group",
-                            isActiveParent ? "text-white" : "text-slate-400 hover:text-white hover:bg-slate-800"
-                        )}
-                    >
-                        <div className="flex items-center gap-3">
-                            <Icon className={cn("h-5 w-5 shrink-0 group-hover:text-white", isActiveParent ? "text-white" : "text-slate-400")} />
-                            {isSidebarOpen && <span>{item.title}</span>}
-                        </div>
-                        {isSidebarOpen && (
-                            isOpen ? <ChevronDown className="h-4 w-4 opacity-50" /> : <ChevronRight className="h-4 w-4 opacity-50" />
-                        )}
-                    </button>
-                    {isSidebarOpen && isOpen && (
-                        <ul className="pl-10 space-y-1 relative">
-                            {/* Vertical connection line styling could go here */}
-                            {/* <div className="absolute left-5 top-0 bottom-0 w-px bg-slate-800" /> */}
-                            {item.children.map((child: any) => (
-                                <li key={child.path}>
-                                    <NavLink
-                                        to={child.path}
-                                        className={({ isActive }) =>
-                                            cn(
-                                                "block px-3 py-2 rounded-lg transition-colors text-sm font-medium relative",
-                                                isActive
-                                                    ? "bg-indigo-600 text-white"
-                                                    : "text-slate-400 hover:text-white hover:bg-slate-800"
-                                            )
-                                        }
-                                    >
-                                        {child.title}
-                                    </NavLink>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            </li>
-        );
-    }
+  useEffect(() => {
+    if (isActiveParent) setIsOpen(true);
+  }, [isActiveParent]);
 
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsOpen(!isOpen);
+  };
+
+  // --- Parent with children ---
+  if (item.children) {
     return (
-        <li>
-            <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                    cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium group",
+      <li>
+        <button
+          onClick={handleToggle}
+          className={cn(
+            "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 group",
+            isActiveParent
+              ? "text-white bg-sidebar-hover"
+              : "text-slate-400 hover:text-slate-200 hover:bg-sidebar-hover"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <Icon className="h-[18px] w-[18px] shrink-0" />
+            {isSidebarOpen && <span>{item.title}</span>}
+          </div>
+          {isSidebarOpen && (
+            <ChevronDown
+              className={cn(
+                "h-3.5 w-3.5 opacity-40 transition-transform duration-200",
+                isOpen && "rotate-180"
+              )}
+            />
+          )}
+        </button>
+
+        {isSidebarOpen && (
+          <div
+            className={cn(
+              "overflow-hidden transition-all duration-200",
+              isOpen ? "max-h-40 opacity-100 mt-1" : "max-h-0 opacity-0"
+            )}
+          >
+            <ul className="ml-[30px] border-l border-slate-700/50 pl-3 space-y-0.5">
+              {item.children.map((child) => (
+                <li key={child.path}>
+                  <NavLink
+                    to={child.path}
+                    className={({ isActive }) =>
+                      cn(
+                        "block px-3 py-2 rounded-md text-[13px] font-medium transition-all duration-150",
                         isActive
-                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/20"
-                            : "text-slate-400 hover:text-white hover:bg-slate-800"
-                    )
-                }
-            >
-                <Icon className={cn("h-5 w-5 shrink-0 group-hover:text-white", ({ isActive }: any) => isActive ? "text-white" : "text-slate-400")} />
-                {isSidebarOpen && <span>{item.title}</span>}
-            </NavLink>
-        </li>
+                          ? "text-primary-light bg-sidebar-active"
+                          : "text-slate-500 hover:text-slate-300 hover:bg-sidebar-hover"
+                      )
+                    }
+                  >
+                    {child.title}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </li>
     );
+  }
+
+  // --- Single item ---
+  return (
+    <li>
+      <NavLink
+        to={item.path}
+        className={({ isActive }) =>
+          cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 group",
+            isActive
+              ? "text-white bg-primary/15 border-l-2 border-primary-light -ml-px"
+              : "text-slate-400 hover:text-slate-200 hover:bg-sidebar-hover"
+          )
+        }
+      >
+        <Icon className="h-[18px] w-[18px] shrink-0" />
+        {isSidebarOpen && <span>{item.title}</span>}
+      </NavLink>
+    </li>
+  );
 };

@@ -13,11 +13,26 @@ export const navigation = [
         title: 'Katalog',
         path: '/catalog',
         icon: 'shirt',
+        children: [
+            { title: 'Ürünler', path: '/catalog' },
+            { title: 'Kategoriler', path: '/catalog/categories' },
+            { title: 'Yeni Ürün', path: '/catalog/new' }
+        ]
     },
     {
         title: 'Satış Ekranı (POS)',
         path: '/pos',
         icon: 'shopping-cart',
+    },
+    {
+        title: 'Siparişler',
+        path: '/sales/orders',
+        icon: 'package',
+    },
+    {
+        title: 'Müşteriler',
+        path: '/crm',
+        icon: 'user-check',
     },
     {
         title: 'İade Talepleri',
@@ -50,3 +65,4 @@ export const navigation = [
         ]
     }
 ];
+

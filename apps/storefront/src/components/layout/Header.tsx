@@ -2,27 +2,67 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Search, Menu, User, ChevronDown } from 'lucide-react';
+import { ShoppingBag, Search, Menu, User, ChevronDown, LogOut } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { collectionsDB } from "@/lib/data";
+import SearchModal from "@/components/shared/SearchModal";
+import { useCart } from "@/lib/CartContext";
+import { storeApi } from "@/lib/api";
+
+const collections = [
+  { slug: 'kis-2025', title: 'Kış 2025' },
+  { slug: 'yaz-2025', title: 'Yaz 2025' },
+  { slug: 'ozel-seri', title: 'Özel Seri' },
+];
 
 export default function Header() {
+  const router = useRouter();
+  const { items, itemCount } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    // Check auth status
+    setIsLoggedIn(storeApi.isLoggedIn());
+    setUser(storeApi.getUser());
+
+    // Keyboard shortcut for search
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
+
+  const handleLogout = () => {
+    storeApi.logout();
+    setIsLoggedIn(false);
+    setUser(null);
+    router.push('/');
+  };
 
   return (
     <motion.header
-      className={`fixed top-0 w-full z-50 transition-all duration-500 border-b ${
-        isScrolled
-          ? 'bg-white/30 backdrop-blur-md shadow-sm border-white/20 py-3'
-          : 'bg-transparent border-transparent py-5'
-      }`}
+      className={`fixed top-0 w-full z-50 transition-all duration-500 border-b ${isScrolled
+        ? 'bg-white/30 backdrop-blur-md shadow-sm border-white/20 py-3'
+        : 'bg-transparent border-transparent py-5'
+        }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
@@ -47,8 +87,6 @@ export default function Header() {
               Koleksiyonlar <ChevronDown className="w-4 h-4 opacity-70" />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 bg-white/95 backdrop-blur-md border-stone-100">
-
-              {/* Statik Linkler (Veritabanında olmayan özel sayfalar) */}
               <DropdownMenuItem asChild>
                 <Link href="/koleksiyonlar/cok-satanlar" className="cursor-pointer w-full font-semibold text-amber-600">
                   ★ Çok Satanlar
@@ -57,15 +95,13 @@ export default function Header() {
 
               <DropdownMenuSeparator />
 
-              {/* Dinamik Linkler (Veritabanından gelenler) */}
-              {Object.entries(collectionsDB).map(([slug, collection]) => (
-                <DropdownMenuItem key={slug} asChild>
-                  <Link href={`/koleksiyonlar/${slug}`} className="cursor-pointer w-full">
-                    {collection.meta.title}
+              {collections.map((collection) => (
+                <DropdownMenuItem key={collection.slug} asChild>
+                  <Link href={`/koleksiyonlar/${collection.slug}`} className="cursor-pointer w-full">
+                    {collection.title}
                   </Link>
                 </DropdownMenuItem>
               ))}
-
             </DropdownMenuContent>
           </DropdownMenu>
           <Link href="/giyim" className="hover:text-amber-500 transition-colors relative group">Giyim</Link>
@@ -75,39 +111,80 @@ export default function Header() {
 
         {/* Icons */}
         <div className={`flex items-center gap-3 md:gap-5 ${isScrolled ? 'text-stone-900' : 'text-stone-850'}`}>
-          <Search className="w-5 h-5 cursor-pointer hover:text-amber-500 transition-colors hidden sm:block" />
+          <button onClick={() => setIsSearchOpen(true)} className="hover:text-amber-500 transition-colors hidden sm:block">
+            <Search className="w-5 h-5" />
+          </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger className="hover:text-amber-500 transition-colors focus:outline-none flex items-center gap-2">
               <User className="w-5 h-5" />
-              <span className="hidden lg:inline text-sm font-medium">Hesabım</span>
+              <span className="hidden lg:inline text-sm font-medium">
+                {isLoggedIn ? user?.firstName || 'Hesabım' : 'Giriş'}
+              </span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-md border-stone-850">
-              <DropdownMenuLabel>Merhaba, Peyker</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/profil" className="cursor-pointer w-full font-semibold">
-                  Profilim
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/profil?tab=orders" className="cursor-pointer w-full font-semibold ">
-                  Sparişlerim
-                </Link>
-              </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">Favorilerim</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-rose-600 focus:text-rose-600">Çıkış Yap</DropdownMenuItem>
+              {isLoggedIn ? (
+                <>
+                  <DropdownMenuLabel>Merhaba, {user?.firstName || 'Kullanıcı'}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profil" className="cursor-pointer w-full font-semibold">
+                      Profilim
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profil?tab=orders" className="cursor-pointer w-full font-semibold">
+                      Siparişlerim
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">Favorilerim</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="cursor-pointer text-rose-600 focus:text-rose-600"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Çıkış Yap
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuLabel>Hesap</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/giris" className="cursor-pointer w-full font-semibold">
+                      Giriş Yap
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/kayit" className="cursor-pointer w-full">
+                      Kayıt Ol
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/siparis-takip" className="cursor-pointer w-full text-stone-500">
+                      Sipariş Takip
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
           <Link href="/sepet" className="relative cursor-pointer hover:text-amber-500 transition-colors">
             <ShoppingBag className="w-5 h-5" />
-            {/* Sepet boş olsa bile badge görünebilir veya context ile dinamik yapılabilir */}
-            <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">2</span>
+            {itemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                {itemCount}
+              </span>
+            )}
           </Link>
         </div>
       </div>
+
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </motion.header>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -7,6 +7,7 @@ import { usePos } from '@/context/PosContext';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Receipt } from './Receipt';
+import { posService } from '../services/pos.service';
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -22,19 +23,18 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
     const [receivedAmount, setReceivedAmount] = useState<string>('');
     const [isSuccess, setIsSuccess] = useState(false);
+    const [processing, setProcessing] = useState(false);
 
     // Store a snapshot of the cart for the receipt
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [receiptCart, setReceiptCart] = useState<any[]>([]);
     const [receiptNo, setReceiptNo] = useState('');
 
-    // Ref for receipt scrolling if needed
-    const receiptContainerRef = useRef<HTMLDivElement>(null);
-
     useEffect(() => {
         if (isOpen) {
             setReceivedAmount('');
             setIsSuccess(false);
+            setProcessing(false);
             setPaymentMethod('cash');
             setReceiptCart(cart);
         }
@@ -43,15 +43,37 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
 
     if (!isOpen) return null;
 
-    const handleComplete = () => {
-        setIsSuccess(true);
-        const newReceiptNo = `TR-${Math.floor(Math.random() * 100000)}`;
-        setReceiptNo(newReceiptNo);
-        setReceiptCart(cart); // Update one last time to be sure
+    const handleComplete = async () => {
+        setProcessing(true);
 
-        toast.success(`Ödeme Başarılı: ${total.toLocaleString('tr-TR')} ₺`);
+        try {
+            // Map cart items to API format
+            const saleData = {
+                items: cart.map(item => ({
+                    variantId: item.variantId || item.id,
+                    quantity: item.quantity,
+                    unitPrice: item.price,
+                })),
+                paymentMethod: paymentMethod === 'cash' ? 'CASH' as const :
+                    paymentMethod === 'credit_card' ? 'CARD' as const : 'CASH' as const,
+                cashAmount: paymentMethod === 'cash' ? Number(receivedAmount) || total : undefined,
+                notes: `POS Sale - ${new Date().toLocaleString('tr-TR')}`,
+            };
 
-        clearCart();
+            const result = await posService.createSale(saleData);
+
+            setIsSuccess(true);
+            setReceiptNo(result.saleNumber || `TR-${Math.floor(Math.random() * 100000)}`);
+            setReceiptCart(cart);
+
+            toast.success(`Ödeme Başarılı: ${total.toLocaleString('tr-TR')} ₺`);
+            clearCart();
+        } catch (error) {
+            console.error('Sale creation failed:', error);
+            toast.error('Satış kaydedilemedi. Lütfen tekrar deneyin.');
+        } finally {
+            setProcessing(false);
+        }
     };
 
     const handlePrint = () => {

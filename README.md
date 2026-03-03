@@ -1,135 +1,171 @@
-# Turborepo starter
+# Peyker Moda - E-Ticaret & POS Sistemi
 
-This Turborepo starter is maintained by the Turborepo core team.
+Modern ve kapsamlı bir e-ticaret ve POS (Point of Sale) yönetim sistemi.
 
-## Using this example
+## 🚀 Özellikler
 
-Run the following command:
+### Backend API
+- **Kimlik Doğrulama**: JWT tabanlı güvenli auth sistemi
+- **Ürün Yönetimi**: Kategoriler, varyantlar, stok takibi
+- **Sipariş Yönetimi**: Sipariş oluşturma, takip, durum güncelleme
+- **POS Modülü**: Satış noktası işlemleri, barkod okuma, hızlı satış
+- **CRM**: Müşteri yönetimi, müşteri grupları
+- **Muhasebe**: Fatura oluşturma, PDF export, gelir-gider takibi
+- **Kampanyalar**: İndirim kampanyaları, kupon kodları
+- **Dashboard**: Gerçek zamanlı istatistikler, raporlar
+- **WebSocket**: Canlı bildirimler
 
-```sh
-npx create-turbo@latest
-```
+### Admin Panel
+- Modern React + TypeScript arayüzü
+- DataGrid ile gelişmiş tablolar
+- Gerçek zamanlı dashboard
+- POS arayüzü
 
-## What's inside?
+### Storefront
+- Next.js 15 ile SSR
+- Modern ve responsive tasarım
+- Sepet yönetimi
+- Ödeme akışı
 
-This Turborepo includes the following packages/apps:
+## 🛠 Teknolojiler
 
-### Apps and Packages
+| Katman | Teknoloji |
+|--------|-----------|
+| Backend | NestJS, Prisma, PostgreSQL |
+| Admin Panel | React, Vite, TypeScript, TailwindCSS |
+| Storefront | Next.js 15, React 19 |
+| Veritabanı | PostgreSQL |
+| Auth | JWT, Passport.js |
+| Docs | Swagger/OpenAPI |
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+## 📁 Proje Yapısı
 
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+peyker-moda/
+├── apps/
+│   ├── api/             # NestJS Backend API
+│   ├── admin/           # React Admin Panel
+│   └── storefront/      # Next.js Mağaza
+├── packages/
+│   └── types/           # Paylaşılan TypeScript tipleri
+└── README.md
 ```
 
-### Develop
+## 🚀 Kurulum
 
-To develop all apps and packages, run the following command:
+### Gereksinimler
+- Node.js 18+
+- PostgreSQL 14+
+- pnpm
 
-```
-cd my-turborepo
+### Adımlar
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+1. **Repoyu klonlayın**
+```bash
+git clone <repo-url>
+cd peyker-moda
 ```
 
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+2. **Bağımlılıkları yükleyin**
+```bash
+pnpm install
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+3. **Ortam değişkenlerini ayarlayın**
+```bash
+# apps/api/.env
+DATABASE_URL="postgresql://user:password@localhost:5432/peyker_moda"
+JWT_SECRET="your-super-secret-key"
+APP_PORT=3001
+CORS_ORIGIN="http://localhost:5173,http://localhost:3000"
 ```
 
-## Useful Links
+4. **Veritabanı migrasyonlarını çalıştırın**
+```bash
+cd apps/api
+npx prisma migrate dev
+npx prisma db seed  # Örnek veriler
+```
 
-Learn more about the power of Turborepo:
+5. **Geliştirme sunucularını başlatın**
+```bash
+# Kök dizinde
+pnpm run dev
+```
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+## 📚 API Dokümantasyonu
+
+API çalışırken Swagger UI'a erişin:
+```
+http://localhost:3001/docs
+```
+
+### Ana Endpoint'ler
+
+| Endpoint | Açıklama |
+|----------|----------|
+| `POST /api/auth/login` | Giriş yap |
+| `GET /api/products` | Ürün listesi |
+| `GET /api/orders` | Sipariş listesi |
+| `GET /api/dashboard/stats` | Dashboard istatistikleri |
+| `POST /api/pos/sales` | POS satış oluştur |
+| `GET /api/store/products` | Mağaza ürünleri |
+
+## 🔒 Güvenlik
+
+- **Helmet**: HTTP güvenlik başlıkları
+- **Rate Limiting**: Brute-force koruması (10/s, 50/10s, 100/dk)
+- **ValidationPipe**: Input doğrulama ve sanitizasyon
+- **Prisma ORM**: SQL Injection koruması
+- **JWT**: Güvenli token tabanlı kimlik doğrulama
+
+## 🧪 Test
+
+```bash
+# Unit testler
+cd apps/api
+npm run test
+
+# Coverage raporu
+npm run test:cov
+
+# E2E testler
+npm run test:e2e
+```
+
+## 📦 Production Build
+
+```bash
+# API
+cd apps/api
+npm run build
+npm run start:prod
+
+# Admin Panel
+cd apps/admin
+npm run build
+
+# Storefront
+cd apps/storefront
+npm run build
+npm run start
+```
+
+## 📊 Proje İlerlemesi
+
+| Faz | Durum | Açıklama |
+|-----|-------|----------|
+| Faz 0-9 | ✅ | Backend API (70+ endpoint) |
+| Faz 10 | ✅ | Admin Panel Entegrasyonu |
+| Faz 11 | ✅ | Storefront Geliştirme |
+| Faz 12 | ✅ | Güvenlik & Performans |
+| Faz 13 | ✅ | Test & Dokümantasyon |
+| Faz 14 | ⏳ | Deployment |
+
+## 📄 Lisans
+
+UNLICENSED - Özel Proje
+
+## 👥 Katkıda Bulunanlar
+
+- Peyker Moda Ekibi

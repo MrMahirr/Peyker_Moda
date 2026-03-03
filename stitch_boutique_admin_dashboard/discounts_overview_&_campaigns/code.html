@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Discounts Overview &amp; Campaigns - Elegant Boutique</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#19c3e6",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#111e21",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-[#111718] dark:text-white">
+<div class="flex h-full min-h-screen">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-[#dce4e5] dark:border-[#2a3a3d] bg-white dark:bg-[#152529] hidden lg:flex flex-col">
+<div class="p-6 flex flex-col h-full">
+<div class="flex items-center gap-3 mb-10">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#dce4e5] dark:border-[#2a3a3d]" data-alt="Elegant boutique minimalist circular brand logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDO10qZ4X18Uh-jSAYRnmgGhKfmeig0RVXufzzIPXkBReNVrj3cQY8bocDPqXKC9NgMdmj8CoPryJ_vdUkWNa5X4CBbyAzx5IAyfncOnIvQKEsVDTvgzf8P3F7_cXsqkVyXxYiRIZvEHtV6n8L8bRt6Yyn8rYKbwiqu0pGgdrC9Fqgr4qggNB4HgUasLegd2VdvH-8i-fBl4NJGPrxUlbuDxVmVOtEwVGCDmRBcAFJFcaeTQOxW7mUiTE5ICeWTKGcyu35wFlf5r7c");'></div>
+<div class="flex flex-col">
+<h1 class="text-[#111718] dark:text-white text-base font-semibold leading-normal">Elegant Boutique</h1>
+<p class="text-[#638288] text-xs font-normal leading-normal">Admin Panel</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 flex-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#638288] hover:bg-background-light dark:hover:bg-background-dark transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#638288] hover:bg-background-light dark:hover:bg-background-dark transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<p class="text-sm font-medium">Inventory</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#638288] hover:bg-background-light dark:hover:bg-background-dark transition-colors" href="#">
+<span class="material-symbols-outlined">shopping_bag</span>
+<p class="text-sm font-medium">Sales</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">sell</span>
+<p class="text-sm font-semibold">Discounts</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#638288] hover:bg-background-light dark:hover:bg-background-dark transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<p class="text-sm font-medium">Accounting</p>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-[#dce4e5] dark:border-[#2a3a3d]">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#638288] hover:bg-background-light dark:hover:bg-background-dark transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<p class="text-sm font-medium">Settings</p>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col">
+<!-- Header -->
+<header class="flex items-center justify-between border-b border-[#dce4e5] dark:border-[#2a3a3d] bg-white dark:bg-[#152529] px-8 py-4 sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-3xl">confirmation_number</span>
+<h2 class="text-[#111718] dark:text-white text-xl font-bold tracking-tight">Discounts Management</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#638288] text-xl">search</span>
+<input class="pl-10 pr-4 py-2 rounded-lg border-none bg-background-light dark:bg-background-dark focus:ring-2 focus:ring-primary w-64 text-sm placeholder:text-[#638288]" placeholder="Search campaigns..." type="text"/>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all shadow-sm">
+<span class="material-symbols-outlined text-xl">add_circle</span>
+<span>Create New Discount</span>
+</button>
+<div class="h-10 w-10 rounded-full border-2 border-primary/20 p-0.5">
+<div class="h-full w-full rounded-full bg-cover bg-center" data-alt="Admin user profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC0atWuyEuLeV5iDVdGy8PtBNZmrUStLSOehDLPjBwdv2px_tMQ1XkQf4NpUeUoj30XE3oCTBGqNEazHkZS_KEe1x2p9aZLx4ihA6fmS2HGVl5tvwZjesl0cKAMJ_gS8GcP4jbHVDhRAOVPDQRP5uU4IvTIQ5PMc1m3YnMp4RvT1p4dU9hAwdWHVzASD3wRXN2m9jr8z_t-s5nzQGG_itJwOP5fBsJyvwEaUfQI5X1C_BUeyVMubRRdYeolcr_YOvWdWiga1YibHI0');"></div>
+</div>
+</div>
+</header>
+<div class="p-8 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-sm">
+<a class="text-[#638288] hover:text-primary transition-colors" href="#">Admin</a>
+<span class="text-[#638288] material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-[#111718] dark:text-white font-medium">Discounts &amp; Campaigns</span>
+</nav>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-white dark:bg-[#152529] p-6 rounded-xl border border-[#dce4e5] dark:border-[#2a3a3d] shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-[#638288] text-sm font-medium">Total Active</p>
+<span class="material-symbols-outlined text-primary">campaign</span>
+</div>
+<p class="text-[#111718] dark:text-white text-2xl font-bold">12</p>
+<p class="text-[#078834] text-xs font-medium mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +2% from last month
+                        </p>
+</div>
+<div class="bg-white dark:bg-[#152529] p-6 rounded-xl border border-[#dce4e5] dark:border-[#2a3a3d] shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-[#638288] text-sm font-medium">Revenue Impact</p>
+<span class="material-symbols-outlined text-primary">payments</span>
+</div>
+<p class="text-[#111718] dark:text-white text-2xl font-bold">$4,250.00</p>
+<p class="text-[#078834] text-xs font-medium mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +15% vs target
+                        </p>
+</div>
+<div class="bg-white dark:bg-[#152529] p-6 rounded-xl border border-[#dce4e5] dark:border-[#2a3a3d] shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-[#638288] text-sm font-medium">Best Coupon</p>
+<span class="material-symbols-outlined text-primary">stars</span>
+</div>
+<p class="text-[#111718] dark:text-white text-2xl font-bold uppercase">Spring20</p>
+<p class="text-[#638288] text-xs font-medium mt-1">452 uses this week</p>
+</div>
+<div class="bg-white dark:bg-[#152529] p-6 rounded-xl border border-[#dce4e5] dark:border-[#2a3a3d] shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-[#638288] text-sm font-medium">Inventory on Sale</p>
+<span class="material-symbols-outlined text-primary">inventory</span>
+</div>
+<p class="text-[#111718] dark:text-white text-2xl font-bold">145 items</p>
+<p class="text-[#078834] text-xs font-medium mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +5% collection coverage
+                        </p>
+</div>
+</div>
+<!-- Tabs & Table Section -->
+<div class="bg-white dark:bg-[#152529] rounded-xl border border-[#dce4e5] dark:border-[#2a3a3d] shadow-sm overflow-hidden">
+<!-- Tabs -->
+<div class="px-6 border-b border-[#dce4e5] dark:border-[#2a3a3d] flex gap-8">
+<button class="border-b-2 border-primary text-primary py-4 text-sm font-bold transition-all">All Campaigns</button>
+<button class="border-b-2 border-transparent text-[#638288] hover:text-[#111718] dark:hover:text-white py-4 text-sm font-medium transition-all">Active</button>
+<button class="border-b-2 border-transparent text-[#638288] hover:text-[#111718] dark:hover:text-white py-4 text-sm font-medium transition-all">Scheduled</button>
+<button class="border-b-2 border-transparent text-[#638288] hover:text-[#111718] dark:hover:text-white py-4 text-sm font-medium transition-all">Expired</button>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-background-light dark:bg-background-dark border-b border-[#dce4e5] dark:border-[#2a3a3d]">
+<tr>
+<th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#638288]">Campaign Name</th>
+<th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#638288]">Type</th>
+<th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#638288]">Status</th>
+<th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#638288]">Duration</th>
+<th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#638288]">Redemptions</th>
+<th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#638288] text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#dce4e5] dark:divide-[#2a3a3d]">
+<!-- Campaign Row 1 -->
+<tr class="hover:bg-background-light/50 dark:hover:bg-background-dark/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold">S2</div>
+<div>
+<p class="text-sm font-semibold text-[#111718] dark:text-white">Spring Essentials 2024</p>
+<p class="text-xs text-[#638288]">Code: SPRING20</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<p class="text-sm text-[#111718] dark:text-white">20% Off Storewide</p>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                            Active
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-[#638288]">
+                                        Mar 01 - Apr 30, 2024
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex flex-col gap-1">
+<div class="w-24 h-1.5 bg-[#dce4e5] dark:bg-[#2a3a3d] rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[65%]"></div>
+</div>
+<p class="text-xs text-[#638288]">325 / 500</p>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="p-1 hover:bg-[#dce4e5] dark:hover:bg-[#2a3a3d] rounded transition-colors text-[#638288]">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Campaign Row 2 -->
+<tr class="hover:bg-background-light/50 dark:hover:bg-background-dark/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold">MD</div>
+<div>
+<p class="text-sm font-semibold text-[#111718] dark:text-white">Mother's Day Special</p>
+<p class="text-xs text-[#638288]">Automatic Discount</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<p class="text-sm text-[#111718] dark:text-white">Buy 2 Get 1 Free</p>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                            Scheduled
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-[#638288]">
+                                        May 01 - May 14, 2024
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap">
+<p class="text-xs text-[#638288]">Not started</p>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="p-1 hover:bg-[#dce4e5] dark:hover:bg-[#2a3a3d] rounded transition-colors text-[#638288]">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Campaign Row 3 -->
+<tr class="hover:bg-background-light/50 dark:hover:bg-background-dark/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold">WS</div>
+<div>
+<p class="text-sm font-semibold text-[#111718] dark:text-white">Winter Clearance</p>
+<p class="text-xs text-[#638288]">Fixed Amount</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<p class="text-sm text-[#111718] dark:text-white">$50 off over $250</p>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400">
+                                            Expired
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-[#638288]">
+                                        Jan 01 - Feb 28, 2024
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex flex-col gap-1">
+<div class="w-24 h-1.5 bg-[#dce4e5] dark:bg-[#2a3a3d] rounded-full overflow-hidden">
+<div class="bg-primary/50 h-full w-full"></div>
+</div>
+<p class="text-xs text-[#638288]">1,200 (Completed)</p>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="p-1 hover:bg-[#dce4e5] dark:hover:bg-[#2a3a3d] rounded transition-colors text-[#638288]">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-[#dce4e5] dark:border-[#2a3a3d] flex items-center justify-between">
+<p class="text-sm text-[#638288]">Showing 1 to 3 of 12 campaigns</p>
+<div class="flex gap-2">
+<button class="px-3 py-1 border border-[#dce4e5] dark:border-[#2a3a3d] rounded text-sm hover:bg-background-light dark:hover:bg-background-dark transition-colors text-[#111718] dark:text-white">Previous</button>
+<button class="px-3 py-1 bg-primary text-white rounded text-sm font-medium">1</button>
+<button class="px-3 py-1 border border-[#dce4e5] dark:border-[#2a3a3d] rounded text-sm hover:bg-background-light dark:hover:bg-background-dark transition-colors text-[#111718] dark:text-white">2</button>
+<button class="px-3 py-1 border border-[#dce4e5] dark:border-[#2a3a3d] rounded text-sm hover:bg-background-light dark:hover:bg-background-dark transition-colors text-[#111718] dark:text-white">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

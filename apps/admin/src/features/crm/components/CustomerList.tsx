@@ -1,33 +1,62 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Plus, Eye, Edit, Trash, Mail, Phone, Search } from 'lucide-react';
+import { Plus, Eye, Edit, Trash, Mail, Phone, Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { showDeleteConfirm } from '@/utils/swal';
+import { customersService, Customer } from '../api/customerService';
 
-// Mock Customer Data
-const MOCK_CUSTOMERS = [
-    { id: '1', name: 'Ayşe Yılmaz', email: 'ayse@example.com', phone: '0555 123 45 67', totalSpent: 15400.50, lastVisit: '2024-01-20', group: 'VIP' },
-    { id: '2', name: 'Mehmet Demir', email: 'mehmet@example.com', phone: '0532 987 65 43', totalSpent: 2350.00, lastVisit: '2024-01-15', group: 'Standart' },
-    { id: '3', name: 'Zeynep Kaya', email: 'zeynep@example.com', phone: '0544 333 22 11', totalSpent: 8900.25, lastVisit: '2024-01-18', group: 'Sadık' },
-    { id: '4', name: 'Ali Vural', email: 'ali@example.com', phone: '0505 555 55 55', totalSpent: 450.00, lastVisit: '2023-12-30', group: 'Yeni' },
-    { id: '5', name: 'Fatma Çelik', email: 'fatma@example.com', phone: '0530 111 22 33', totalSpent: 12000.00, lastVisit: '2024-01-21', group: 'VIP' },
-];
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
+};
 
 export const CustomerList = () => {
     const navigate = useNavigate();
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            try {
+                const response = await customersService.getAll({ limit: 50 });
+                setCustomers(response.data || []);
+            } catch (err) {
+                console.error('Customers fetch error:', err);
+                toast.error('Müşteriler yüklenemedi');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCustomers();
+    }, []);
+
+    const handleDelete = async (id: string) => {
+        const result = await showDeleteConfirm('Müşteriyi Sil?', 'Bu işlem geri alınamaz!');
+        if (result.isConfirmed) {
+            try {
+                await customersService.delete(id);
+                setCustomers(customers.filter(c => c.id !== id));
+                toast.success('Müşteri silindi');
+            } catch (err) {
+                console.error('Delete error:', err);
+                toast.error('Müşteri silinemedi');
+            }
+        }
+    };
 
     const columns = [
         {
             header: 'Müşteri Adı',
-            accessorKey: 'name',
+            accessorKey: 'firstName',
             cell: (info: any) => (
                 <div className="flex flex-col">
-                    <span className="font-medium text-slate-900">{info.getValue()}</span>
-                    <span className="text-xs text-slate-500">{info.row.original.group}</span>
+                    <span className="font-medium text-slate-900">
+                        {info.row.original.firstName} {info.row.original.lastName}
+                    </span>
+                    <span className="text-xs text-slate-500">{info.row.original.group?.name || 'Standart'}</span>
                 </div>
             )
         },
@@ -36,10 +65,12 @@ export const CustomerList = () => {
             accessorKey: 'contact',
             cell: (info: any) => (
                 <div className="flex flex-col text-sm text-slate-600 gap-1">
-                    <div className="flex items-center gap-1">
-                        <Mail className="h-3 w-3 text-slate-400" />
-                        {info.row.original.email}
-                    </div>
+                    {info.row.original.email && (
+                        <div className="flex items-center gap-1">
+                            <Mail className="h-3 w-3 text-slate-400" />
+                            {info.row.original.email}
+                        </div>
+                    )}
                     <div className="flex items-center gap-1">
                         <Phone className="h-3 w-3 text-slate-400" />
                         {info.row.original.phone}
@@ -52,13 +83,16 @@ export const CustomerList = () => {
             accessorKey: 'totalSpent',
             cell: (info: any) => (
                 <span className="font-semibold text-indigo-600">
-                    {info.getValue().toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
+                    {formatCurrency(info.row.original.totalSpent || 0)}
                 </span>
             )
         },
         {
-            header: 'Son Ziyaret',
-            accessorKey: 'lastVisit',
+            header: 'Sipariş',
+            accessorKey: 'orderCount',
+            cell: (info: any) => (
+                <span className="text-slate-600">{info.row.original.orderCount || 0} sipariş</span>
+            )
         },
         {
             header: 'İşlemler',
@@ -73,20 +107,19 @@ export const CustomerList = () => {
                     >
                         <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-amber-600">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-500 hover:text-amber-600"
+                        onClick={() => navigate(`/crm/${info.row.original.id}/edit`)}
+                    >
                         <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-slate-500 hover:text-red-500"
-                        onClick={() => {
-                            showDeleteConfirm('Müşteriyi Sil?', 'Bu işlem geri alınamaz!').then((result) => {
-                                if (result.isConfirmed) {
-                                    toast.success('Müşteri silindi (Mock)');
-                                }
-                            });
-                        }}
+                        onClick={() => handleDelete(info.row.original.id)}
                     >
                         <Trash className="h-4 w-4" />
                     </Button>
@@ -95,11 +128,19 @@ export const CustomerList = () => {
         }
     ];
 
-    const filteredData = MOCK_CUSTOMERS.filter(c =>
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const filteredData = customers.filter(c =>
+        `${c.firstName} ${c.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.phone.includes(searchTerm)
     );
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4">

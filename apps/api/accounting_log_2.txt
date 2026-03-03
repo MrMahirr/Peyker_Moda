@@ -1,0 +1,47 @@
+🧪 Starting Accounting Module Verification...
+
+1. Logging in...
+✅ Login Successful
+
+2. Creating Expense (Rent)...
+✅ Expense Created: undefined
+
+3. Creating Income (Freelance)...
+✅ Income Created: undefined
+
+4. Updating Income Amount (3000 -> 3500)...
+
+5. Deleting Expense...
+❌ Delete Failed: {
+  success: false,
+  statusCode: 404,
+  error: 'Not Found',
+  message: [ 'İşlem bulunamadı' ],
+  timestamp: '2026-02-06T21:42:52.881Z',
+  path: '/api/transactions/undefined'
+}
+
+6. Checking Financial Summary...
+✅ Summary Retrieved: {
+  "success": true,
+  "data": {
+    "period": {
+      "start": "2026-02-06",
+      "end": "2026-02-06"
+    },
+    "income": {
+      "transactions": 3500,
+      "sales": 0,
+      "total": 3500,
+      "count": 2
+    },
+    "expense": {
+      "total": 5000,
+      "count": 1
+    },
+    "netProfit": -1500
+  },
+  "timestamp": "2026-02-06T21:42:52.902Z"
+}
+
+🏁 Verification Complete.

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Reports &amp; Expenses - Boutique Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#308ce8",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111921",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111418] dark:text-white min-h-screen flex">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-[#dce0e5] dark:border-gray-700 bg-white dark:bg-[#1c2632] flex flex-col fixed h-full">
+<div class="p-6 flex flex-col gap-8">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">storefront</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-[#111418] dark:text-white text-base font-bold leading-none">Boutique Admin</h1>
+<p class="text-[#637588] dark:text-gray-400 text-xs font-normal mt-1">Management Portal</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-[#637588] dark:text-gray-400 hover:bg-background-light dark:hover:bg-gray-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#637588] dark:text-gray-400 hover:bg-background-light dark:hover:bg-gray-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<p class="text-sm font-medium">Inventory</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#637588] dark:text-gray-400 hover:bg-background-light dark:hover:bg-gray-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<p class="text-sm font-medium">Sales</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<p class="text-sm font-bold">Expenses</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#637588] dark:text-gray-400 hover:bg-background-light dark:hover:bg-gray-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<p class="text-sm font-medium">Accounting</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#637588] dark:text-gray-400 hover:bg-background-light dark:hover:bg-gray-800 rounded-lg transition-colors mt-10" href="#">
+<span class="material-symbols-outlined">settings</span>
+<p class="text-sm font-medium">Settings</p>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-64">
+<!-- Top Nav Bar -->
+<header class="sticky top-0 z-10 flex items-center justify-between border-b border-[#f0f2f4] dark:border-gray-800 bg-white dark:bg-[#1c2632] px-8 py-4">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-[#111418] dark:text-white">
+<span class="material-symbols-outlined text-primary">analytics</span>
+<h2 class="text-lg font-bold leading-tight tracking-tight">Financial Reports</h2>
+</div>
+<div class="flex items-center bg-[#f0f2f4] dark:bg-gray-800 rounded-lg px-3 h-10 w-64">
+<span class="material-symbols-outlined text-[#637588] mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-[#637588]" placeholder="Search transactions..."/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 h-10 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-lg">download</span>
+                    Download PDF
+                </button>
+<button class="flex items-center gap-2 px-4 h-10 bg-[#f0f2f4] dark:bg-gray-800 text-[#111418] dark:text-white rounded-lg text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">
+<span class="material-symbols-outlined text-lg">upload_file</span>
+                    Export Excel
+                </button>
+<div class="ml-2 w-10 h-10 rounded-full bg-cover bg-center border border-[#dce0e5]" data-alt="User profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBguecNnol9ErbBJCxYUHYCz4uxf17ZXP160qR2zpW2ySWyTFmSzY_649cPGdkkxqsVaJdL-pDypUyR9IyOWGn77Jl2if47aeycsWamE8PGC0ZrOx4NRaG5cUaa_feDqYWT8gG7ORhPr5k0-Tp1Eq4Z4cKUiGprKXE2-0P9C0UMr91sI8oNReApRsOWdU8v1dX0J0d6_zm8kw3f_bJEIwQvwS-yEgKoZce8lJSS6urcXvSU0SDggIydb6c3coHGwbKo0qTrFYh3m8w");'></div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-8 space-y-8">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-sm">
+<a class="text-[#637588] hover:text-primary transition-colors" href="#">Accounting</a>
+<span class="material-symbols-outlined text-xs text-[#637588]">chevron_right</span>
+<span class="text-[#111418] dark:text-white font-semibold">Financial Overview</span>
+</nav>
+<!-- Stats Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-white dark:bg-[#1c2632] p-6 rounded-xl border border-[#dce0e5] dark:border-gray-800 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<p class="text-[#637588] text-sm font-medium">Total Revenue</p>
+<span class="material-symbols-outlined text-primary text-xl">trending_up</span>
+</div>
+<h3 class="text-2xl font-bold dark:text-white">$45,200.00</h3>
+<p class="text-emerald-600 text-sm font-semibold flex items-center mt-1">
+<span class="material-symbols-outlined text-sm mr-1">arrow_upward</span>+12.5%
+                    </p>
+</div>
+<div class="bg-white dark:bg-[#1c2632] p-6 rounded-xl border border-[#dce0e5] dark:border-gray-800 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<p class="text-[#637588] text-sm font-medium">Total Expenses</p>
+<span class="material-symbols-outlined text-red-500 text-xl">payments</span>
+</div>
+<h3 class="text-2xl font-bold dark:text-white">$22,850.00</h3>
+<p class="text-red-500 text-sm font-semibold flex items-center mt-1">
+<span class="material-symbols-outlined text-sm mr-1">arrow_downward</span>-2.3%
+                    </p>
+</div>
+<div class="bg-white dark:bg-[#1c2632] p-6 rounded-xl border border-[#dce0e5] dark:border-gray-800 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<p class="text-[#637588] text-sm font-medium">Net Profit</p>
+<span class="material-symbols-outlined text-emerald-500 text-xl">account_balance</span>
+</div>
+<h3 class="text-2xl font-bold dark:text-white">$22,350.00</h3>
+<p class="text-emerald-600 text-sm font-semibold flex items-center mt-1">
+<span class="material-symbols-outlined text-sm mr-1">arrow_upward</span>+18.1%
+                    </p>
+</div>
+<div class="bg-white dark:bg-[#1c2632] p-6 rounded-xl border border-[#dce0e5] dark:border-gray-800 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<p class="text-[#637588] text-sm font-medium">Tax Estimates</p>
+<span class="material-symbols-outlined text-amber-500 text-xl">calculate</span>
+</div>
+<h3 class="text-2xl font-bold dark:text-white">$4,520.00</h3>
+<p class="text-emerald-600 text-sm font-semibold flex items-center mt-1">
+<span class="material-symbols-outlined text-sm mr-1">arrow_upward</span>+5.0%
+                    </p>
+</div>
+</section>
+<!-- Middle Section: Charts & Calendar -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Bar Chart Simulation -->
+<div class="lg:col-span-2 bg-white dark:bg-[#1c2632] p-6 rounded-xl border border-[#dce0e5] dark:border-gray-800 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h4 class="text-base font-bold dark:text-white">Revenue vs. Expenses</h4>
+<p class="text-[#637588] text-sm">Monthly comparison for 2023</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-xs font-medium text-[#637588]">Revenue</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-gray-200"></span>
+<span class="text-xs font-medium text-[#637588]">Expenses</span>
+</div>
+</div>
+</div>
+<div class="h-64 flex items-end justify-between gap-4 px-4">
+<!-- Simulated Bar Chart Columns -->
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full flex justify-center gap-1 items-end h-full">
+<div class="w-4 bg-gray-200 rounded-t h-[40%]"></div>
+<div class="w-4 bg-primary rounded-t h-[60%]"></div>
+</div>
+<span class="text-[10px] font-bold text-[#637588]">JAN</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full flex justify-center gap-1 items-end h-full">
+<div class="w-4 bg-gray-200 rounded-t h-[35%]"></div>
+<div class="w-4 bg-primary rounded-t h-[75%]"></div>
+</div>
+<span class="text-[10px] font-bold text-[#637588]">FEB</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full flex justify-center gap-1 items-end h-full">
+<div class="w-4 bg-gray-200 rounded-t h-[45%]"></div>
+<div class="w-4 bg-primary rounded-t h-[85%]"></div>
+</div>
+<span class="text-[10px] font-bold text-[#637588]">MAR</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full flex justify-center gap-1 items-end h-full">
+<div class="w-4 bg-gray-200 rounded-t h-[50%]"></div>
+<div class="w-4 bg-primary rounded-t h-[70%]"></div>
+</div>
+<span class="text-[10px] font-bold text-[#637588]">APR</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full flex justify-center gap-1 items-end h-full">
+<div class="w-4 bg-gray-200 rounded-t h-[30%]"></div>
+<div class="w-4 bg-primary rounded-t h-[95%]"></div>
+</div>
+<span class="text-[10px] font-bold text-[#637588]">MAY</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full flex justify-center gap-1 items-end h-full">
+<div class="w-4 bg-gray-200 rounded-t h-[40%]"></div>
+<div class="w-4 bg-primary rounded-t h-[80%]"></div>
+</div>
+<span class="text-[10px] font-bold text-[#637588]">JUN</span>
+</div>
+</div>
+</div>
+<!-- Calendar Picker Component Integration -->
+<div class="bg-white dark:bg-[#1c2632] p-6 rounded-xl border border-[#dce0e5] dark:border-gray-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h4 class="text-base font-bold dark:text-white">Reporting Period</h4>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between p-1">
+<button class="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"><span class="material-symbols-outlined text-lg">chevron_left</span></button>
+<p class="text-[#111418] dark:text-white text-sm font-bold">October 2023</p>
+<button class="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"><span class="material-symbols-outlined text-lg">chevron_right</span></button>
+</div>
+<div class="grid grid-cols-7 text-center text-xs font-bold text-[#637588] mb-2">
+<div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+</div>
+<div class="grid grid-cols-7 gap-y-1">
+<div class="text-xs py-2 text-gray-300">28</div>
+<div class="text-xs py-2 text-gray-300">29</div>
+<div class="text-xs py-2 text-gray-300">30</div>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all">1</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all">2</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all">3</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all">4</button>
+<button class="text-xs py-2 bg-primary text-white rounded-full font-bold">5</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all">6</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all">7</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all">8</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all font-bold bg-primary/20 text-primary">9</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all font-bold bg-primary/20 text-primary">10</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all font-bold bg-primary/20 text-primary">11</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all font-bold bg-primary/20 text-primary">12</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all font-bold bg-primary/20 text-primary">13</button>
+<button class="text-xs py-2 hover:bg-primary/10 rounded-full transition-all font-bold bg-primary/20 text-primary">14</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Expense Logging & Pie Chart -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Log New Expense Form -->
+<div class="bg-white dark:bg-[#1c2632] p-6 rounded-xl border border-[#dce0e5] dark:border-gray-800 shadow-sm h-full">
+<h4 class="text-base font-bold dark:text-white mb-6">Log Business Expense</h4>
+<form class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-[#637588] mb-1">Expense Category</label>
+<select class="w-full bg-[#f0f2f4] dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-primary">
+<option>Rent &amp; Utilities</option>
+<option>Staff Salaries</option>
+<option>Inventory Restock</option>
+<option>Marketing &amp; Ads</option>
+<option>Shipping &amp; Logistics</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium text-[#637588] mb-1">Amount ($)</label>
+<input class="w-full bg-[#f0f2f4] dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-primary" placeholder="0.00" type="number"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-[#637588] mb-1">Date</label>
+<input class="w-full bg-[#f0f2f4] dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-primary" type="date"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-[#637588] mb-1">Description</label>
+<textarea class="w-full bg-[#f0f2f4] dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-primary" placeholder="Add some notes..." rows="3"></textarea>
+</div>
+<button class="w-full py-3 bg-primary text-white font-bold rounded-lg text-sm shadow-md shadow-primary/20 hover:bg-primary/90 transition-all" type="submit">Add Expense Record</button>
+</form>
+</div>
+<!-- Recent Transactions Table -->
+<div class="lg:col-span-2 bg-white dark:bg-[#1c2632] p-6 rounded-xl border border-[#dce0e5] dark:border-gray-800 shadow-sm overflow-hidden flex flex-col">
+<div class="flex items-center justify-between mb-6">
+<h4 class="text-base font-bold dark:text-white">Recent Transactions</h4>
+<button class="text-primary text-sm font-bold hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="border-b border-[#f0f2f4] dark:border-gray-800">
+<th class="py-3 text-xs font-bold text-[#637588] uppercase">Description</th>
+<th class="py-3 text-xs font-bold text-[#637588] uppercase">Category</th>
+<th class="py-3 text-xs font-bold text-[#637588] uppercase">Date</th>
+<th class="py-3 text-xs font-bold text-[#637588] uppercase text-right">Amount</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#f0f2f4] dark:divide-gray-800">
+<tr>
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">home</span>
+</div>
+<p class="text-sm font-semibold dark:text-white">Monthly Store Rent</p>
+</div>
+</td>
+<td class="py-4 text-sm text-[#637588]">Rent &amp; Utilities</td>
+<td class="py-4 text-sm text-[#637588]">Oct 12, 2023</td>
+<td class="py-4 text-sm font-bold text-red-500 text-right">-$2,400.00</td>
+</tr>
+<tr>
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">sell</span>
+</div>
+<p class="text-sm font-semibold dark:text-white">Online Sales Payout</p>
+</div>
+</td>
+<td class="py-4 text-sm text-[#637588]">Revenue</td>
+<td class="py-4 text-sm text-[#637588]">Oct 10, 2023</td>
+<td class="py-4 text-sm font-bold text-emerald-600 text-right">+$1,850.20</td>
+</tr>
+<tr>
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-amber-100 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">inventory_2</span>
+</div>
+<p class="text-sm font-semibold dark:text-white">Fall Collection Restock</p>
+</div>
+</td>
+<td class="py-4 text-sm text-[#637588]">Inventory</td>
+<td class="py-4 text-sm text-[#637588]">Oct 08, 2023</td>
+<td class="py-4 text-sm font-bold text-red-500 text-right">-$5,120.00</td>
+</tr>
+<tr>
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-purple-100 text-purple-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">group</span>
+</div>
+<p class="text-sm font-semibold dark:text-white">Staff Commissions</p>
+</div>
+</td>
+<td class="py-4 text-sm text-[#637588]">Salaries</td>
+<td class="py-4 text-sm text-[#637588]">Oct 05, 2023</td>
+<td class="py-4 text-sm font-bold text-red-500 text-right">-$850.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Expense Breakdown (Visual Chart Simulation) -->
+<section class="bg-white dark:bg-[#1c2632] p-8 rounded-xl border border-[#dce0e5] dark:border-gray-800 shadow-sm">
+<div class="flex flex-col md:flex-row items-center gap-12">
+<div class="w-48 h-48 relative">
+<!-- Doughnut Chart Simulation -->
+<div class="w-full h-full rounded-full border-[16px] border-primary" style="border-right-color: #cbd5e1; border-bottom-color: #fca311; border-left-color: #9333ea;"></div>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-xs text-[#637588] font-bold">TOTAL</span>
+<span class="text-lg font-extrabold">$22k</span>
+</div>
+</div>
+<div class="flex-1 grid grid-cols-2 md:grid-cols-4 gap-8">
+<div>
+<p class="text-xs font-bold text-[#637588] mb-1">RENT &amp; UTIL</p>
+<h5 class="text-xl font-bold">35%</h5>
+<div class="w-full bg-gray-100 h-1.5 rounded-full mt-2"><div class="bg-primary w-[35%] h-full rounded-full"></div></div>
+</div>
+<div>
+<p class="text-xs font-bold text-[#637588] mb-1">SALARIES</p>
+<h5 class="text-xl font-bold">28%</h5>
+<div class="w-full bg-gray-100 h-1.5 rounded-full mt-2"><div class="bg-purple-600 w-[28%] h-full rounded-full"></div></div>
+</div>
+<div>
+<p class="text-xs font-bold text-[#637588] mb-1">INVENTORY</p>
+<h5 class="text-xl font-bold">22%</h5>
+<div class="w-full bg-gray-100 h-1.5 rounded-full mt-2"><div class="bg-amber-500 w-[22%] h-full rounded-full"></div></div>
+</div>
+<div>
+<p class="text-xs font-bold text-[#637588] mb-1">MARKETING</p>
+<h5 class="text-xl font-bold">15%</h5>
+<div class="w-full bg-gray-100 h-1.5 rounded-full mt-2"><div class="bg-gray-400 w-[15%] h-full rounded-full"></div></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

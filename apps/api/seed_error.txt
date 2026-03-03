@@ -1,0 +1,7 @@
+🌱 Seeding database...
+✅ Admin user created
+✅ Categories created
+✅ Products and Variants created
+✅ Sample customer created
+✅ Sample orders created
+🚀 Seeding completed!

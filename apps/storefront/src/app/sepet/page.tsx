@@ -4,130 +4,114 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ArrowLeft, ShieldCheck, Loader2, CheckCircle, XCircle, Tag } from 'lucide-react';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/utils";
-
-// Simüle edilmiş sepet verisi (Gerçekte Context veya Redux'tan gelir)
-const initialCartItems = [
-  {
-    id: 403,
-    name: "Kaşmir Karışımlı Palto",
-    price: 5200,
-    image: "https://images.unsplash.com/photo-1544266395-58022731885b?q=80&w=800&auto=format&fit=crop",
-    color: "Camel",
-    size: "M",
-    quantity: 1
-  },
-  {
-    id: 103,
-    name: "Deri Omuz Çantası",
-    price: 3200,
-    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800&auto=format&fit=crop",
-    color: "Siyah",
-    size: "Standart",
-    quantity: 1
-  },
-  {
-    id: 304,
-    name: "Gold Detaylı Kemer",
-    price: 650,
-    image: "https://images.unsplash.com/photo-1616147416348-73b37805903b?q=80&w=800&auto=format&fit=crop",
-    color: "Gold",
-    size: "S/M",
-    quantity: 2
-  }
-];
+import { useCart } from "@/lib/CartContext";
+import { storeApi } from "@/lib/api";
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const { items, updateQuantity, removeItem, subtotal, itemCount } = useCart();
 
-  // Miktar Güncelleme
-  const updateQuantity = (id: number, change: number) => {
-    setCartItems(items =>
-      items.map(item => {
-        if (item.id === id) {
-          const newQuantity = Math.max(1, item.quantity + change);
-          return { ...item, quantity: newQuantity };
-        }
-        return item;
-      })
-    );
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponResult, setCouponResult] = useState<{
+    valid: boolean;
+    discount: number;
+    discountType: 'percentage' | 'fixed';
+    message: string;
+  } | null>(null);
+
+  // Apply coupon
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+
+    setCouponLoading(true);
+    try {
+      const result = await storeApi.validateCoupon(couponCode);
+      setCouponResult(result);
+    } catch (error) {
+      setCouponResult({
+        valid: false,
+        discount: 0,
+        discountType: 'percentage',
+        message: 'Kupon doğrulanamadı'
+      });
+    } finally {
+      setCouponLoading(false);
+    }
   };
 
-  // Ürün Silme
-  const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id));
+  // Remove coupon
+  const handleRemoveCoupon = () => {
+    setCouponCode("");
+    setCouponResult(null);
   };
 
-  // Toplam Hesaplama
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const shipping = subtotal > 1500 ? 0 : 50; // 1500 TL üzeri kargo bedava
-  const total = subtotal + shipping;
+  // Calculate discount
+  const discountAmount = couponResult?.valid
+    ? couponResult.discountType === 'percentage'
+      ? Math.round(subtotal * (couponResult.discount / 100))
+      : couponResult.discount
+    : 0;
+
+  // Calculate totals
+  const shipping = subtotal > 1500 ? 0 : 50;
+  const total = subtotal - discountAmount + shipping;
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-amber-200">
       <Header />
 
       <main className="container mx-auto px-4 md:px-8 py-24 md:py-32">
-        <h1 className="text-3xl md:text-4xl font-serif font-bold mb-8">Alışveriş Sepetim ({cartItems.length})</h1>
+        <h1 className="text-3xl md:text-4xl font-serif font-bold mb-8">Alışveriş Sepetim ({itemCount})</h1>
 
-        {cartItems.length > 0 ? (
+        {items.length > 0 ? (
           <div className="flex flex-col lg:flex-row gap-12">
 
-            {/* --- SEPET LİSTESİ (SOL) --- */}
+            {/* --- SEPET ÜRÜNLER (SOL) --- */}
             <div className="flex-1 space-y-6">
-              <AnimatePresence mode='popLayout'>
-                {cartItems.map((item) => (
+              <AnimatePresence>
+                {items.map((item) => (
                   <motion.div
                     key={item.id}
                     layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    className="flex flex-col sm:flex-row gap-6 bg-white p-6 rounded-xl shadow-sm border border-stone-100"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
+                    className="bg-white rounded-xl p-5 shadow-sm border border-stone-100 flex gap-5 relative group"
                   >
-                    {/* Ürün Görseli */}
-                    <div className="relative w-full sm:w-32 aspect-[3/4] sm:aspect-square bg-stone-100 rounded-md overflow-hidden flex-shrink-0">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                      />
+                    {/* Ürün Resmi */}
+                    <div className="relative w-24 h-32 md:w-32 md:h-40 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100">
+                      <Image src={item.image} alt={item.name} fill className="object-cover" />
                     </div>
 
-                    {/* Ürün Bilgileri */}
+                    {/* Ürün Bilgisi */}
                     <div className="flex-1 flex flex-col justify-between">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-serif text-lg font-bold text-stone-900">{item.name}</h3>
-                          <p className="text-stone-500 text-sm mt-1">Renk: {item.color} | Beden: {item.size}</p>
-                        </div>
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-stone-400 hover:text-rose-500 transition-colors p-1"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                      <div>
+                        <h3 className="font-serif font-bold text-lg mb-1 pr-8">{item.name}</h3>
+                        {item.variant && (
+                          <p className="text-sm text-stone-500">Varyant: {item.variant}</p>
+                        )}
                       </div>
 
-                      <div className="flex justify-between items-end mt-4 sm:mt-0">
-                        {/* Miktar Arttır/Azalt */}
-                        <div className="flex items-center border border-stone-200 rounded-md">
+                      {/* Miktar & Fiyat */}
+                      <div className="flex items-center justify-between mt-4">
+                        {/* Miktar Seçici */}
+                        <div className="flex items-center border border-stone-200 rounded-full overflow-hidden shadow-sm">
                           <button
-                            onClick={() => updateQuantity(item.id, -1)}
-                            className="p-2 hover:bg-stone-50 text-stone-600 disabled:opacity-50"
-                            disabled={item.quantity <= 1}
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="p-2 hover:bg-stone-50 text-stone-600"
                           >
                             <Minus className="w-4 h-4" />
                           </button>
-                          <span className="w-10 text-center font-medium text-sm">{item.quantity}</span>
+                          <span className="w-10 text-center font-medium">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(item.id, 1)}
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             className="p-2 hover:bg-stone-50 text-stone-600"
                           >
                             <Plus className="w-4 h-4" />
@@ -138,6 +122,14 @@ export default function CartPage() {
                         <p className="font-medium text-lg">{formatPrice(item.price * item.quantity)}</p>
                       </div>
                     </div>
+
+                    {/* Silme Butonu */}
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="absolute top-4 right-4 p-2 text-stone-400 hover:text-rose-600 transition-colors rounded-full hover:bg-rose-50"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -153,6 +145,18 @@ export default function CartPage() {
                     <span>Ara Toplam</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
+
+                  {/* Discount Row */}
+                  {couponResult?.valid && (
+                    <div className="flex justify-between text-green-600">
+                      <span className="flex items-center gap-1">
+                        <Tag className="w-4 h-4" />
+                        İndirim ({couponCode})
+                      </span>
+                      <span>-{formatPrice(discountAmount)}</span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between text-stone-600">
                     <span>Kargo</span>
                     {shipping === 0 ? (
@@ -168,14 +172,53 @@ export default function CartPage() {
                 </div>
 
                 {/* İndirim Kodu Alanı */}
-                <div className="flex gap-2 mb-6">
-                  <Input placeholder="İndirim kodu" className="bg-stone-50 border-stone-200" />
-                  <Button variant="outline" className="border-stone-300 text-stone-600">Uygula</Button>
+                <div className="mb-6">
+                  {!couponResult?.valid ? (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="İndirim kodu"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        className="bg-stone-50 border-stone-200 uppercase"
+                        disabled={couponLoading}
+                      />
+                      <Button
+                        variant="outline"
+                        className="border-stone-300 text-stone-600 min-w-[80px]"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponCode.trim()}
+                      >
+                        {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Uygula'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+                      <span className="flex items-center gap-2 text-green-700 font-medium">
+                        <CheckCircle className="w-4 h-4" />
+                        {couponCode} uygulandı
+                      </span>
+                      <button
+                        onClick={handleRemoveCoupon}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        <XCircle className="w-5 h-5" />
+                      </button>
+                    </div>
+                  )}
+
+                  {couponResult && !couponResult.valid && (
+                    <p className="text-sm text-rose-500 mt-2 flex items-center gap-1">
+                      <XCircle className="w-4 h-4" />
+                      {couponResult.message}
+                    </p>
+                  )}
                 </div>
 
-                <Button className="w-full bg-stone-900 hover:bg-amber-600 text-white h-14 text-lg font-medium shadow-lg hover:shadow-xl transition-all mb-4">
-                  Ödemeye Geç
-                </Button>
+                <Link href="/odeme">
+                  <Button className="w-full bg-stone-900 hover:bg-amber-600 text-white h-14 text-lg font-medium shadow-lg hover:shadow-xl transition-all mb-4">
+                    Ödemeye Geç <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
 
                 <div className="flex items-center justify-center gap-2 text-stone-400 text-xs">
                   <ShieldCheck className="w-4 h-4" />

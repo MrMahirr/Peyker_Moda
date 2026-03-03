@@ -22,15 +22,16 @@ function App() {
         toastOptions={{
           style: {
             background: 'white',
-            border: '1px solid #e2e8f0', // slate-200
+            border: '1px solid #e2e8f0',
             borderRadius: '12px',
-            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', // shadow-xl
-            padding: '16px',
+            boxShadow: '0 4px 24px rgb(0 0 0 / 0.08)',
+            padding: '14px 16px',
+            fontFamily: "'Inter', system-ui, sans-serif",
           },
           classNames: {
-            title: 'text-slate-900 font-semibold text-sm',
-            description: 'text-slate-500 text-xs',
-            actionButton: 'bg-indigo-600 text-white font-medium text-xs py-2 px-4 rounded-lg',
+            title: 'text-slate-800 font-semibold text-sm',
+            description: 'text-slate-400 text-xs',
+            actionButton: 'bg-primary text-white font-medium text-xs py-2 px-4 rounded-lg',
             cancelButton: 'bg-slate-100 text-slate-600 font-medium text-xs py-2 px-4 rounded-lg',
             toast: 'font-sans'
           }

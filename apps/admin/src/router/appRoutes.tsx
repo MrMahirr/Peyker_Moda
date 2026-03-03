@@ -5,11 +5,14 @@ import { AdminLayout } from '@/components/layout/AdminLayout';
 import { StaffPage } from '@/features/staff/StaffPage';
 import { CatalogPage } from '@/features/catalog/CatalogPage';
 import { AddProductPage } from '@/features/catalog/AddProductPage';
+import { CategoryList } from '@/features/catalog/components/CategoryList';
 import { PosLayout } from '@/components/layout/PosLayout';
 import { PosPage } from '@/features/pos/PosPage';
 import { CRMPage } from '@/features/crm/CRMPage';
 import { CustomerDetail } from '@/features/crm/components/CustomerDetail';
 import { ReturnRequests } from '@/features/sales/returns/ReturnRequests';
+import { OrderList } from '@/features/sales/orders/OrderList';
+import { OrderDetail } from '@/features/sales/orders/OrderDetail';
 import { AccountingPage } from '@/features/accounting/AccountingPage';
 import { StoreSettings } from '@/features/settings/general/StoreSettings';
 import { ReceiptDesigner } from '@/features/settings/printer/ReceiptDesigner';
@@ -19,38 +22,33 @@ import { CampaignForm } from '@/features/marketing/campaigns/CampaignForm';
 import { PriceListManager } from '@/features/marketing/price-lists/PriceListManager';
 import { BulkMessageSender } from '@/features/marketing/messaging/BulkMessageSender';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
+import { InventoryPage } from '@/features/catalog/InventoryPage';
 
 export const AppRoutes = () => {
     return useRoutes([
-        // ...
-
         {
             path: '/auth',
             element: <AuthLayout />,
             children: [
-                {
-                    path: 'login',
-                    element: <LoginPage />,
-                },
+                { path: 'login', element: <LoginPage /> },
             ],
         },
         {
             path: '/',
             element: <AdminLayout />,
             children: [
+                { index: true, element: <DashboardPage /> },
+                { path: 'staff', element: <StaffPage /> },
+                { path: 'inventory', element: <InventoryPage /> },
+                { path: 'catalog', element: <CatalogPage /> },
+                { path: 'catalog/new', element: <AddProductPage /> },
+                { path: 'catalog/:id', element: <AddProductPage /> },
+                { path: 'catalog/categories', element: <CategoryList /> },
                 {
-                    index: true,
-                    element: <DashboardPage />,
-                },
-                {
-                    path: 'staff',
-                    element: <StaffPage />,
-                },
-                {
-                    path: 'catalog',
-                    element: <CatalogPage />,
+                    path: 'sales',
                     children: [
-                        { path: 'new', element: <AddProductPage /> }
+                        { path: 'orders', element: <OrderList /> },
+                        { path: 'orders/:id', element: <OrderDetail /> },
                     ]
                 },
                 {
@@ -60,14 +58,8 @@ export const AppRoutes = () => {
                         { path: ':id', element: <CustomerDetail /> }
                     ]
                 },
-                {
-                    path: 'returns',
-                    element: <ReturnRequests />
-                },
-                {
-                    path: 'accounting',
-                    element: <AccountingPage />
-                },
+                { path: 'returns', element: <ReturnRequests /> },
+                { path: 'accounting', element: <AccountingPage /> },
                 {
                     path: 'marketing',
                     children: [

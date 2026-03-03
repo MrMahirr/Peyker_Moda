@@ -1,0 +1,1 @@
+prisma/seed.ts(176,41): error TS2339: Property 'WEB' does not exist on type '{ POS: "POS"; ONLINE: "ONLINE"; PHONE: "PHONE"; }'.

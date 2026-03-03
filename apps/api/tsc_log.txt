@@ -1,0 +1,64 @@
+src/modules/auth/auth.module.ts(14,13): error TS2322: Type '(configService: ConfigService) => { secret: string | undefined; signOptions: { expiresIn: string | undefined; }; }' is not assignable to type '(...args: any[]) => JwtModuleOptions | Promise<JwtModuleOptions>'.
+  Type '{ secret: string | undefined; signOptions: { expiresIn: string | undefined; }; }' is not assignable to type 'JwtModuleOptions | Promise<JwtModuleOptions>'.
+    Type '{ secret: string | undefined; signOptions: { expiresIn: string | undefined; }; }' is not assignable to type 'JwtModuleOptions'.
+      The types of 'signOptions.expiresIn' are incompatible between these types.
+        Type 'string | undefined' is not assignable to type 'number | StringValue | undefined'.
+          Type 'string' is not assignable to type 'number | StringValue | undefined'.
+src/modules/auth/auth.service.ts(181,17): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(payload: string, options?: Omit<JwtSignOptions, keyof SignOptions> | undefined): string', gave the following error.
+    Object literal may only specify known properties, and 'expiresIn' does not exist in type 'Omit<JwtSignOptions, keyof SignOptions>'.
+  Overload 2 of 3, '(payload: Buffer<ArrayBufferLike>, options?: JwtSignOptions | undefined): string', gave the following error.
+    Type 'string' is not assignable to type 'number | StringValue | undefined'.
+  Overload 3 of 3, '(payload: any, options?: JwtSignOptions | undefined): string', gave the following error.
+    Type 'string' is not assignable to type 'number | StringValue | undefined'.
+src/modules/auth/strategies/jwt.strategy.ts(19,15): error TS2345: Argument of type '[{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }]' is not assignable to parameter of type '[opt: StrategyOptionsWithRequest] | [opt: StrategyOptionsWithoutRequest]'.
+  Type '[{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }]' is not assignable to type '[opt: StrategyOptionsWithoutRequest]'.
+    Type '{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }' is not assignable to type 'StrategyOptionsWithoutRequest'.
+      Type '{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }' is not assignable to type 'Omit<WithSecretOrKey, "secretOrKeyProvider"> & { passReqToCallback?: false | undefined; }'.
+        Type '{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }' is not assignable to type 'Omit<WithSecretOrKey, "secretOrKeyProvider">'.
+          Types of property 'secretOrKey' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string | Buffer<ArrayBufferLike>'.
+              Type 'undefined' is not assignable to type 'string | Buffer<ArrayBufferLike>'.
+src/modules/categories/categories.service.ts(99,25): error TS2353: Object literal may only specify known properties, and 'image' does not exist in type 'CategorySelect<DefaultArgs>'.
+src/modules/customers/customers.service.ts(169,17): error TS2322: Type '{ email: string; }' is not assignable to type 'CustomerWhereUniqueInput'.
+  Type '{ email: string; }' is not assignable to type '{ id: string; } & { id?: string | undefined; AND?: CustomerWhereInput | CustomerWhereInput[] | undefined; OR?: CustomerWhereInput[] | undefined; ... 19 more ...; heldSales?: HeldSaleListRelationFilter | undefined; }'.
+    Property 'id' is missing in type '{ email: string; }' but required in type '{ id: string; }'.
+src/modules/customers/customers.service.ts(180,17): error TS2322: Type '{ phone: string; }' is not assignable to type 'CustomerWhereUniqueInput'.
+  Type '{ phone: string; }' is not assignable to type '{ id: string; } & { id?: string | undefined; AND?: CustomerWhereInput | CustomerWhereInput[] | undefined; OR?: CustomerWhereInput[] | undefined; ... 19 more ...; heldSales?: HeldSaleListRelationFilter | undefined; }'.
+    Property 'id' is missing in type '{ phone: string; }' but required in type '{ id: string; }'.
+src/modules/customers/customers.service.ts(191,17): error TS2353: Object literal may only specify known properties, and 'birthDate' does not exist in type '(Without<CustomerCreateInput, CustomerUncheckedCreateInput> & CustomerUncheckedCreateInput) | (Without<...> & CustomerCreateInput)'.
+src/modules/customers/customers.service.ts(272,13): error TS2322: Type '{ phone: string; }' is not assignable to type 'CustomerWhereUniqueInput'.
+  Type '{ phone: string; }' is not assignable to type '{ id: string; } & { id?: string | undefined; AND?: CustomerWhereInput | CustomerWhereInput[] | undefined; OR?: CustomerWhereInput[] | undefined; ... 19 more ...; heldSales?: HeldSaleListRelationFilter | undefined; }'.
+    Property 'id' is missing in type '{ phone: string; }' but required in type '{ id: string; }'.
+src/modules/customers/dto/index.ts(13,10): error TS2305: Module '"@prisma/client"' has no exported member 'Gender'.
+src/modules/pos/pos.service.ts(45,29): error TS2345: Argument of type '{ variantId: string; quantity: number; unitPrice: number; discount: number; total: number; }' is not assignable to parameter of type 'never'.
+src/modules/products/products.service.ts(91,21): error TS2353: Object literal may only specify known properties, and 'images' does not exist in type 'ProductInclude<DefaultArgs>'.
+src/modules/products/products.service.ts(106,33): error TS2339: Property 'variants' does not exist on type '{ description: string | null; id: string; isActive: boolean; createdAt: Date; updatedAt: Date; name: string; slug: string; categoryId: string; sku: string; barcode: string | null; ... 6 more ...; viewCount: number; }'.
+src/modules/products/products.service.ts(107,27): error TS18047: 'product.images' is possibly 'null'.
+src/modules/products/products.service.ts(123,17): error TS2353: Object literal may only specify known properties, and 'images' does not exist in type 'ProductInclude<DefaultArgs>'.
+src/modules/products/products.service.ts(138,33): error TS2339: Property 'variants' does not exist on type '{ description: string | null; id: string; isActive: boolean; createdAt: Date; updatedAt: Date; name: string; slug: string; categoryId: string; sku: string; barcode: string | null; ... 6 more ...; viewCount: number; }'.
+src/modules/products/products.service.ts(151,17): error TS2353: Object literal may only specify known properties, and 'images' does not exist in type 'ProductInclude<DefaultArgs>'.
+src/modules/products/products.service.ts(163,29): error TS2353: Object literal may only specify known properties, and 'images' does not exist in type 'ProductInclude<DefaultArgs>'.
+src/modules/products/products.service.ts(171,32): error TS2551: Property 'product' does not exist on type '{ id: string; isActive: boolean; createdAt: Date; updatedAt: Date; sku: string; barcode: string | null; price: Decimal | null; stock: number; productId: string; size: string | null; color: string | null; }'. Did you mean 'productId'?
+src/modules/products/products.service.ts(199,17): error TS2353: Object literal may only specify known properties, and 'images' does not exist in type 'ProductInclude<DefaultArgs>'.
+src/modules/products/products.service.ts(210,22): error TS2339: Property 'price' does not exist on type '{ description: string | null; id: string; isActive: boolean; createdAt: Date; updatedAt: Date; name: string; slug: string; categoryId: string; sku: string; barcode: string | null; ... 6 more ...; viewCount: number; }'.
+src/modules/products/products.service.ts(211,20): error TS18047: 'p.images' is possibly 'null'.
+src/modules/products/products.service.ts(212,27): error TS2339: Property 'variants' does not exist on type '{ description: string | null; id: string; isActive: boolean; createdAt: Date; updatedAt: Date; name: string; slug: string; categoryId: string; sku: string; barcode: string | null; ... 6 more ...; viewCount: number; }'.
+src/modules/products/products.service.ts(252,13): error TS2322: Type '{ slug: string; name: string; description?: string; sku: string; barcode?: string; price: number; comparePrice?: number; cost?: number; categoryId: string; brand?: string; isFeatured?: boolean; }' is not assignable to type '(Without<ProductCreateInput, ProductUncheckedCreateInput> & ProductUncheckedCreateInput) | (Without<...> & ProductCreateInput)'.
+  Type '{ slug: string; name: string; description?: string; sku: string; barcode?: string; price: number; comparePrice?: number; cost?: number; categoryId: string; brand?: string; isFeatured?: boolean; }' is not assignable to type 'Without<ProductCreateInput, ProductUncheckedCreateInput> & ProductUncheckedCreateInput'.
+    Property 'basePrice' is missing in type '{ slug: string; name: string; description?: string; sku: string; barcode?: string; price: number; comparePrice?: number; cost?: number; categoryId: string; brand?: string; isFeatured?: boolean; }' but required in type 'ProductUncheckedCreateInput'.
+src/modules/storefront/storefront.service.ts(266,28): error TS2345: Argument of type '{ variantId: string; product: { id: string; name: string; slug: string; basePrice: Decimal; salePrice: Decimal | null; images: JsonValue; }; variant: { size: string | null; color: string | null; }; quantity: number; unitPrice: Decimal; total: number; }' is not assignable to parameter of type 'never'.
+src/modules/storefront/storefront.service.ts(287,17): error TS2322: Type '{ code: string; discountType: $Enums.DiscountType; discountValue: Decimal; }' is not assignable to type 'null'.
+src/modules/storefront/storefront.service.ts(340,13): error TS2322: Type '{ orderNumber: string; customerId: string; subtotal: number; discountAmount: number; shippingCost: number; totalAmount: number; couponCode: string | undefined; shippingAddress: any; notes: string | undefined; status: "PENDING"; paymentStatus: "PENDING"; items: { ...; }; }' is not assignable to type '(Without<OrderCreateInput, OrderUncheckedCreateInput> & OrderUncheckedCreateInput) | (Without<...> & OrderCreateInput)'.
+  Type '{ orderNumber: string; customerId: string; subtotal: number; discountAmount: number; shippingCost: number; totalAmount: number; couponCode: string | undefined; shippingAddress: any; notes: string | undefined; status: "PENDING"; paymentStatus: "PENDING"; items: { ...; }; }' is not assignable to type 'Without<OrderCreateInput, OrderUncheckedCreateInput> & OrderUncheckedCreateInput'.
+    Property 'userId' is missing in type '{ orderNumber: string; customerId: string; subtotal: number; discountAmount: number; shippingCost: number; totalAmount: number; couponCode: string | undefined; shippingAddress: any; notes: string | undefined; status: "PENDING"; paymentStatus: "PENDING"; items: { ...; }; }' but required in type 'OrderUncheckedCreateInput'.
+src/modules/storefront/storefront.service.ts(354,41): error TS2339: Property 'variantId' does not exist on type 'never'.
+src/modules/storefront/storefront.service.ts(355,40): error TS2339: Property 'quantity' does not exist on type 'never'.
+src/modules/storefront/storefront.service.ts(356,41): error TS2339: Property 'unitPrice' does not exist on type 'never'.
+src/modules/storefront/storefront.service.ts(357,37): error TS2339: Property 'total' does not exist on type 'never'.
+src/modules/transactions/transactions.service.ts(50,21): error TS2353: Object literal may only specify known properties, and 'order' does not exist in type 'TransactionInclude<DefaultArgs>'.
+src/modules/transactions/transactions.service.ts(71,17): error TS2353: Object literal may only specify known properties, and 'order' does not exist in type 'TransactionInclude<DefaultArgs>'.
+src/modules/transactions/transactions.service.ts(138,29): error TS2365: Operator '+' cannot be applied to types 'number | Decimal' and 'number'.
+src/modules/transactions/transactions.service.ts(156,38): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/modules/variants/variants.service.ts(206,29): error TS2353: Object literal may only specify known properties, and 'colorCode' does not exist in type 'Without<VariantCreateInput, VariantUncheckedCreateInput> & VariantUncheckedCreateInput'.
+src/modules/variants/variants.service.ts(210,35): error TS2345: Argument of type '{ id: string; isActive: boolean; createdAt: Date; updatedAt: Date; sku: string; barcode: string | null; price: Decimal | null; stock: number; productId: string; size: string | null; color: string | null; }' is not assignable to parameter of type 'never'.

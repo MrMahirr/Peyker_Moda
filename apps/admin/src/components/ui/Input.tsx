@@ -2,34 +2,47 @@ import React from 'react';
 import { cn } from '../../lib/utils';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-    label?: string;
-    error?: string;
+  label?: string;
+  error?: string;
+  icon?: React.ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-    ({ className, type, label, error, ...props }, ref) => {
-        return (
-            <div className="w-full space-y-2">
-                {label && (
-                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-700">
-                        {label}
-                    </label>
-                )}
-                <input
-                    type={type}
-                    className={cn(
-                        "flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50",
-                        error && "border-red-500 focus-visible:ring-red-500",
-                        className
-                    )}
-                    ref={ref}
-                    {...props}
-                />
-                {error && (
-                    <p className="text-xs text-red-500">{error}</p>
-                )}
+  ({ label, error, icon, className, id, ...props }, ref) => {
+    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+
+    return (
+      <div className="space-y-1.5">
+        {label && (
+          <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
+            {label}
+          </label>
+        )}
+        <div className="relative">
+          {icon && (
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              {icon}
             </div>
-        );
-    }
+          )}
+          <input
+            ref={ref}
+            id={inputId}
+            className={cn(
+              "w-full h-10 rounded-lg border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400",
+              "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all",
+              icon ? "pl-10 pr-4" : "px-4",
+              error && "border-red-300 focus:ring-red-200 focus:border-red-400",
+              className
+            )}
+            {...props}
+          />
+        </div>
+        {error && (
+          <p className="text-xs text-red-500 mt-1">{error}</p>
+        )}
+      </div>
+    );
+  }
 );
-Input.displayName = "Input";
+
+Input.displayName = 'Input';

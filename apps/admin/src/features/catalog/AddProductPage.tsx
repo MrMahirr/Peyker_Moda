@@ -5,11 +5,12 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { BasicInfo } from './components/ProductForm/BasicInfo';
 import { VariantMatrix } from './components/ProductForm/VariantMatrix';
-import { ChevronLeft, Save } from 'lucide-react';
+import { ChevronLeft, Save, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { Card } from '@/components/ui/Card';
+import { productsService } from './services/products.service';
 
 // Validation Schema
 const productSchema = z.object({
@@ -46,6 +47,8 @@ const STEPS = [
 export const AddProductPage = () => {
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const form = useForm<ProductFormData>({
         resolver: zodResolver(productSchema),
@@ -67,10 +70,26 @@ export const AddProductPage = () => {
     const { handleSubmit, watch, trigger, setValue } = form;
     const hasVariants = watch('hasVariants');
 
-    const onSubmit: SubmitHandler<ProductFormData> = (data) => {
-        console.log('Form Submit:', data);
-        // TODO: Send to API
-        navigate('/catalog');
+    const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
+        setIsSubmitting(true);
+        setSubmitError(null);
+        try {
+            await productsService.create({
+                name: data.name,
+                sku: data.sku,
+                description: data.description,
+                basePrice: data.price,
+                categoryId: data.category,
+                isActive: true,
+                images: data.images,
+            });
+            navigate('/catalog');
+        } catch (err: any) {
+            setSubmitError(err.response?.data?.message || 'Ürün kaydedilemedi');
+            console.error('Product create error:', err);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const nextStep = async () => {

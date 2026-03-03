@@ -1,0 +1,98 @@
+import {
+    Controller,
+    Get,
+    Post,
+    Delete,
+    Body,
+    Param,
+    UseGuards,
+} from '@nestjs/common';
+import {
+    ApiTags,
+    ApiOperation,
+    ApiResponse,
+    ApiBearerAuth,
+} from '@nestjs/swagger';
+import { PosService } from './pos.service';
+import { PosSaleDto, HoldSaleDto, OpenSessionDto, CloseSessionDto } from './dto';
+import { JwtAuthGuard, RolesGuard } from '../../common/guards';
+import { Roles, CurrentUser } from '../../common/decorators';
+import { UserRole } from '@prisma/client';
+
+@ApiTags('POS')
+@Controller('pos')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth('JWT-auth')
+export class PosController {
+    constructor(private readonly posService: PosService) { }
+
+    @Post('sale')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'POS Satış işlemi' })
+    @ApiResponse({ status: 201, description: 'Satış tamamlandı' })
+    async processSale(
+        @Body() saleDto: PosSaleDto,
+        @CurrentUser('id') userId: string,
+    ) {
+        return this.posService.processSale(saleDto, userId);
+    }
+
+    @Post('hold')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'Satışı beklet' })
+    async holdSale(
+        @Body() holdDto: HoldSaleDto,
+        @CurrentUser('id') userId: string,
+    ) {
+        return this.posService.holdSale(holdDto, userId);
+    }
+
+    @Get('queue')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'Bekleyen satışlar' })
+    async getHeldSales(@CurrentUser('id') userId: string) {
+        return this.posService.getHeldSales();
+    }
+
+    @Get('queue/:id')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'Bekleyen satış detayı' })
+    async getHeldSale(@Param('id') id: string) {
+        return this.posService.getHeldSale(id);
+    }
+
+    @Delete('queue/:id')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'Bekleyen satışı iptal et' })
+    async cancelHeldSale(@Param('id') id: string) {
+        return this.posService.cancelHeldSale(id);
+    }
+
+    @Post('sessions/open')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'Kasa oturumu aç' })
+    async openSession(
+        @Body() openDto: OpenSessionDto,
+        @CurrentUser('id') userId: string,
+    ) {
+        return this.posService.openSession(openDto, userId);
+    }
+
+    @Post('sessions/:id/close')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'Kasa oturumu kapat' })
+    async closeSession(
+        @Param('id') id: string,
+        @Body() closeDto: CloseSessionDto,
+        @CurrentUser('id') userId: string,
+    ) {
+        return this.posService.closeSession(id, closeDto, userId);
+    }
+
+    @Get('sessions/:id/report')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'Oturum raporu' })
+    async getSessionReport(@Param('id') id: string) {
+        return this.posService.getSessionReport(id);
+    }
+}

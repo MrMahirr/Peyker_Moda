@@ -1,75 +1,60 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
-import { Plus, Edit, Trash, Eye } from 'lucide-react';
+import { Plus, Edit, Trash, Eye, Loader2 } from 'lucide-react';
+import { productsService, Product } from '../services/products.service';
 
-export type Product = {
-    id: string;
-    name: string;
-    sku: string;
-    category: string;
-    price: number;
-    stock: number;
-    status: 'Published' | 'Draft' | 'Out of Stock';
-    image: string;
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
 };
-
-const mockProducts: Product[] = [
-    {
-        id: '1',
-        name: 'Yazlık Çiçekli Elbise',
-        sku: 'ELB-2024-001',
-        category: 'Elbise',
-        price: 899.90,
-        stock: 150,
-        status: 'Published',
-        image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=100&h=100&fit=crop',
-    },
-    {
-        id: '2',
-        name: 'Kot Ceket - Vintage',
-        sku: 'CKT-2024-055',
-        category: 'Dış Giyim',
-        price: 1250.00,
-        stock: 45,
-        status: 'Published',
-        image: 'https://images.unsplash.com/photo-1551537482-f20963253ecb?w=100&h=100&fit=crop',
-    },
-    {
-        id: '3',
-        name: 'Basic Beyaz Tişört',
-        sku: 'TSH-2024-102',
-        category: 'Üst Giyim',
-        price: 299.90,
-        stock: 0,
-        status: 'Out of Stock',
-        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=100&h=100&fit=crop',
-    },
-    {
-        id: '4',
-        name: 'Kumaş Pantolon - Siyah',
-        sku: 'PNT-2024-301',
-        category: 'Alt Giyim',
-        price: 599.90,
-        stock: 80,
-        status: 'Draft',
-        image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=100&h=100&fit=crop',
-    }
-];
 
 export const ProductList = () => {
     const navigate = useNavigate();
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await productsService.getAll({ limit: 50 });
+                setProducts(response.data || []);
+            } catch (err) {
+                setError('Ürünler yüklenemedi');
+                console.error('Products fetch error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
+    const handleDelete = async (id: string) => {
+        if (confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
+            try {
+                await productsService.delete(id);
+                setProducts(products.filter(p => p.id !== id));
+            } catch (err) {
+                console.error('Delete error:', err);
+            }
+        }
+    };
 
     const columns: ColumnDef<Product>[] = [
         {
-            accessorKey: 'image',
+            accessorKey: 'images',
             header: 'Görsel',
-            cell: ({ row }) => (
-                <div className="h-12 w-12 rounded-md overflow-hidden bg-slate-100 border border-slate-200">
-                    <img src={row.getValue('image')} alt={row.getValue('name')} className="h-full w-full object-cover" />
-                </div>
-            )
+            cell: ({ row }) => {
+                const images = row.getValue('images') as string[] | undefined;
+                const imageUrl = images?.[0] || 'https://via.placeholder.com/100';
+                return (
+                    <div className="h-12 w-12 rounded-md overflow-hidden bg-slate-100 border border-slate-200">
+                        <img src={imageUrl} alt={row.original.name} className="h-full w-full object-cover" />
+                    </div>
+                );
+            }
         },
         {
             accessorKey: 'name',
@@ -84,57 +69,74 @@ export const ProductList = () => {
         {
             accessorKey: 'category',
             header: 'Kategori',
+            cell: ({ row }) => row.original.category?.name || '-',
         },
         {
-            accessorKey: 'price',
+            accessorKey: 'basePrice',
             header: 'Fiyat',
             cell: ({ row }) => {
-                const price = parseFloat(row.getValue('price'));
-                return <div className="font-medium">{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(price)}</div>;
+                const basePrice = row.original.basePrice;
+                const salePrice = row.original.salePrice;
+                return (
+                    <div>
+                        <div className="font-medium">{formatCurrency(salePrice || basePrice)}</div>
+                        {salePrice && <div className="text-xs text-slate-400 line-through">{formatCurrency(basePrice)}</div>}
+                    </div>
+                );
             }
         },
         {
-            accessorKey: 'stock',
+            accessorKey: 'totalStock',
             header: 'Stok',
             cell: ({ row }) => {
-                const stock = row.getValue('stock') as number;
+                const stock = row.original.totalStock || 0;
                 return (
                     <div className={stock < 10 ? 'text-red-600 font-medium' : 'text-slate-700'}>
                         {stock} adet
                     </div>
-                )
+                );
             }
         },
         {
-            accessorKey: 'status',
+            accessorKey: 'isActive',
             header: 'Durum',
             cell: ({ row }) => {
-                const status = row.getValue('status') as string;
-                let colorClass = 'bg-slate-100 text-slate-800';
-
-                if (status === 'Published') colorClass = 'bg-emerald-100 text-emerald-800';
-                if (status === 'Out of Stock') colorClass = 'bg-red-100 text-red-800';
-                if (status === 'Draft') colorClass = 'bg-amber-100 text-amber-800';
-
+                const isActive = row.original.isActive;
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}>
-                        {status === 'Published' ? 'Yayında' : status === 'Out of Stock' ? 'Tükendi' : 'Taslak'}
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-800'
+                        }`}>
+                        {isActive ? 'Yayında' : 'Taslak'}
                     </span>
                 );
             },
         },
         {
             id: 'actions',
-            cell: () => {
+            cell: ({ row }) => {
                 return (
                     <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-indigo-600">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:text-indigo-600"
+                            onClick={() => navigate(`/catalog/${row.original.id}`)}
+                        >
                             <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-orange-600">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:text-orange-600"
+                            onClick={() => navigate(`/catalog/${row.original.id}/edit`)}
+                        >
                             <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDelete(row.original.id)}
+                        >
                             <Trash className="h-4 w-4" />
                         </Button>
                     </div>
@@ -142,6 +144,22 @@ export const ProductList = () => {
             },
         },
     ];
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="text-center py-12 text-red-600">
+                {error}
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -161,7 +179,7 @@ export const ProductList = () => {
 
             <DataGrid
                 columns={columns}
-                data={mockProducts}
+                data={products}
                 searchKey="name"
             />
         </div>

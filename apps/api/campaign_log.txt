@@ -1,0 +1,42 @@
+🧪 Starting Campaigns & Coupons Verification...
+
+1. Logging in...
+✅ Login Successful
+
+2. Creating Campaign...
+❌ Campaign Creation Failed: {
+  success: false,
+  statusCode: 400,
+  error: 'Bad Request',
+  message: [ 'property isActive should not exist' ],
+  timestamp: '2026-02-06T22:07:28.820Z',
+  path: '/api/campaigns'
+}
+
+3. Listing Campaigns...
+✅ Found 0 campaigns
+
+4. Creating Coupon...
+❌ Coupon Creation Failed: {
+  success: false,
+  statusCode: 400,
+  error: 'Bad Request',
+  message: [
+    'property isActive should not exist',
+    'discountType must be one of the following values: PERCENTAGE, FIXED_AMOUNT'
+  ],
+  timestamp: '2026-02-06T22:07:28.836Z',
+  path: '/api/coupons'
+}
+
+5. Validating Coupon...
+❌ Coupon Validation Failed: {
+  success: false,
+  statusCode: 404,
+  error: 'Not Found',
+  message: [ 'Kupon bulunamadı' ],
+  timestamp: '2026-02-06T22:07:28.845Z',
+  path: '/api/coupons/validate'
+}
+
+🏁 Verification Complete.

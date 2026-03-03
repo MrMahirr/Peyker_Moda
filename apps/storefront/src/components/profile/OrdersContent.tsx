@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Package, Truck, CheckCircle, Clock, ChevronRight,
-  RefreshCcw, MapPin, CreditCard, Search, Filter, Box
+  Package, Truck, CheckCircle, ChevronRight,
+  MapPin, CreditCard, Search, Box, Loader2
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,10 +13,11 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { formatPrice } from "@/lib/utils";
+import { storeApi, Order as ApiOrder } from "@/lib/api";
 
-// --- TİPLER & MOCK VERİ ---
+// --- TİPLER ---
 
-type OrderStatus = 'processing' | 'shipped' | 'delivered' | 'cancelled';
+type OrderStatus = 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'pending';
 
 interface OrderItem {
   id: number;
@@ -31,60 +32,82 @@ interface OrderItem {
 interface Order {
   id: string;
   date: string;
-  status: string; // Ekranda görünen isim
-  statusCode: OrderStatus; // Mantıksal kod
-  stepIndex: number; // 0: Onay, 1: Hazırlık, 2: Kargo, 3: Teslim
+  status: string;
+  statusCode: OrderStatus;
+  stepIndex: number;
   total: number;
   address: string;
   paymentMethod: string;
+  cargoTrackingCode?: string;
+  cargoProvider?: string;
   cargoLink?: string;
   items: OrderItem[];
 }
 
-const orders: Order[] = [
-  {
-    id: "SIP-248192",
-    date: "28 Kasım 2025 - 14:30",
-    status: "Kargoya Verildi",
-    statusCode: "shipped",
-    stepIndex: 2,
-    total: 3450,
-    address: "Etiler Mah. Nispetiye Cad. No:12 Beşiktaş/İstanbul",
-    paymentMethod: "**** 4589 ile ödendi",
-    cargoLink: "#",
-    items: [
-      { id: 1, name: "Oversize Kaşe Kaban", image: "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=200&auto=format&fit=crop", price: 2800, quantity: 1, size: "M", color: "Camel" },
-      { id: 2, name: "Yünlü Triko Bere", image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=200&auto=format&fit=crop", price: 650, quantity: 1, size: "Std", color: "Bej" }
-    ]
-  },
-  {
-    id: "SIP-247855",
-    date: "02 Kasım 2025",
-    status: "Hazırlanıyor",
-    statusCode: "processing",
-    stepIndex: 1,
-    total: 8900,
-    address: "Çankaya Mah. Atatürk Bulvarı No:5 Ankara",
-    paymentMethod: "**** 1234 ile ödendi",
-    items: [
-      { id: 3, name: "İpek Saten Elbise", image: "https://images.unsplash.com/photo-1612336307429-8a898d10e223?q=80&w=200&auto=format&fit=crop", price: 3400, quantity: 1, size: "S", color: "Siyah" },
-      { id: 4, name: "Süet Çizme", image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?q=80&w=200&auto=format&fit=crop", price: 5500, quantity: 1, size: "38", color: "Taba" }
-    ]
-  },
-  {
-    id: "SIP-248110",
-    date: "15 Ekim 2025",
-    status: "Teslim Edildi",
-    statusCode: "delivered",
-    stepIndex: 3,
-    total: 1250,
-    address: "Etiler Mah. Nispetiye Cad. No:12 Beşiktaş/İstanbul",
-    paymentMethod: "Kapıda Ödeme",
-    items: [
-      { id: 5, name: "Deri Görünümlü Pantolon", image: "https://images.unsplash.com/photo-1551163943-3f6a29e3945d?q=80&w=200&auto=format&fit=crop", price: 1250, quantity: 1, size: "36", color: "Siyah" }
-    ]
-  },
-];
+// --- YARDIMCI FONKSİYONLAR ---
+
+const getStatusCode = (status: string): OrderStatus => {
+  const statusMap: Record<string, OrderStatus> = {
+    'PENDING': 'pending',
+    'PROCESSING': 'processing',
+    'SHIPPED': 'shipped',
+    'DELIVERED': 'delivered',
+    'CANCELLED': 'cancelled',
+  };
+  return statusMap[status] || 'pending';
+};
+
+const getStepIndex = (status: string): number => {
+  const stepMap: Record<string, number> = {
+    'PENDING': 0,
+    'PROCESSING': 1,
+    'SHIPPED': 2,
+    'DELIVERED': 3,
+    'CANCELLED': -1,
+  };
+  return stepMap[status] ?? 0;
+};
+
+const getStatusLabel = (status: string): string => {
+  const labelMap: Record<string, string> = {
+    'PENDING': 'Sipariş Alındı',
+    'PROCESSING': 'Hazırlanıyor',
+    'SHIPPED': 'Kargoya Verildi',
+    'DELIVERED': 'Teslim Edildi',
+    'CANCELLED': 'İptal Edildi',
+  };
+  return labelMap[status] || status;
+};
+
+const transformOrder = (apiOrder: ApiOrder): Order => {
+  return {
+    id: apiOrder.orderNumber || `SIP-${apiOrder.id.slice(0, 6)}`,
+    date: new Date(apiOrder.createdAt).toLocaleDateString('tr-TR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    status: getStatusLabel(apiOrder.status),
+    statusCode: getStatusCode(apiOrder.status),
+    stepIndex: getStepIndex(apiOrder.status),
+    total: apiOrder.total,
+    address: apiOrder.shippingAddress || 'Adres bilgisi mevcut değil',
+    paymentMethod: apiOrder.paymentMethod || 'Belirtilmedi',
+    cargoTrackingCode: apiOrder.cargoTrackingCode,
+    cargoProvider: apiOrder.cargoProvider,
+    items: apiOrder.items?.map((item: any, idx: number) => ({
+      id: idx,
+      name: item.productName || item.variant?.product?.name || 'Ürün',
+      image: item.variant?.product?.images?.[0] || 'https://via.placeholder.com/200',
+      price: item.unitPrice || 0,
+      quantity: item.quantity || 1,
+      size: item.variant?.size || '-',
+      color: item.variant?.color || '-',
+    })) || []
+  };
+};
 
 // --- YARDIMCI BİLEŞENLER ---
 
@@ -95,14 +118,12 @@ const StatusStepper = ({ currentStep, status }: { currentStep: number, status: O
 
   return (
     <div className="relative w-full py-4 hidden sm:block">
-      {/* Çizgi */}
       <div className="absolute top-1/2 left-0 w-full h-1 bg-stone-100 -translate-y-1/2 rounded-full" />
       <div
         className="absolute top-1/2 left-0 h-1 bg-stone-900 -translate-y-1/2 rounded-full transition-all duration-500"
         style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
       />
 
-      {/* Noktalar */}
       <div className="relative flex justify-between">
         {steps.map((step, idx) => {
           const isCompleted = idx <= currentStep;
@@ -142,10 +163,6 @@ const OrderCard = ({ order }: { order: Order }) => {
             <span className="text-stone-400 text-xs block mb-0.5">Sipariş Özeti</span>
             <span className="font-medium text-stone-700">{order.items.length} Ürün | {formatPrice(order.total)}</span>
           </div>
-          <div>
-            <span className="text-stone-400 text-xs block mb-0.5">Alıcı</span>
-            <span className="font-medium text-stone-700">Peyker Yılmaz</span>
-          </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-stone-400 tracking-wider">#{order.id}</span>
@@ -155,8 +172,6 @@ const OrderCard = ({ order }: { order: Order }) => {
 
       {/* BODY */}
       <div className="p-6">
-
-        {/* Status Bar */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4 sm:hidden">
             <Badge className="bg-stone-900">{order.status}</Badge>
@@ -164,7 +179,6 @@ const OrderCard = ({ order }: { order: Order }) => {
           <StatusStepper currentStep={order.stepIndex} status={order.statusCode} />
         </div>
 
-        {/* Product List */}
         <div className="space-y-6">
           {order.items.map((item) => (
             <div key={item.id} className="flex gap-4 items-start">
@@ -187,7 +201,6 @@ const OrderCard = ({ order }: { order: Order }) => {
 
         <Separator className="my-6" />
 
-        {/* Footer Info & Actions */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex gap-8 text-sm text-stone-500">
             <div className="flex items-start gap-2 max-w-[200px]">
@@ -216,7 +229,6 @@ const OrderCard = ({ order }: { order: Order }) => {
             )}
           </div>
         </div>
-
       </div>
     </motion.div>
   );
@@ -225,12 +237,37 @@ const OrderCard = ({ order }: { order: Order }) => {
 // --- ANA BİLEŞEN ---
 
 export default function OrdersContent() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const apiOrders = await storeApi.getOrders();
+      setOrders(apiOrders.map(transformOrder));
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredOrders = orders.filter(order =>
     order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.items.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -259,7 +296,6 @@ export default function OrdersContent() {
         </TabsList>
 
         <AnimatePresence mode='wait'>
-          {/* TÜM SİPARİŞLER */}
           <TabsContent value="all" className="mt-0">
             {filteredOrders.length > 0 ? (
               filteredOrders.map(order => <OrderCard key={order.id} order={order} />)
@@ -268,14 +304,12 @@ export default function OrdersContent() {
             )}
           </TabsContent>
 
-          {/* AKTİF SİPARİŞLER (Hazırlanıyor veya Kargoda) */}
           <TabsContent value="active" className="mt-0">
-            {filteredOrders.filter(o => ['processing', 'shipped'].includes(o.statusCode)).map(order => (
+            {filteredOrders.filter(o => ['processing', 'shipped', 'pending'].includes(o.statusCode)).map(order => (
               <OrderCard key={order.id} order={order} />
             ))}
           </TabsContent>
 
-          {/* TAMAMLANAN SİPARİŞLER (Teslim veya İptal) */}
           <TabsContent value="completed" className="mt-0">
             {filteredOrders.filter(o => ['delivered', 'cancelled'].includes(o.statusCode)).map(order => (
               <OrderCard key={order.id} order={order} />
@@ -291,6 +325,6 @@ const EmptyState = () => (
   <div className="text-center py-20 bg-stone-50 rounded-xl border border-stone-100 border-dashed">
     <Box className="w-12 h-12 text-stone-300 mx-auto mb-3" />
     <h3 className="text-lg font-medium text-stone-900">Sipariş Bulunamadı</h3>
-    <p className="text-stone-500 text-sm">Aradığınız kriterlere uygun bir sipariş kaydı yok.</p>
+    <p className="text-stone-500 text-sm">Henüz sipariş kaydınız bulunmuyor.</p>
   </div>
 );

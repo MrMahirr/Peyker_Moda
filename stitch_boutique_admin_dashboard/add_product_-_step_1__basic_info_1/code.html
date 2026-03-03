@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Product - Step 1: Basic Info</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#cf47eb",
+                        "background-light": "#f8f6f8",
+                        "background-dark": "#1e1121",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 border-r border-[#e4dce5] dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col justify-between py-6">
+<div class="flex flex-col gap-8">
+<div class="px-6 flex items-center gap-3">
+<div class="bg-primary/20 rounded-lg p-2">
+<span class="material-symbols-outlined text-primary">storefront</span>
+</div>
+<div>
+<h1 class="text-[#171118] dark:text-white text-base font-bold leading-none">Boutique Admin</h1>
+<p class="text-[#826388] text-xs font-normal mt-1">Management Suite</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1 px-3">
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#826388] dark:text-zinc-400 hover:bg-background-light dark:hover:bg-zinc-900 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#826388] dark:text-zinc-400 hover:bg-background-light dark:hover:bg-zinc-900 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-sm font-medium">Sales</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">inventory_2</span>
+<span class="text-sm font-semibold">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#826388] dark:text-zinc-400 hover:bg-background-light dark:hover:bg-zinc-900 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Customers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#826388] dark:text-zinc-400 hover:bg-background-light dark:hover:bg-zinc-900 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+</div>
+<div class="px-6">
+<div class="flex items-center gap-3 pt-6 border-t border-[#e4dce5] dark:border-zinc-800">
+<div class="w-10 h-10 rounded-full bg-center bg-cover" data-alt="Female administrator portrait" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDQy_x4PK_WOwo8FN99iVngKYoPkGk5mWhNh9jFUN38CyPhBxH3tZD_qMze7Hvj0HlIuzwaos2vG0Q0IHoQ67SZY3Y6izpD2d-NHKbXJpVkvakc68p6iZlcDSevJA9AHJcfA2kE-S4lN0lDfFhZ54g6s9Jp6VY675X1Z5htI_UvJXWs5p172UPjm7Onw09KRx08RsT1anTrhp9VK3zIu5PPcsxoRcnMdfzzkBKxGo58RimrhnaFdpVvU08KbIbcj-349bYbqf40G_w')"></div>
+<div>
+<p class="text-sm font-bold text-[#171118] dark:text-white">Sarah Miller</p>
+<p class="text-xs text-[#826388]">Owner</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto">
+<!-- Header -->
+<header class="sticky top-0 z-10 flex items-center justify-between px-10 py-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-[#f4f0f4] dark:border-zinc-800">
+<div class="flex items-center gap-2">
+<span class="text-sm font-medium text-[#826388]">Inventory</span>
+<span class="material-symbols-outlined text-sm text-[#826388]">chevron_right</span>
+<span class="text-sm font-bold text-[#171118] dark:text-white">Add New Product</span>
+</div>
+<div class="flex items-center gap-4">
+<label class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-[#826388]">search</span>
+<input class="pl-10 pr-4 py-2 bg-[#f4f0f4] dark:bg-zinc-900 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/50 w-64" placeholder="Search orders, products..." type="text"/>
+</label>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-background-light dark:hover:bg-zinc-900 transition-colors">
+<span class="material-symbols-outlined text-[#171118] dark:text-white">notifications</span>
+</button>
+</div>
+</header>
+<div class="max-w-4xl mx-auto py-10 px-6">
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between items-end gap-3 mb-8">
+<div class="flex flex-col gap-1">
+<h2 class="text-[#171118] dark:text-white text-4xl font-black leading-tight tracking-tight">Add New Product</h2>
+<p class="text-[#826388] text-base font-normal">Fill in the basic information to list your new item.</p>
+</div>
+<button class="flex items-center justify-center rounded-xl h-11 px-6 bg-[#f4f0f4] dark:bg-zinc-900 text-[#171118] dark:text-white text-sm font-bold transition-all hover:bg-zinc-200 dark:hover:bg-zinc-800">
+<span class="truncate">Save Draft</span>
+</button>
+</div>
+<!-- Progress Bar -->
+<div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-[#e4dce5] dark:border-zinc-800 mb-8 shadow-sm">
+<div class="flex flex-col gap-4">
+<div class="flex gap-6 justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">1</span>
+<p class="text-[#171118] dark:text-white text-base font-semibold leading-normal">Basic Info</p>
+</div>
+<p class="text-primary text-sm font-bold leading-normal">33% Complete</p>
+</div>
+<div class="rounded-full bg-[#f4f0f4] dark:bg-zinc-800 overflow-hidden h-2.5">
+<div class="h-full rounded-full bg-primary" style="width: 33%;"></div>
+</div>
+<div class="flex justify-between">
+<p class="text-[#826388] text-xs font-medium">In Progress: General Information</p>
+<p class="text-[#826388] text-xs font-medium">Next: Pricing &amp; Inventory</p>
+</div>
+</div>
+</div>
+<!-- Form Card -->
+<div class="bg-white dark:bg-zinc-900 rounded-2xl border border-[#e4dce5] dark:border-zinc-800 shadow-sm overflow-hidden">
+<div class="p-8">
+<h3 class="text-[#171118] dark:text-white tracking-tight text-xl font-bold mb-6">Product Details</h3>
+<div class="space-y-6">
+<!-- Product Name -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#171118] dark:text-zinc-300 flex items-center gap-1">
+                                    Product Name <span class="text-primary">*</span>
+</label>
+<input class="w-full px-4 py-3.5 rounded-xl border-[#e4dce5] dark:border-zinc-800 dark:bg-zinc-950 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-base text-[#171118] dark:text-white placeholder:text-[#826388]" placeholder="e.g., Silk Floral Midi Dress" type="text"/>
+</div>
+<!-- Category & Subcategory -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#171118] dark:text-zinc-300">Category</label>
+<div class="relative">
+<select class="w-full appearance-none px-4 py-3.5 rounded-xl border-[#e4dce5] dark:border-zinc-800 dark:bg-zinc-950 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-base text-[#171118] dark:text-white">
+<option>Dresses</option>
+<option>Tops</option>
+<option>Bottoms</option>
+<option>Outerwear</option>
+<option>Accessories</option>
+</select>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#171118] dark:text-zinc-300">Collection</label>
+<select class="w-full appearance-none px-4 py-3.5 rounded-xl border-[#e4dce5] dark:border-zinc-800 dark:bg-zinc-950 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-base text-[#171118] dark:text-white">
+<option>Spring/Summer 2024</option>
+<option>Essentials</option>
+<option>Limited Edition</option>
+</select>
+</div>
+</div>
+<!-- Description -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#171118] dark:text-zinc-300">Description</label>
+<textarea class="w-full px-4 py-3.5 rounded-xl border-[#e4dce5] dark:border-zinc-800 dark:bg-zinc-950 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-base text-[#171118] dark:text-white placeholder:text-[#826388]" placeholder="Describe the fit, material, and style details. Make it enticing for your customers!" rows="6"></textarea>
+<p class="text-xs text-[#826388] mt-1">Tip: Mention if the item runs true to size.</p>
+</div>
+<!-- Tags -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#171118] dark:text-zinc-300">Tags</label>
+<div class="flex flex-wrap gap-2 mb-2">
+<span class="bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                        Floral <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<span class="bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                        Summer <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<span class="bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                        Silk <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+</div>
+<input class="w-full px-4 py-3 rounded-xl border-[#e4dce5] dark:border-zinc-800 dark:bg-zinc-950 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm text-[#171118] dark:text-white" placeholder="Add a tag..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Form Footer -->
+<div class="px-8 py-6 bg-background-light dark:bg-zinc-800/50 border-t border-[#e4dce5] dark:border-zinc-800 flex justify-end gap-4">
+<button class="px-6 py-3 text-sm font-bold text-[#826388] hover:text-[#171118] dark:hover:text-white transition-colors">
+                            Cancel
+                        </button>
+<button class="flex items-center gap-2 bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all transform hover:translate-y-[-1px]">
+<span>Continue to Pricing</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

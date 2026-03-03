@@ -1,52 +1,108 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Search, Plus, Download, Eye } from 'lucide-react';
+import { Search, Plus, Download, Eye, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { invoicesService, Invoice, downloadInvoicePdf } from '../services/invoices.service';
 
-const MOCK_INVOICES = [
-    { id: 'FAT-2024-001', date: '2024-01-22', recipient: 'Ayşe Yılmaz', taxId: '1234567890', amount: 15400.50, status: 'Ödendi' },
-    { id: 'FAT-2024-002', date: '2024-01-21', recipient: 'Mehmet Demir', taxId: '9876543210', amount: 2350.00, status: 'Bekliyor' },
-    { id: 'FAT-2024-003', date: '2024-01-20', recipient: 'Öz-İplik Ltd. Şti.', taxId: '5554443322', amount: 12500.00, status: 'Ödendi' },
-];
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
+};
+
+const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('tr-TR');
+};
+
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+    DRAFT: { label: 'Taslak', color: 'bg-slate-100 text-slate-700' },
+    ISSUED: { label: 'Kesildi', color: 'bg-blue-100 text-blue-700' },
+    PAID: { label: 'Ödendi', color: 'bg-green-100 text-green-800' },
+    CANCELLED: { label: 'İptal', color: 'bg-red-100 text-red-700' },
+};
 
 export const InvoiceList = () => {
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [downloading, setDownloading] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchInvoices();
+    }, []);
+
+    const fetchInvoices = async () => {
+        try {
+            const data = await invoicesService.getAll({ limit: 50 });
+            setInvoices(data || []);
+        } catch (err) {
+            console.error('Invoices fetch error:', err);
+            toast.error('Faturalar yüklenemedi');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDownload = async (invoice: Invoice) => {
+        setDownloading(invoice.id);
+        try {
+            await downloadInvoicePdf(invoice.id, invoice.invoiceNumber);
+            toast.success('PDF indirildi');
+        } catch (err) {
+            toast.error('PDF indirilemedi');
+        } finally {
+            setDownloading(null);
+        }
+    };
+
+    const handleMarkPaid = async (id: string) => {
+        try {
+            await invoicesService.markAsPaid(id);
+            toast.success('Fatura ödendi olarak işaretlendi');
+            fetchInvoices();
+        } catch (err) {
+            toast.error('İşlem başarısız');
+        }
+    };
 
     const columns = [
         {
             header: 'Fatura No',
-            accessorKey: 'id',
+            accessorKey: 'invoiceNumber',
             cell: (info: any) => <span className="font-mono font-medium text-indigo-600">{info.getValue()}</span>
         },
         {
             header: 'Tarih',
-            accessorKey: 'date',
+            accessorKey: 'createdAt',
+            cell: (info: any) => formatDate(info.getValue())
         },
         {
             header: 'Alıcı / Firma',
-            accessorKey: 'recipient',
-            cell: (info: any) => (
-                <div className="flex flex-col">
-                    <span className="font-medium text-slate-900">{info.getValue()}</span>
-                    <span className="text-xs text-slate-500">VKN: {info.row.original.taxId}</span>
-                </div>
-            )
+            accessorKey: 'customer',
+            cell: (info: any) => {
+                const customer = info.row.original.customer;
+                return customer ? (
+                    <div className="flex flex-col">
+                        <span className="font-medium text-slate-900">{customer.firstName} {customer.lastName}</span>
+                        <span className="text-xs text-slate-500">{customer.phone}</span>
+                    </div>
+                ) : <span className="text-slate-400">-</span>;
+            }
         },
         {
             header: 'Tutar',
-            accessorKey: 'amount',
-            cell: (info: any) => <span className="font-bold text-slate-900">{info.getValue().toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+            accessorKey: 'total',
+            cell: (info: any) => <span className="font-bold text-slate-900">{formatCurrency(info.getValue())}</span>
         },
         {
             header: 'Durum',
             accessorKey: 'status',
             cell: (info: any) => {
                 const status = info.getValue() as string;
+                const statusInfo = STATUS_MAP[status] || { label: status, color: 'bg-slate-100' };
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'Ödendi' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                        {status}
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                        {statusInfo.label}
                     </span>
                 );
             }
@@ -54,23 +110,52 @@ export const InvoiceList = () => {
         {
             header: 'İşlemler',
             id: 'actions',
-            cell: () => (
-                <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-indigo-600">
-                        <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-slate-900">
-                        <Download className="h-4 w-4" />
-                    </Button>
-                </div>
-            )
+            cell: (info: any) => {
+                const invoice = info.row.original;
+                return (
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-500 hover:text-indigo-600"
+                            onClick={() => handleDownload(invoice)}
+                            disabled={downloading === invoice.id}
+                        >
+                            {downloading === invoice.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Download className="h-4 w-4" />
+                            )}
+                        </Button>
+                        {invoice.status === 'ISSUED' && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-green-500 hover:text-green-600"
+                                onClick={() => handleMarkPaid(invoice.id)}
+                                title="Ödendi olarak işaretle"
+                            >
+                                <CheckCircle className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
+                );
+            }
         }
     ];
 
-    const filteredData = MOCK_INVOICES.filter(i =>
-        i.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        i.recipient.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredData = invoices.filter(i =>
+        i.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (i.customer && `${i.customer.firstName} ${i.customer.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-4">

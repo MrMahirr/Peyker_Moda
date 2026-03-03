@@ -105,5 +105,5 @@ src/
 - [x] Kullanıcı profil ve şifre işlemleri.
 
 #### 8. Dashboard (Genel Bakış)
-- [ ] Ana sayfa widget'ları (Günlük özet, Kritik stok, Çok satanlar).
-- [ ] Bildirim merkezi.
+- [x] Ana sayfa widget'ları (Günlük özet, Kritik stok, Çok satanlar).
+- [x] Bildirim merkezi.

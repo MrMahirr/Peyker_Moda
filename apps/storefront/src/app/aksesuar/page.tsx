@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Filter } from 'lucide-react';
-import Header from "@/components/layout/Header"; // Header yolu doğru olmalı
-import Footer from "@/components/layout/Footer"; // Footer yolu doğru olmalı
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Filter, Loader2, Sparkles } from "lucide-react";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/shared/ProductCard";
 import FilterSidebar from "@/components/shop/FilterSidebar";
-import { accessoryProducts } from "@/lib/data";
+import { storeApi, Product } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,68 +25,87 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export default function AccessoryPage() {
+export default function AccessoriesPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("newest");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [sortBy, page]);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const result = await storeApi.getProducts({
+        categorySlug: 'aksesuar',
+        page,
+        limit: 12,
+        sortBy,
+      });
+      setProducts(result.products);
+      setTotalPages(result.totalPages);
+      setTotal(result.total);
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-amber-200">
       <Header />
 
-      {/* --- ACCESSORY HEADER BANNER --- */}
-      {/* Navbar şeffaf olduğu için resim en üstten başlar */}
-      <div className="relative h-[45vh] bg-stone-900 flex items-center justify-center overflow-hidden">
-        {/* Aksesuar için özel arka plan görseli */}
-        <div
-          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-50"
-        />
-        {/* Alt kısımdan yukarı doğru hafif karartma */}
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-stone-900/30" />
+      {/* --- HEADER BANNER --- */}
+      <div className="relative h-[35vh] bg-stone-900 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-900 to-transparent" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 text-center text-white px-4 mt-10"
+          className="relative z-10 text-center text-white px-4"
         >
-          <span className="block text-amber-400 font-medium tracking-widest text-sm mb-3 uppercase">Yeni Koleksiyon</span>
-          <h1 className="text-5xl md:text-7xl font-serif font-bold mb-4 drop-shadow-md">Aksesuar Dünyası</h1>
-          <p className="text-stone-200 text-lg md:text-xl font-light max-w-xl mx-auto leading-relaxed">
-            Stilinizi tamamlayan en zarif dokunuşlar. Altın, gümüş ve değerli taşların modern yorumu.
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="w-6 h-6 text-amber-400" />
+          </div>
+          <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
+            Aksesuarlar
+          </h1>
+          <p className="text-stone-300 text-lg md:text-xl font-light max-w-xl mx-auto">
+            Stilinizi tamamlayan özel parçalar.
           </p>
         </motion.div>
       </div>
 
       <main className="container mx-auto px-4 md:px-8 py-12">
-
         {/* --- TOOLBAR --- */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4 sticky top-[80px] z-30 bg-stone-50/95 backdrop-blur-sm p-4 rounded-lg md:static md:bg-transparent md:p-0 border border-stone-100 md:border-none shadow-sm md:shadow-none">
-          <div className="flex items-center gap-2 text-stone-600 text-sm">
-            <span className="font-bold text-stone-900 font-serif text-lg">{accessoryProducts.length}</span> parça listeleniyor
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <div className="flex items-center gap-2 text-stone-500 text-sm">
+            <span className="font-semibold text-stone-900">{total}</span> ürün listeleniyor
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
-            {/* Mobile Filter */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="md:hidden flex-1 border-stone-300 text-stone-700 hover:bg-stone-100 hover:text-amber-600 transition-colors">
+                <Button variant="outline" className="md:hidden flex-1 border-stone-300">
                   <Filter className="w-4 h-4 mr-2" /> Filtrele
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
+              <SheetContent side="left" className="w-[300px] overflow-y-auto">
                 <SheetHeader className="mb-6">
-                  <SheetTitle className="font-serif text-2xl text-stone-900">Filtreler</SheetTitle>
+                  <SheetTitle className="font-serif text-2xl">Filtreler</SheetTitle>
                 </SheetHeader>
-                {/* Not: FilterSidebar içinde kategoriler giyim için ayarlı, aksesuara özel ayrı bir sidebar veya prop ile yönetilebilir. Şimdilik aynı kalabilir. */}
                 <FilterSidebar />
-                <div className="mt-8 pt-4 border-t border-stone-100">
-                  <Button className="w-full bg-stone-900 hover:bg-amber-600 text-white transition-colors h-12 text-md">Sonuçları Göster</Button>
-                </div>
               </SheetContent>
             </Sheet>
 
-            {/* Sort */}
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full md:w-[200px] border-stone-200 bg-white shadow-sm hover:border-amber-400 transition-colors">
+              <SelectTrigger className="w-full md:w-[180px] border-stone-300 bg-white">
                 <SelectValue placeholder="Sıralama" />
               </SelectTrigger>
               <SelectContent>
@@ -99,33 +118,57 @@ export default function AccessoryPage() {
           </div>
         </div>
 
-        <div className="flex gap-12">
-          {/* --- SIDEBAR (Desktop) --- */}
-          <aside className="hidden md:block w-72 flex-shrink-0">
-            <div className="sticky top-28 bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
+        <div className="flex gap-10">
+          <aside className="hidden md:block w-64 flex-shrink-0">
+            <div className="sticky top-32">
               <FilterSidebar />
             </div>
           </aside>
 
-          {/* --- PRODUCT GRID --- */}
           <div className="flex-1">
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
-              <AnimatePresence>
-                {accessoryProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </AnimatePresence>
-            </div>
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-stone-500">Ürün bulunamadı.</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+                  <AnimatePresence>
+                    {products.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={{
+                          id: parseInt(product.id) || 0,
+                          name: product.name,
+                          price: product.price,
+                          oldPrice: product.compareAtPrice || null,
+                          image: product.images[0] || 'https://via.placeholder.com/400',
+                          tag: product.tags?.[0] || '',
+                        }}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
 
-            {/* Load More */}
-            <div className="mt-20 text-center">
-              <Button variant="outline" className="border-stone-300 hover:border-amber-500 hover:text-amber-600 px-12 py-6 text-md tracking-wide uppercase transition-all duration-300">
-                Daha Fazla Keşfet
-              </Button>
-            </div>
+                {page < totalPages && (
+                  <div className="mt-16 text-center">
+                    <Button
+                      variant="outline"
+                      className="border-stone-300 hover:border-amber-500 px-8"
+                      onClick={() => setPage(p => p + 1)}
+                    >
+                      Daha Fazla Göster
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
-
       </main>
 
       <Footer />

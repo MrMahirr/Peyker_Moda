@@ -1,16 +1,31 @@
+import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-
-const data = [
-    { name: 'Pzt', gelir: 4200, gider: 2100 },
-    { name: 'Sal', gelir: 3800, gider: 1800 },
-    { name: 'Çar', gelir: 5100, gider: 2400 },
-    { name: 'Per', gelir: 4600, gider: 2200 },
-    { name: 'Cum', gelir: 6200, gider: 3100 },
-    { name: 'Cmt', gelir: 7800, gider: 3600 },
-    { name: 'Paz', gelir: 5400, gider: 2800 },
-];
+import { dashboardService } from '../services/dashboard.service';
+import { Loader2 } from 'lucide-react';
 
 export const SalesChart = () => {
+    const [data, setData] = useState<{ name: string; gelir: number; gider: number }[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchChart = async () => {
+            try {
+                const res = await dashboardService.getSalesChart('day');
+                const chartData = res.labels.map((label, idx) => ({
+                    name: label,
+                    gelir: res.data[idx],
+                    gider: 0, // Gider verisi backend'den gelmediği takdirde 0
+                }));
+                setData(chartData);
+            } catch (err) {
+                console.error('Failed to fetch sales chart', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchChart();
+    }, []);
+
     return (
         <div className="lg:col-span-2 bg-surface rounded-xl border border-zinc-200/80 flex flex-col">
             <div className="p-5 pb-0 flex items-center justify-between">
@@ -30,8 +45,13 @@ export const SalesChart = () => {
                 </div>
             </div>
 
-            <div className="p-5 pt-3 h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="p-5 pt-3 h-[300px] w-full relative">
+                {loading ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={data}>
                         <defs>
                             <linearGradient id="colorGelir" x1="0" y1="0" x2="0" y2="1">
@@ -67,7 +87,8 @@ export const SalesChart = () => {
                                 padding: '10px 14px',
                                 fontSize: '12px',
                             }}
-                            formatter={(value: number) => [`₺${value.toLocaleString('tr-TR')}`, '']}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            formatter={(value: any) => [`₺${Number(value).toLocaleString('tr-TR')}`, '']}
                             labelStyle={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}
                         />
                         <Area
@@ -92,6 +113,7 @@ export const SalesChart = () => {
                         />
                     </AreaChart>
                 </ResponsiveContainer>
+                )}
             </div>
         </div>
     );

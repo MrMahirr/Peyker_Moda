@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { showDeleteConfirm } from '@/utils/swal';
 import { customersService, Customer } from '../api/customerService';
 import { Badge } from '@/components/ui/Badge';
+import { CustomerFormModal } from './CustomerFormModal';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -18,19 +19,23 @@ export const CustomerList = () => {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+
+    const fetchCustomers = async () => {
+        try {
+            setLoading(true);
+            const response = await customersService.getAll({ limit: 50 });
+            setCustomers(response.data || []);
+        } catch (err) {
+            console.error('Customers fetch error:', err);
+            toast.error('Müşteriler yüklenemedi', { className: 'font-medium' });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchCustomers = async () => {
-            try {
-                const response = await customersService.getAll({ limit: 50 });
-                setCustomers(response.data || []);
-            } catch (err) {
-                console.error('Customers fetch error:', err);
-                toast.error('Müşteriler yüklenemedi', { className: 'font-medium' });
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchCustomers();
     }, []);
 
@@ -128,7 +133,10 @@ export const CustomerList = () => {
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
-                        onClick={() => navigate(`/crm/${info.row.original.id}/edit`)}
+                        onClick={() => {
+                            setEditingCustomer(info.row.original);
+                            setIsModalOpen(true);
+                        }}
                     >
                         <Edit className="h-4 w-4" />
                     </Button>
@@ -167,7 +175,14 @@ export const CustomerList = () => {
                     <h1 className="text-2xl font-black tracking-tight text-zinc-900">Müşteri Portföyü</h1>
                     <p className="text-[13px] font-medium text-zinc-500 mt-1">Müşteri ilişkilerinizi ve satış geçmişlerini yönetin.</p>
                 </div>
-                <Button className="font-semibold shadow-md active:scale-[0.98] transition-all" icon={<Plus className="w-4 h-4" />}>
+                <Button 
+                    className="font-semibold shadow-md active:scale-[0.98] transition-all" 
+                    icon={<Plus className="w-4 h-4" />}
+                    onClick={() => {
+                        setEditingCustomer(null);
+                        setIsModalOpen(true);
+                    }}
+                >
                     Yeni Müşteri
                 </Button>
             </div>
@@ -187,6 +202,13 @@ export const CustomerList = () => {
             <DataGrid
                 data={filteredData}
                 columns={columns}
+            />
+
+            <CustomerFormModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                customerToEdit={editingCustomer}
+                onSuccess={() => fetchCustomers()}
             />
         </div>
     );

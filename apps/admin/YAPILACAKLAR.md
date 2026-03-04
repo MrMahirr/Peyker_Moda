@@ -49,18 +49,21 @@ src/
 ## 📋 2. Adım Adım Yapılacaklar Listesi
 
 ### 🏗️ Aşama 1: Altyapı ve Klasör Kurulumu
+
 - [x] `src/app` klasörü oluşturulacak, `App.tsx` ve `main.tsx` taşınacak.
 - [x] Ana klasör ağacı (`features`, `components`, `lib`, `context`) kurulacak.
 - [x] Temel konfigürasyon dosyaları (`vite.config.ts`, `tsconfig.json`) kontrol edilecek.
 
 ### 🧩 Aşama 2: Temel Bileşenler (Core Components)
+
 - [x] **UI Kit:** `components/ui` altında temel taşların (Button, Input, Card) oluşturulması.
 - [x] **Layouts:**
-    - [x] `AdminLayout`: Sol menü ve üst bar içeren ana düzen.
-    - [x] `PosLayout`: Satış ekranı için özel, tam genişlikli düzen.
+  - [x] `AdminLayout`: Sol menü ve üst bar içeren ana düzen.
+  - [x] `PosLayout`: Satış ekranı için özel, tam genişlikli düzen.
 - [x] **Shared:** `DataGrid` (Tablo) ve `ImageUpload` bileşenlerinin kodlanması.
 
 ### ⚙️ Aşama 3: State & Config
+
 - [x] `AuthContext`: Login/Logout işlemleri.
 - [x] `PosContext`: Sepet mantığının (Add, Remove, Clear Cart) yazılması.
 - [x] `socket.ts`: WebSocket bağlantısının kurulması.
@@ -69,15 +72,18 @@ src/
 ### 🚀 Aşama 4: Modül Geliştirmeleri (Features)
 
 #### 1. Auth & Staff
+
 - [x] Login ekranı tasarımı ve entegrasyonu.
 - [x] Personel rolleri ve yetki yönetimi.
 
 #### 2. Catalog (Ürün Yönetimi)
+
 - [x] Ürün listesi sayfası.
 - [x] **Ürün Ekleme Sihirbazı:** Step-by-step form (Info -> Variants -> SEO).
 - [x] Varyant matrisi mantığının kurulması.
 
 #### 3. POS (Satış Ekranı)
+
 - [x] Ürün Grid ve Arama.
 - [x] Barkod okuyucu dinleyicisi (`usePosHotkeys`).
 - [x] Cart Context ve Sepet UI.
@@ -85,25 +91,42 @@ src/
 - [x] Fiş Önizleme ve Yazdırma.
 
 #### 4. CRM & Sales
+
 - [x] Müşteri veritabanı ekranları.
 - [x] Satış geçmişi ve sipariş detayları.
 - [x] İade (Return) süreci yönetimi.
 
 #### 5. Accounting (Muhasebe)
+
 - [x] Gelir/Gider takibi formları.
 - [x] Fatura oluşturma şablonları.
 - [x] Gün sonu (Z-Raporu) ekranı.
 
 #### 6. Marketing (Kampanya & Fiyat)
+
 - [x] Kampanya oluşturma (İndirim, Kupon).
 - [x] Özel fiyat listeleri (Müşteri grubu bazlı).
 - [x] Toplu SMS/E-posta gönderimi.
 
 #### 7. Settings (Ayarlar)
+
 - [x] Mağaza genel ayarları.
 - [x] Yazıcı ve fiş tasarımı düzenleyici.
 - [x] Kullanıcı profil ve şifre işlemleri.
 
 #### 8. Dashboard (Genel Bakış)
+
 - [x] Ana sayfa widget'ları (Günlük özet, Kritik stok, Çok satanlar).
 - [x] Bildirim merkezi.
+
+### 🌐 Aşama 5: Full Backend Entegrasyonu (YENİ)
+
+Bu aşamada admin panelindeki sahte (mock) veriler kaldırılarak tamamıyla NestJS API ve Prisma üzerinden veritabanına bağlanılacaktır.
+
+- [ ] **Altyapı:** Prisma P1001 Hatası (DB Bağlantısı) ve PostgreSQL onarılacak.
+- [ ] **Auth:** Giriş işlemleri gerçek JWT üretimine bağlanacak.
+- [ ] **Katalog:** Ürün listesi ve yeni ürün ekleme işlemleri `/api/products` üzerinden yönetilecek.
+- [ ] **Dashboard:** İstatistikler `/api/dashboard/summary` üzerinden dinamik beslenecek.
+- [ ] **Satış ve Siparişler:** Sahte siparişler silinip, DB'den gelen gerçek siparişler tablolara aktarılacak.
+- [ ] **POS ve Sepet:** POS sepeti tamamlandığında sipariş `/api/orders` ile doğrudan DB'ye yazılacak.
+- [ ] **Uçtan Uca Test:** Tüm modüller entegre edildikten sonra örnek bir satış senaryosu baştan sona (POS -> Sepet -> Kasa -> Fatura) test edilecek.

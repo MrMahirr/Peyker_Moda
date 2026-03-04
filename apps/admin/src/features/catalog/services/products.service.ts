@@ -52,6 +52,14 @@ export interface CreateProductDto {
     isActive?: boolean;
     isFeatured?: boolean;
     images?: string[];
+    variants?: {
+        sku: string;
+        price?: number;
+        stock?: number;
+        size?: string;
+        color?: string;
+        barcode?: string;
+    }[];
 }
 
 export interface PaginatedResponse<T> {

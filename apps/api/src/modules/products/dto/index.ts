@@ -12,6 +12,44 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
+export class CreateVariantDto {
+    @ApiProperty({ example: 'SKU-VAR-1', description: 'Varyant SKU' })
+    @IsString()
+    sku: string;
+
+    @ApiPropertyOptional({ example: '8697123456789', description: 'Varyant Barkod' })
+    @IsString()
+    @IsOptional()
+    barcode?: string;
+
+    @ApiPropertyOptional({ example: 49.99, description: 'Varyant Fiyatı' })
+    @IsNumber()
+    @Min(0)
+    @IsOptional()
+    price?: number;
+
+    @ApiPropertyOptional({ example: 'M', description: 'Beden' })
+    @IsString()
+    @IsOptional()
+    size?: string;
+
+    @ApiPropertyOptional({ example: 'Mavi', description: 'Renk' })
+    @IsString()
+    @IsOptional()
+    color?: string;
+
+    @ApiPropertyOptional({ example: '#0000FF', description: 'Renk Kodu' })
+    @IsString()
+    @IsOptional()
+    colorCode?: string;
+
+    @ApiPropertyOptional({ example: 10, description: 'Stok Adedi' })
+    @IsInt()
+    @Min(0)
+    @IsOptional()
+    stock?: number;
+}
+
 export class CreateProductDto {
     @ApiProperty({ example: 'Kadın Blazer Ceket', description: 'Ürün adı' })
     @IsString()
@@ -61,6 +99,24 @@ export class CreateProductDto {
     @IsBoolean()
     @IsOptional()
     isFeatured?: boolean;
+
+    @ApiPropertyOptional({ example: true, description: 'Aktif durumda mı' })
+    @IsBoolean()
+    @IsOptional()
+    isActive?: boolean;
+
+    @ApiPropertyOptional({ type: [String], description: 'Ürün görselleri (URL dizisi)' })
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    images?: string[];
+
+    @ApiPropertyOptional({ type: [CreateVariantDto], description: 'Ürün Varyantları' })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateVariantDto)
+    @IsOptional()
+    variants?: CreateVariantDto[];
 }
 
 export class UpdateProductDto {

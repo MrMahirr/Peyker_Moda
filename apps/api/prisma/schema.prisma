@@ -19,10 +19,11 @@ model User {
   isActive     Boolean       @default(true)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  heldSales    HeldSale[]
-  orders       Order[]
-  posSessions  PosSession[]
-  transactions Transaction[]
+  heldSales      HeldSale[]
+  orders         Order[]
+  posSessions    PosSession[]
+  transactions   Transaction[]
+  refreshTokens  RefreshToken[]
 
   @@map("users")
 }
@@ -33,7 +34,9 @@ model RefreshToken {
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("refresh_tokens")
 }
 

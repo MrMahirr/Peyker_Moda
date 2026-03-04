@@ -87,8 +87,8 @@ export const posService = {
 
     // Sales
     async createSale(data: CreateSaleDto): Promise<SaleResult> {
-        const response = await api.post('/pos/sales', data);
-        return response.data.data;
+        const response = await api.post('/pos/sale', data);
+        return response.data;
     },
 
     async getSales(sessionId?: string) {

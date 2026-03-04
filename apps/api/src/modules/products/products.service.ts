@@ -243,15 +243,23 @@ export class ProductsService {
             counter++;
         }
 
-        const { price, ...rest } = createProductDto;
+        const { price, variants, ...rest } = createProductDto;
         const product = await this.prisma.product.create({
             data: {
                 ...rest,
                 basePrice: price,
                 slug: uniqueSlug,
+                variants: variants?.length ? {
+                    create: variants.map(v => ({
+                        ...v,
+                        price: v.price ?? price,
+                        stock: v.stock ?? 0
+                    }))
+                } : undefined
             },
             include: {
                 category: { select: { id: true, name: true } },
+                variants: true
             },
         });
 

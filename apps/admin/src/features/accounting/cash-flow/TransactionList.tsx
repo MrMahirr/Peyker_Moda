@@ -5,23 +5,41 @@ import { Input } from '@/components/ui/Input';
 import { Search, Plus, ArrowUpRight, ArrowDownLeft, Filter } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 
-const MOCK_TRANSACTIONS = [
-    { id: 'TRX-5001', type: 'income', category: 'Satış', description: 'Nakit Satış (#12345)', amount: 450.00, date: '2024-01-22 14:30', updatedBy: 'Kasa-1' },
-    { id: 'TRX-5002', type: 'expense', category: 'Tedarik', description: 'Kumaş Alımı (Öz-İplik)', amount: 12500.00, date: '2024-01-22 10:00', updatedBy: 'Mahir G.' },
-    { id: 'TRX-5003', type: 'income', category: 'Tahsilat', description: 'Cari Tahsilat (Ayşe Yılmaz)', amount: 2500.00, date: '2024-01-21 16:45', updatedBy: 'Muhasebe' },
-    { id: 'TRX-5004', type: 'expense', category: 'Gider', description: 'Yemek Gideri', amount: 350.00, date: '2024-01-21 12:30', updatedBy: 'Kasa-1' },
-    { id: 'TRX-5005', type: 'income', category: 'Satış', description: 'Kredi Kartı Satış (#12344)', amount: 1890.00, date: '2024-01-21 11:15', updatedBy: 'Kasa-1' },
-];
+import { Loader2 } from 'lucide-react';
+import { transactionsService, Transaction } from '../services/transactions.service';
+
+const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('tr-TR', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+};
 
 export const TransactionList = () => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTransactions = async () => {
+            try {
+                const response = await transactionsService.getAll({ limit: 50 });
+                setTransactions(response.data || []);
+            } catch (err) {
+                console.error('Failed to fetch transactions:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTransactions();
+    }, []);
 
     const columns = [
         {
             header: 'Tarih',
-            accessorKey: 'date',
+            accessorKey: 'transactionDate',
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => <span className="text-zinc-500 text-[13px] font-medium">{info.getValue()}</span>
+            cell: (info: any) => <span className="text-zinc-500 text-[13px] font-medium">{formatDate(info.getValue())}</span>
         },
         {
             header: 'Tür',
@@ -29,7 +47,7 @@ export const TransactionList = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: ({ row }: any) => {
                 const type = row.getValue('type') as string;
-                return type === 'income' ? (
+                return type === 'INCOME' ? (
                     <div className="flex items-center text-emerald-600 text-[11px] font-bold uppercase tracking-wider">
                         <ArrowUpRight className="h-3.5 w-3.5 mr-1" /> Gelir
                     </div>
@@ -58,9 +76,10 @@ export const TransactionList = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: (info: any) => {
                 const type = info.row.original.type;
+                const amt = Number(info.getValue());
                 return (
-                    <span className={`font-mono text-[15px] font-bold ${type === 'income' ? 'text-emerald-600' : 'text-zinc-900'}`}>
-                        {type === 'income' ? '+' : '-'}{info.getValue().toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                    <span className={`font-mono text-[15px] font-bold ${type === 'INCOME' ? 'text-emerald-600' : 'text-zinc-900'}`}>
+                        {type === 'INCOME' ? '+' : '-'}{amt.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
                     </span>
                 )
             }
@@ -69,14 +88,26 @@ export const TransactionList = () => {
             header: 'İşlem Yapan',
             accessorKey: 'updatedBy',
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => <span className="text-zinc-500 text-[13px] font-medium">{info.getValue()}</span>
+            cell: (info: any) => {
+                const user = info.row.original.user;
+                return <span className="text-zinc-500 text-[13px] font-medium">{user ? `${user.firstName} ${user.lastName}` : 'Sistem'}</span>;
+            }
         }
     ];
 
-    const filteredData = MOCK_TRANSACTIONS.filter(t =>
-        t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.category.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredData = transactions.filter(t =>
+        (t.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (t.category?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
+                <p className="text-[13px] font-medium text-zinc-500">Kasa hareketleri yükleniyor...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-6">

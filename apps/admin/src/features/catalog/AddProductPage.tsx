@@ -72,15 +72,33 @@ export const AddProductPage = () => {
         setIsSubmitting(true);
         setSubmitError(null);
         try {
-            await productsService.create({
+            const productData: any = {
                 name: data.name,
                 sku: data.sku,
                 description: data.description,
-                basePrice: data.price,
+                price: data.price,
                 categoryId: data.category,
                 isActive: true,
                 images: data.images,
-            });
+            };
+
+            if (data.hasVariants && data.variants && data.variants.length > 0) {
+                productData.variants = data.variants.map((v: any) => ({
+                    sku: v.sku,
+                    price: v.price,
+                    stock: v.stock,
+                    size: v.options?.[0] || undefined, 
+                    color: v.options?.[1] || undefined,
+                }));
+            } else {
+                productData.variants = [{
+                    sku: `${data.sku}-STD`,
+                    price: data.price,
+                    stock: data.manageStock ? 100 : 0 // Default stock if no variants
+                }];
+            }
+
+            await productsService.create(productData);
             navigate('/catalog');
         } catch (err: any) {
             setSubmitError(err.response?.data?.message || 'Ürün kaydedilirken sunucu hatası oluştu');

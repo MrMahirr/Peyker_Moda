@@ -3,15 +3,8 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
-
-// Categories mock
-const categories = [
-    { label: 'Elbise', value: 'dress' },
-    { label: 'Üst Giyim', value: 'top' },
-    { label: 'Alt Giyim', value: 'bottom' },
-    { label: 'Dış Giyim', value: 'outerwear' },
-    { label: 'Aksesuar', value: 'accessory' },
-];
+import { useState, useEffect } from 'react';
+import { categoriesService } from '../../services/categories.service';
 
 interface BasicInfoProps {
     form: UseFormReturn<any>;
@@ -19,6 +12,19 @@ interface BasicInfoProps {
 
 export const BasicInfo = ({ form }: BasicInfoProps) => {
     const { register, formState: { errors } } = form;
+    const [categories, setCategories] = useState<{label: string, value: string}[]>([]);
+
+    useEffect(() => {
+        async function fetchCategories() {
+            try {
+                const data = await categoriesService.getAll();
+                setCategories(data.map(c => ({ label: c.name, value: c.id })));
+            } catch (err) {
+                console.error("Failed to fetch categories", err);
+            }
+        }
+        fetchCategories();
+    }, []);
 
     return (
         <div className="space-y-6">

@@ -16,6 +16,106 @@ export class PosService {
     constructor(private prisma: PrismaService) { }
 
     /**
+     * POS ürünlerini getirir
+     */
+    async getProducts(search?: string, categoryId?: string) {
+        const where: any = {
+            isActive: true,
+        };
+
+        if (categoryId) {
+            where.product = { categoryId };
+        }
+
+        if (search) {
+            where.OR = [
+                { sku: { contains: search, mode: 'insensitive' } },
+                { barcode: { contains: search, mode: 'insensitive' } },
+                { product: { name: { contains: search, mode: 'insensitive' } } },
+                { product: { sku: { contains: search, mode: 'insensitive' } } },
+            ];
+        }
+
+        const variants = await this.prisma.variant.findMany({
+            where,
+            include: {
+                product: { include: { category: true } }
+            },
+            take: 50,
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return variants.map(v => {
+            const hasOptions = v.size || v.color;
+            const optionsStr = hasOptions ? ` (${[v.size, v.color].filter(Boolean).join(' / ')})` : '';
+            // images form handling 
+            let imageUrl: string | undefined = undefined;
+            if (v.product.images) {
+                const imgs = v.product.images as string[];
+                if (Array.isArray(imgs) && imgs.length > 0) {
+                    imageUrl = imgs[0];
+                }
+            }
+
+            return {
+                id: v.id,
+                name: `${v.product.name}${optionsStr}`,
+                sku: v.sku,
+                barcode: v.barcode,
+                price: Number(v.price ?? v.product.basePrice ?? 0),
+                stock: v.stock,
+                image: imageUrl,
+                categoryName: v.product.category?.name || 'Diğer'
+            };
+        });
+    }
+
+    /**
+     * Barkoda göre POS ürünü getir
+     */
+    async getProductByBarcode(barcode: string) {
+        const variant = await this.prisma.variant.findFirst({
+            where: {
+                OR: [
+                    { barcode },
+                    { product: { barcode } }
+                ],
+                isActive: true
+            },
+            include: {
+                product: { include: { category: true } }
+            }
+        });
+
+        if (!variant) {
+            throw new NotFoundException('Ürün bulunamadı veya pasif');
+        }
+
+        const hasOptions = variant.size || variant.color;
+        const optionsStr = hasOptions ? ` (${[variant.size, variant.color].filter(Boolean).join(' / ')})` : '';
+
+        // images form handling 
+        let imageUrl: string | undefined = undefined;
+        if (variant.product.images) {
+            const imgs = variant.product.images as string[];
+            if (Array.isArray(imgs) && imgs.length > 0) {
+                imageUrl = imgs[0];
+            }
+        }
+
+        return {
+            id: variant.id,
+            name: `${variant.product.name}${optionsStr}`,
+            sku: variant.sku,
+            barcode: variant.barcode,
+            price: Number(variant.price ?? variant.product.basePrice ?? 0),
+            stock: variant.stock,
+            image: imageUrl,
+            categoryName: variant.product.category?.name || 'Diğer'
+        };
+    }
+
+    /**
      * POS Satış işlemi
      */
     async processSale(saleDto: PosSaleDto, userId: string) {

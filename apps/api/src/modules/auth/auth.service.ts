@@ -1,8 +1,8 @@
 import {
-    Injectable,
-    UnauthorizedException,
-    ConflictException,
-    Logger,
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -12,215 +12,223 @@ import { RegisterDto } from './dto';
 import { User, UserRole } from '@prisma/client';
 
 export interface TokenPayload {
-    accessToken: string;
-    refreshToken: string;
-    expiresIn: number;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
 }
 
 export interface AuthenticatedUser {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: UserRole;
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
 }
 
 @Injectable()
 export class AuthService {
-    private readonly logger = new Logger(AuthService.name);
+  private readonly logger = new Logger(AuthService.name);
 
-    constructor(
-        private prisma: PrismaService,
-        private jwtService: JwtService,
-        private configService: ConfigService,
-    ) { }
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
 
-    /**
-     * Kullanıcı email ve şifresini doğrular
-     */
-    async validateUser(email: string, password: string): Promise<AuthenticatedUser | null> {
-        const user = await this.prisma.user.findUnique({
-            where: { email },
-        });
+  /**
+   * Kullanıcı email ve şifresini doğrular
+   */
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<AuthenticatedUser | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
 
-        if (!user || !user.isActive) {
-            return null;
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            return null;
-        }
-
-        return {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-        };
+    if (!user || !user.isActive) {
+      return null;
     }
 
-    /**
-     * Kullanıcı girişi - Access ve Refresh token döner
-     */
-    async login(user: AuthenticatedUser): Promise<TokenPayload> {
-        const payload = {
-            sub: user.id,
-            email: user.email,
-            role: user.role,
-        };
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        const accessToken = this.jwtService.sign(payload);
-        const refreshToken = await this.generateRefreshToken(user.id);
-
-        this.logger.log(`Kullanıcı giriş yaptı: ${user.email}`);
-
-        return {
-            accessToken,
-            refreshToken,
-            expiresIn: 900, // 15 dakika (saniye cinsinden)
-        };
+    if (!isPasswordValid) {
+      return null;
     }
 
-    /**
-     * Yeni kullanıcı kaydı
-     */
-    async register(registerDto: RegisterDto): Promise<AuthenticatedUser> {
-        // Email kontrolü
-        const existingUser = await this.prisma.user.findUnique({
-            where: { email: registerDto.email },
-        });
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+    };
+  }
 
-        if (existingUser) {
-            throw new ConflictException('Bu email adresi zaten kullanılıyor');
-        }
+  /**
+   * Kullanıcı girişi - Access ve Refresh token döner
+   */
+  async login(user: AuthenticatedUser): Promise<TokenPayload> {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
 
-        // Şifreyi hashle
-        const hashedPassword = await bcrypt.hash(registerDto.password, 12);
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = await this.generateRefreshToken(user.id);
 
-        // Kullanıcı oluştur
-        const user = await this.prisma.user.create({
-            data: {
-                email: registerDto.email,
-                password: hashedPassword,
-                firstName: registerDto.firstName,
-                lastName: registerDto.lastName,
-                phone: registerDto.phone,
-                role: registerDto.role || UserRole.STAFF,
-            },
-        });
+    this.logger.log(`Kullanıcı giriş yaptı: ${user.email}`);
 
-        this.logger.log(`Yeni kullanıcı oluşturuldu: ${user.email}`);
+    return {
+      accessToken,
+      refreshToken,
+      expiresIn: 900, // 15 dakika (saniye cinsinden)
+    };
+  }
 
-        return {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-        };
+  /**
+   * Yeni kullanıcı kaydı
+   */
+  async register(registerDto: RegisterDto): Promise<AuthenticatedUser> {
+    // Email kontrolü
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: registerDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Bu email adresi zaten kullanılıyor');
     }
 
-    /**
-     * Refresh token ile yeni access token al
-     */
-    async refreshToken(refreshToken: string): Promise<TokenPayload> {
-        const storedToken = await this.prisma.refreshToken.findUnique({
-            where: { token: refreshToken },
-        });
+    // Şifreyi hashle
+    const hashedPassword = await bcrypt.hash(registerDto.password, 12);
 
-        if (!storedToken || storedToken.expiresAt < new Date()) {
-            throw new UnauthorizedException('Geçersiz veya süresi dolmuş refresh token');
-        }
+    // Kullanıcı oluştur
+    const user = await this.prisma.user.create({
+      data: {
+        email: registerDto.email,
+        password: hashedPassword,
+        firstName: registerDto.firstName,
+        lastName: registerDto.lastName,
+        phone: registerDto.phone,
+        role: registerDto.role || UserRole.STAFF,
+      },
+    });
 
-        const user = await this.prisma.user.findUnique({
-            where: { id: storedToken.userId },
-        });
+    this.logger.log(`Yeni kullanıcı oluşturuldu: ${user.email}`);
 
-        if (!user || !user.isActive) {
-            throw new UnauthorizedException('Kullanıcı bulunamadı veya hesabı aktif değil');
-        }
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+    };
+  }
 
-        // Eski refresh token'ı sil
-        await this.prisma.refreshToken.delete({
-            where: { id: storedToken.id },
-        });
+  /**
+   * Refresh token ile yeni access token al
+   */
+  async refreshToken(refreshToken: string): Promise<TokenPayload> {
+    const storedToken = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+    });
 
-        // Yeni tokenlar oluştur
-        return this.login({
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-        });
+    if (!storedToken || storedToken.expiresAt < new Date()) {
+      throw new UnauthorizedException(
+        'Geçersiz veya süresi dolmuş refresh token',
+      );
     }
 
-    /**
-     * Çıkış yap - Refresh token'ı sil
-     */
-    async logout(userId: string): Promise<void> {
-        await this.prisma.refreshToken.deleteMany({
-            where: { userId },
-        });
+    const user = await this.prisma.user.findUnique({
+      where: { id: storedToken.userId },
+    });
 
-        this.logger.log(`Kullanıcı çıkış yaptı: ${userId}`);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException(
+        'Kullanıcı bulunamadı veya hesabı aktif değil',
+      );
     }
 
-    /**
-     * Refresh token oluştur ve kaydet
-     */
-    private async generateRefreshToken(userId: string): Promise<string> {
-        // @ts-ignore
-        const token = this.jwtService.sign(
-            { sub: userId } as any,
-            {
-                secret: this.configService.get<string>('app.jwtSecret'),
-                expiresIn: this.configService.get<string>('app.jwtRefreshExpiresIn', '7d') as any,
-            },
-        );
+    // Eski refresh token'ı sil
+    await this.prisma.refreshToken.delete({
+      where: { id: storedToken.id },
+    });
 
-        // Eski tokenları temizle
-        await this.prisma.refreshToken.deleteMany({
-            where: { userId },
-        });
+    // Yeni tokenlar oluştur
+    return this.login({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+    });
+  }
 
-        // Yeni token'ı kaydet
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7); // 7 gün
+  /**
+   * Çıkış yap - Refresh token'ı sil
+   */
+  async logout(userId: string): Promise<void> {
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    });
 
-        await this.prisma.refreshToken.create({
-            data: {
-                token,
-                userId,
-                expiresAt,
-            },
-        });
+    this.logger.log(`Kullanıcı çıkış yaptı: ${userId}`);
+  }
 
-        return token;
+  /**
+   * Refresh token oluştur ve kaydet
+   */
+  private async generateRefreshToken(userId: string): Promise<string> {
+    const refreshExpiresIn =
+      this.configService.get('app.jwtRefreshExpiresIn', '7d');
+    const token = this.jwtService.sign(
+      { sub: userId },
+      {
+        secret: this.configService.get<string>('app.jwtSecret'),
+        expiresIn: refreshExpiresIn as any,
+      },
+    );
+
+    // Eski tokenları temizle
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    });
+
+    // Yeni token'ı kaydet
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 gün
+
+    await this.prisma.refreshToken.create({
+      data: {
+        token,
+        userId,
+        expiresAt,
+      },
+    });
+
+    return token;
+  }
+
+  /**
+   * Kullanıcı bilgilerini getir
+   */
+  async getProfile(userId: string): Promise<AuthenticatedUser> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Kullanıcı bulunamadı');
     }
 
-    /**
-     * Kullanıcı bilgilerini getir
-     */
-    async getProfile(userId: string): Promise<AuthenticatedUser> {
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-            },
-        });
-
-        if (!user) {
-            throw new UnauthorizedException('Kullanıcı bulunamadı');
-        }
-
-        return user;
-    }
+    return user;
+  }
 }

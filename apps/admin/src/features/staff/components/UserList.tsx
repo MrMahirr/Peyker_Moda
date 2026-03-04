@@ -7,10 +7,13 @@ import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { staffService, User } from '../services/staff.service';
 import { Badge } from '@/components/ui/Badge';
+import { UserModal } from './UserModal';
 
 export const UserList = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     useEffect(() => {
         fetchUsers();
@@ -107,7 +110,15 @@ export const UserList = () => {
             cell: ({ row }) => {
                 return (
                     <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50">
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
+                            onClick={() => {
+                                setSelectedUser(row.original);
+                                setIsModalOpen(true);
+                            }}
+                        >
                             <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -139,7 +150,15 @@ export const UserList = () => {
                 <div>
                     <h2 className="text-[17px] font-semibold tracking-tight text-zinc-900">Sistem Kullanıcıları</h2>
                 </div>
-                <Button variant="primary" size="sm" icon={<Plus className="w-4 h-4" />}>
+                <Button 
+                    variant="primary" 
+                    size="sm" 
+                    icon={<Plus className="w-4 h-4" />}
+                    onClick={() => {
+                        setSelectedUser(null);
+                        setIsModalOpen(true);
+                    }}
+                >
                     Yeni Personel Ekle
                 </Button>
             </div>
@@ -148,6 +167,13 @@ export const UserList = () => {
                 columns={columns}
                 data={users}
                 searchKey="firstName"
+            />
+
+            <UserModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                user={selectedUser}
+                onSuccess={fetchUsers}
             />
         </div>
     );

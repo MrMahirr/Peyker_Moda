@@ -1,9 +1,0 @@
-🧪 Starting Storefront Verification...
-
-✅ Categories: OK
-✅ Products: OK
-
-Testing Cart Calculation...
-✅ Cart Calculate: 479.99
-
-🏁 Verification Complete.

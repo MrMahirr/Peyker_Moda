@@ -6,6 +6,7 @@ import {
     Body,
     Param,
     UseGuards,
+    Query,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -25,6 +26,23 @@ import { UserRole } from '@prisma/client';
 @ApiBearerAuth('JWT-auth')
 export class PosController {
     constructor(private readonly posService: PosService) { }
+
+    @Get('products')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'POS ürünlerini getir (Varyantları liste olarak döndürür)' })
+    async getProducts(
+        @Query('search') search?: string,
+        @Query('categoryId') categoryId?: string
+    ) {
+        return this.posService.getProducts(search, categoryId);
+    }
+
+    @Get('products/barcode/:barcode')
+    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @ApiOperation({ summary: 'Barkoda göre POS ürünü getir' })
+    async getProductByBarcode(@Param('barcode') barcode: string) {
+        return this.posService.getProductByBarcode(barcode);
+    }
 
     @Post('sale')
     @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)

@@ -18,7 +18,6 @@ import { PosService } from './pos.service';
 import { PosSaleDto, HoldSaleDto, OpenSessionDto, CloseSessionDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('POS')
 @Controller('pos')
@@ -28,7 +27,7 @@ export class PosController {
     constructor(private readonly posService: PosService) { }
 
     @Get('products')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'POS ürünlerini getir (Varyantları liste olarak döndürür)' })
     async getProducts(
         @Query('search') search?: string,
@@ -38,14 +37,14 @@ export class PosController {
     }
 
     @Get('products/barcode/:barcode')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Barkoda göre POS ürünü getir' })
     async getProductByBarcode(@Param('barcode') barcode: string) {
         return this.posService.getProductByBarcode(barcode);
     }
 
     @Post('sale')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'POS Satış işlemi' })
     @ApiResponse({ status: 201, description: 'Satış tamamlandı' })
     async processSale(
@@ -56,7 +55,7 @@ export class PosController {
     }
 
     @Post('hold')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Satışı beklet' })
     async holdSale(
         @Body() holdDto: HoldSaleDto,
@@ -66,28 +65,28 @@ export class PosController {
     }
 
     @Get('queue')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Bekleyen satışlar' })
     async getHeldSales(@CurrentUser('id') userId: string) {
         return this.posService.getHeldSales();
     }
 
     @Get('queue/:id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Bekleyen satış detayı' })
     async getHeldSale(@Param('id') id: string) {
         return this.posService.getHeldSale(id);
     }
 
     @Delete('queue/:id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Bekleyen satışı iptal et' })
     async cancelHeldSale(@Param('id') id: string) {
         return this.posService.cancelHeldSale(id);
     }
 
     @Post('sessions/open')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Kasa oturumu aç' })
     async openSession(
         @Body() openDto: OpenSessionDto,
@@ -97,7 +96,7 @@ export class PosController {
     }
 
     @Post('sessions/:id/close')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Kasa oturumu kapat' })
     async closeSession(
         @Param('id') id: string,
@@ -108,7 +107,7 @@ export class PosController {
     }
 
     @Get('sessions/:id/report')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Oturum raporu' })
     async getSessionReport(@Param('id') id: string) {
         return this.posService.getSessionReport(id);

@@ -19,7 +19,6 @@ import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto, UpdateTransactionDto, TransactionQueryDto, ReportQueryDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('Transactions & Reports')
 @Controller()
@@ -31,7 +30,7 @@ export class TransactionsController {
     // ========== TRANSACTIONS ==========
 
     @Get('transactions')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'İşlem listesi' })
     @ApiResponse({ status: 200, description: 'İşlem listesi döner' })
     async findAll(@Query() query: TransactionQueryDto) {
@@ -39,14 +38,14 @@ export class TransactionsController {
     }
 
     @Get('transactions/:id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'İşlem detayı' })
     async findOne(@Param('id') id: string) {
         return this.transactionsService.findOne(id);
     }
 
     @Post('transactions')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Yeni gelir/gider kaydı' })
     @ApiResponse({ status: 201, description: 'İşlem oluşturuldu' })
     async create(
@@ -58,7 +57,7 @@ export class TransactionsController {
 
 
     @Patch('transactions/:id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'İşlem güncelle' })
     @ApiResponse({ status: 200, description: 'İşlem güncellendi' })
     async update(
@@ -69,7 +68,7 @@ export class TransactionsController {
     }
 
     @Delete('transactions/:id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'İşlem sil' })
     @ApiResponse({ status: 200, description: 'İşlem silindi' })
     async remove(@Param('id') id: string) {
@@ -79,35 +78,35 @@ export class TransactionsController {
     // ========== REPORTS ==========
 
     @Get('transactions/reports/financial')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Finansal Rapor (Gelir/Gider/Kar)' })
     async getFinancialReport(@Query() query: ReportQueryDto) {
         return this.transactionsService.getFinancialReport(query);
     }
 
     @Get('reports/summary')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Özet rapor (gelir/gider)' })
     async getSummary(@Query() query: ReportQueryDto) {
         return this.transactionsService.getSummary(query);
     }
 
     @Get('reports/sales')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Satış raporu' })
     async getSalesReport(@Query() query: ReportQueryDto) {
         return this.transactionsService.getSalesReport(query);
     }
 
     @Get('reports/products')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Ürün raporu' })
     async getProductsReport(@Query() query: ReportQueryDto) {
         return this.transactionsService.getProductsReport(query);
     }
 
     @Get('reports/z-report/:date')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Z Raporu (günlük kasa kapanış)' })
     async getZReport(@Param('date') date: string) {
         return this.transactionsService.getZReport(date);

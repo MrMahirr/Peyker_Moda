@@ -25,7 +25,6 @@ import {
 } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('Campaigns & Coupons')
 @Controller()
@@ -36,7 +35,7 @@ export class CampaignsController {
 
     @Get('campaigns')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kampanya listesi' })
     async findAllCampaigns(@Query('includeInactive') includeInactive?: boolean) {
@@ -51,7 +50,7 @@ export class CampaignsController {
 
     @Get('campaigns/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kampanya detayı' })
     async findOneCampaign(@Param('id') id: string) {
@@ -60,7 +59,7 @@ export class CampaignsController {
 
     @Post('campaigns')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Yeni kampanya oluştur' })
     async createCampaign(@Body() createCampaignDto: CreateCampaignDto) {
@@ -69,7 +68,7 @@ export class CampaignsController {
 
     @Patch('campaigns/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kampanya güncelle' })
     async updateCampaign(
@@ -81,7 +80,7 @@ export class CampaignsController {
 
     @Delete('campaigns/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN)
+    @Roles('admin')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kampanya sil' })
     async removeCampaign(@Param('id') id: string) {
@@ -92,7 +91,7 @@ export class CampaignsController {
 
     @Get('coupons')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kupon listesi' })
     async findAllCoupons(@Query('includeInactive') includeInactive?: boolean) {
@@ -101,7 +100,7 @@ export class CampaignsController {
 
     @Get('coupons/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kupon detayı' })
     async findOneCoupon(@Param('id') id: string) {
@@ -110,7 +109,7 @@ export class CampaignsController {
 
     @Post('coupons')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Yeni kupon oluştur' })
     async createCoupon(@Body() createCouponDto: CreateCouponDto) {
@@ -119,7 +118,7 @@ export class CampaignsController {
 
     @Patch('coupons/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kupon güncelle' })
     async updateCoupon(
@@ -131,7 +130,7 @@ export class CampaignsController {
 
     @Delete('coupons/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN)
+    @Roles('admin')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kupon sil' })
     async removeCoupon(@Param('id') id: string) {
@@ -146,7 +145,7 @@ export class CampaignsController {
 
     @Post('coupons/:code/use')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kupon kullan' })
     async useCoupon(@Param('code') code: string) {

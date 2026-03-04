@@ -19,7 +19,6 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto, UpdateCategoryDto, CategoryQueryDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -50,7 +49,7 @@ export class CategoriesController {
 
     @Post()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Yeni kategori oluştur' })
     @ApiResponse({ status: 201, description: 'Kategori oluşturuldu' })
@@ -61,7 +60,7 @@ export class CategoriesController {
 
     @Patch(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kategori güncelle' })
     @ApiResponse({ status: 200, description: 'Kategori güncellendi' })
@@ -75,7 +74,7 @@ export class CategoriesController {
 
     @Patch(':id/order')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kategori sıralamasını güncelle' })
     async updateOrder(
@@ -87,7 +86,7 @@ export class CategoriesController {
 
     @Delete(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN)
+    @Roles('admin')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Kategori sil' })
     @ApiResponse({ status: 200, description: 'Kategori silindi' })

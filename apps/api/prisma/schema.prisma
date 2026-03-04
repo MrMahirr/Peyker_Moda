@@ -15,8 +15,12 @@ model User {
   lastName     String
   phone        String?
   avatar       String?
-  role         UserRole      @default(STAFF)
+  roleId       String
+  role         Role          @relation(fields: [roleId], references: [id])
   isActive     Boolean       @default(true)
+  lastLoginAt  DateTime?
+  failedLogins Int           @default(0)
+  lockedUntil  DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   heldSales      HeldSale[]
@@ -25,7 +29,51 @@ model User {
   transactions   Transaction[]
   refreshTokens  RefreshToken[]
 
+  @@index([roleId])
   @@map("users")
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  displayName String
+  description String?
+  isSystem    Boolean      @default(false)
+  permissions Permission[]
+  users       User[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id       String @id @default(uuid())
+  resource String
+  action   String
+  roleId   String
+  role     Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, resource, action])
+  @@map("permissions")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  oldData    Json?
+  newData    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
 
 model RefreshToken {
@@ -363,12 +411,7 @@ model Setting {
   @@map("settings")
 }
 
-enum UserRole {
-  ADMIN
-  MANAGER
-  STAFF
-  CASHIER
-}
+// UserRole enum REMOVED — replaced by dynamic Role model
 
 enum OrderStatus {
   PENDING

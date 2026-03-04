@@ -19,7 +19,6 @@ import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto, UserQueryDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('Users')
 @Controller('users')
@@ -29,7 +28,7 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) { }
 
     @Get()
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Kullanıcı listesi' })
     @ApiResponse({ status: 200, description: 'Kullanıcı listesi döner' })
     async findAll(@Query() query: UserQueryDto) {
@@ -37,7 +36,7 @@ export class UsersController {
     }
 
     @Get(':id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Kullanıcı detayı' })
     @ApiResponse({ status: 200, description: 'Kullanıcı bulundu' })
     @ApiResponse({ status: 404, description: 'Kullanıcı bulunamadı' })
@@ -46,7 +45,7 @@ export class UsersController {
     }
 
     @Post()
-    @Roles(UserRole.ADMIN)
+    @Roles('admin')
     @ApiOperation({ summary: 'Yeni kullanıcı oluştur' })
     @ApiResponse({ status: 201, description: 'Kullanıcı oluşturuldu' })
     @ApiResponse({ status: 409, description: 'Email zaten kullanılıyor' })
@@ -55,7 +54,7 @@ export class UsersController {
     }
 
     @Patch(':id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Kullanıcı güncelle' })
     @ApiResponse({ status: 200, description: 'Kullanıcı güncellendi' })
     @ApiResponse({ status: 404, description: 'Kullanıcı bulunamadı' })
@@ -64,7 +63,7 @@ export class UsersController {
     }
 
     @Delete(':id')
-    @Roles(UserRole.ADMIN)
+    @Roles('admin')
     @ApiOperation({ summary: 'Kullanıcı sil' })
     @ApiResponse({ status: 200, description: 'Kullanıcı silindi' })
     @ApiResponse({ status: 404, description: 'Kullanıcı bulunamadı' })

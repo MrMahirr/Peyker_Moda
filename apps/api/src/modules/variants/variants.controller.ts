@@ -18,7 +18,6 @@ import { VariantsService } from './variants.service';
 import { CreateVariantDto, UpdateVariantDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('Variants')
 @Controller()
@@ -42,7 +41,7 @@ export class VariantsController {
 
     @Post('products/:productId/variants')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Yeni varyant ekle' })
     @ApiResponse({ status: 201, description: 'Varyant oluşturuldu' })
@@ -55,7 +54,7 @@ export class VariantsController {
 
     @Post('products/:productId/variants/bulk')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Toplu varyant oluştur (beden x renk)' })
     async bulkCreate(
@@ -72,7 +71,7 @@ export class VariantsController {
 
     @Patch('variants/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Varyant güncelle' })
     async update(
@@ -84,7 +83,7 @@ export class VariantsController {
 
     @Delete('variants/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN)
+    @Roles('admin')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Varyant sil' })
     async remove(@Param('id') id: string) {

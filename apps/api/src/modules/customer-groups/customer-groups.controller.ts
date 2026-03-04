@@ -18,7 +18,6 @@ import { CustomerGroupsService } from './customer-groups.service';
 import { CreateCustomerGroupDto, UpdateCustomerGroupDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('Customer Groups')
 @Controller('customer-groups')
@@ -28,7 +27,7 @@ export class CustomerGroupsController {
     constructor(private readonly customerGroupsService: CustomerGroupsService) { }
 
     @Get()
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Müşteri grupları listesi' })
     @ApiResponse({ status: 200, description: 'Grup listesi döner' })
     async findAll() {
@@ -36,7 +35,7 @@ export class CustomerGroupsController {
     }
 
     @Get(':id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Grup detayı' })
     @ApiResponse({ status: 200, description: 'Grup bulundu' })
     @ApiResponse({ status: 404, description: 'Grup bulunamadı' })
@@ -45,7 +44,7 @@ export class CustomerGroupsController {
     }
 
     @Post()
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Yeni grup oluştur' })
     @ApiResponse({ status: 201, description: 'Grup oluşturuldu' })
     async create(@Body() createCustomerGroupDto: CreateCustomerGroupDto) {
@@ -53,7 +52,7 @@ export class CustomerGroupsController {
     }
 
     @Patch(':id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Grup güncelle' })
     @ApiResponse({ status: 200, description: 'Grup güncellendi' })
     async update(
@@ -64,7 +63,7 @@ export class CustomerGroupsController {
     }
 
     @Post(':id/customers/:customerId')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Gruba müşteri ekle' })
     async addCustomer(
         @Param('id') groupId: string,
@@ -74,14 +73,14 @@ export class CustomerGroupsController {
     }
 
     @Delete(':id/customers/:customerId')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Gruptan müşteri çıkar' })
     async removeCustomer(@Param('customerId') customerId: string) {
         return this.customerGroupsService.removeCustomer(customerId);
     }
 
     @Delete(':id')
-    @Roles(UserRole.ADMIN)
+    @Roles('admin')
     @ApiOperation({ summary: 'Grup sil' })
     @ApiResponse({ status: 200, description: 'Grup silindi' })
     async remove(@Param('id') id: string) {

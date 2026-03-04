@@ -4,7 +4,6 @@ import { CreateInvoiceDto } from './dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 import type { Response } from 'express';
 import * as fs from 'fs';
 
@@ -16,21 +15,21 @@ export class InvoicesController {
     constructor(private readonly invoicesService: InvoicesService) { }
 
     @Post()
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Siparişten fatura oluştur' })
     async create(@Body() createInvoiceDto: CreateInvoiceDto) {
         return this.invoicesService.createFromOrder(createInvoiceDto);
     }
 
     @Get(':id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Fatura detayı' })
     async findOne(@Param('id') id: string) {
         return this.invoicesService.findOne(id);
     }
 
     @Get(':id/pdf')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Fatura PDF indir' })
     async downloadPdf(@Param('id') id: string, @Res() res: Response) {
         const filePath = await this.invoicesService.getPdfPath(id);

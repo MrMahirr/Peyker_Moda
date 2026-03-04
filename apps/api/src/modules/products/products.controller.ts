@@ -19,7 +19,6 @@ import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto, ProductQueryDto, UpdateStockDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('Products')
 @Controller('products')
@@ -58,7 +57,7 @@ export class ProductsController {
 
     @Post()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Yeni ürün oluştur' })
     @ApiResponse({ status: 201, description: 'Ürün oluşturuldu' })
@@ -68,7 +67,7 @@ export class ProductsController {
 
     @Patch(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Ürün güncelle' })
     @ApiResponse({ status: 200, description: 'Ürün güncellendi' })
@@ -81,7 +80,7 @@ export class ProductsController {
 
     @Patch('variants/:variantId/stock')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Varyant stoğunu güncelle' })
     async updateStock(
@@ -93,7 +92,7 @@ export class ProductsController {
 
     @Delete(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN)
+    @Roles('admin')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Ürün sil' })
     @ApiResponse({ status: 200, description: 'Ürün silindi' })

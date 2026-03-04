@@ -11,6 +11,8 @@ import { appConfig } from './config';
 // Faz 1: Auth
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 
 // Faz 2: Catalog
 import { CategoriesModule } from './modules/categories/categories.module';
@@ -75,9 +77,11 @@ import { CargoModule } from './modules/cargo/cargo.module';
     // Cache
     RedisModule,
 
-    // Faz 1: Auth
+    // Faz 1: Auth & RBAC
     AuthModule,
     UsersModule,
+    RolesModule,
+    AuditLogsModule,
 
     // Faz 2: Catalog
     CategoriesModule,

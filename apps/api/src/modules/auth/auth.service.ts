@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  ForbiddenException,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -9,7 +10,6 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto } from './dto';
-import { User, UserRole } from '@prisma/client';
 
 export interface TokenPayload {
   accessToken: string;
@@ -22,8 +22,12 @@ export interface AuthenticatedUser {
   email: string;
   firstName: string;
   lastName: string;
-  role: UserRole;
+  roleId: string;
+  roleName: string;
 }
+
+const MAX_FAILED_LOGINS = 5;
+const LOCKOUT_MINUTES = 15;
 
 @Injectable()
 export class AuthService {
@@ -36,7 +40,7 @@ export class AuthService {
   ) {}
 
   /**
-   * Kullanıcı email ve şifresini doğrular
+   * Kullanıcı email ve şifresini doğrular (hesap kilitleme dahil)
    */
   async validateUser(
     email: string,
@@ -44,24 +48,64 @@ export class AuthService {
   ): Promise<AuthenticatedUser | null> {
     const user = await this.prisma.user.findUnique({
       where: { email },
+      include: { role: true },
     });
 
     if (!user || !user.isActive) {
       return null;
     }
 
+    // Hesap kilitli mi kontrol et
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const remainingMinutes = Math.ceil(
+        (user.lockedUntil.getTime() - Date.now()) / 60000,
+      );
+      throw new ForbiddenException(
+        `Hesabınız kilitli. ${remainingMinutes} dakika sonra tekrar deneyin.`,
+      );
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
+      // Başarısız giriş sayacını artır
+      const failedLogins = user.failedLogins + 1;
+      const updateData: Record<string, unknown> = { failedLogins };
+
+      if (failedLogins >= MAX_FAILED_LOGINS) {
+        const lockUntil = new Date();
+        lockUntil.setMinutes(lockUntil.getMinutes() + LOCKOUT_MINUTES);
+        updateData.lockedUntil = lockUntil;
+        this.logger.warn(
+          `Hesap kilitlendi: ${email} (${MAX_FAILED_LOGINS} başarısız deneme)`,
+        );
+      }
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: updateData,
+      });
+
       return null;
     }
+
+    // Başarılı giriş — sayacı sıfırla
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLogins: 0,
+        lockedUntil: null,
+        lastLoginAt: new Date(),
+      },
+    });
 
     return {
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.role,
+      roleId: user.roleId,
+      roleName: user.role.name,
     };
   }
 
@@ -72,7 +116,8 @@ export class AuthService {
     const payload = {
       sub: user.id,
       email: user.email,
-      role: user.role,
+      roleId: user.roleId,
+      roleName: user.roleName,
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -91,7 +136,6 @@ export class AuthService {
    * Yeni kullanıcı kaydı
    */
   async register(registerDto: RegisterDto): Promise<AuthenticatedUser> {
-    // Email kontrolü
     const existingUser = await this.prisma.user.findUnique({
       where: { email: registerDto.email },
     });
@@ -100,10 +144,17 @@ export class AuthService {
       throw new ConflictException('Bu email adresi zaten kullanılıyor');
     }
 
-    // Şifreyi hashle
     const hashedPassword = await bcrypt.hash(registerDto.password, 12);
 
-    // Kullanıcı oluştur
+    // Varsayılan rol: staff
+    let roleId = registerDto.roleId;
+    if (!roleId) {
+      const staffRole = await this.prisma.role.findUnique({
+        where: { name: 'staff' },
+      });
+      roleId = staffRole?.id || '';
+    }
+
     const user = await this.prisma.user.create({
       data: {
         email: registerDto.email,
@@ -111,8 +162,9 @@ export class AuthService {
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
         phone: registerDto.phone,
-        role: registerDto.role || UserRole.STAFF,
+        roleId,
       },
+      include: { role: true },
     });
 
     this.logger.log(`Yeni kullanıcı oluşturuldu: ${user.email}`);
@@ -122,7 +174,8 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.role,
+      roleId: user.roleId,
+      roleName: user.role.name,
     };
   }
 
@@ -142,6 +195,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: storedToken.userId },
+      include: { role: true },
     });
 
     if (!user || !user.isActive) {
@@ -155,13 +209,13 @@ export class AuthService {
       where: { id: storedToken.id },
     });
 
-    // Yeni tokenlar oluştur
     return this.login({
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.role,
+      roleId: user.roleId,
+      roleName: user.role.name,
     });
   }
 
@@ -180,8 +234,10 @@ export class AuthService {
    * Refresh token oluştur ve kaydet
    */
   private async generateRefreshToken(userId: string): Promise<string> {
-    const refreshExpiresIn =
-      this.configService.get('app.jwtRefreshExpiresIn', '7d');
+    const refreshExpiresIn = this.configService.get(
+      'app.jwtRefreshExpiresIn',
+      '7d',
+    );
     const token = this.jwtService.sign(
       { sub: userId },
       {
@@ -190,21 +246,15 @@ export class AuthService {
       },
     );
 
-    // Eski tokenları temizle
     await this.prisma.refreshToken.deleteMany({
       where: { userId },
     });
 
-    // Yeni token'ı kaydet
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 gün
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
     await this.prisma.refreshToken.create({
-      data: {
-        token,
-        userId,
-        expiresAt,
-      },
+      data: { token, userId, expiresAt },
     });
 
     return token;
@@ -216,19 +266,20 @@ export class AuthService {
   async getProfile(userId: string): Promise<AuthenticatedUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-      },
+      include: { role: true },
     });
 
     if (!user) {
       throw new UnauthorizedException('Kullanıcı bulunamadı');
     }
 
-    return user;
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      roleId: user.roleId,
+      roleName: user.role.name,
+    };
   }
 }

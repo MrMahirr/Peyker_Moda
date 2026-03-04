@@ -17,7 +17,6 @@ import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, RefreshTokenDto } from './dto';
 import { LocalAuthGuard, JwtAuthGuard } from '../../common/guards';
 import { CurrentUser, Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -36,7 +35,7 @@ export class AuthController {
 
     @Post('register')
     @UseGuards(JwtAuthGuard)
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: 'Yeni kullanıcı oluştur (Admin/Manager)' })
     @ApiResponse({ status: 201, description: 'Kullanıcı oluşturuldu' })

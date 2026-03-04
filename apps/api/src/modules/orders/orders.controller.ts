@@ -18,7 +18,6 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto, UpdateOrderStatusDto, OrderQueryDto, AddPaymentDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -28,7 +27,7 @@ export class OrdersController {
     constructor(private readonly ordersService: OrdersService) { }
 
     @Get()
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Sipariş listesi' })
     @ApiResponse({ status: 200, description: 'Sipariş listesi döner' })
     async findAll(@Query() query: OrderQueryDto) {
@@ -36,7 +35,7 @@ export class OrdersController {
     }
 
     @Get(':id')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Sipariş detayı' })
     @ApiResponse({ status: 200, description: 'Sipariş bulundu' })
     @ApiResponse({ status: 404, description: 'Sipariş bulunamadı' })
@@ -45,7 +44,7 @@ export class OrdersController {
     }
 
     @Post()
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Yeni sipariş oluştur' })
     @ApiResponse({ status: 201, description: 'Sipariş oluşturuldu' })
     async create(
@@ -56,7 +55,7 @@ export class OrdersController {
     }
 
     @Patch(':id/status')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Sipariş durumu güncelle' })
     async updateStatus(
         @Param('id') id: string,
@@ -67,7 +66,7 @@ export class OrdersController {
     }
 
     @Post(':id/ship')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Siparişi kargoya ver' })
     @ApiResponse({ status: 200, description: 'Sipariş kargoya verildi' })
     async ship(
@@ -75,7 +74,7 @@ export class OrdersController {
     ) {
         return this.ordersService.shipOrder(id);
     }
-    @Roles(UserRole.ADMIN, UserRole.MANAGER)
+    @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Sipariş iptal et' })
     async cancel(
         @Param('id') id: string,
@@ -86,7 +85,7 @@ export class OrdersController {
     }
 
     @Post(':id/payments')
-    @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+    @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Siparişe ödeme ekle' })
     async addPayment(
         @Param('id') id: string,

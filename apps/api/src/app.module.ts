@@ -29,6 +29,7 @@ import { PosModule } from './modules/pos/pos.module';
 
 // Faz 5: Muhasebe
 import { TransactionsModule } from './modules/transactions/transactions.module';
+import { AccountingModule } from './modules/accounting/accounting.module';
 
 // Faz 6: Kampanyalar
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
@@ -100,6 +101,7 @@ import { ShippingModule } from './modules/shipping/shipping.module';
 
     // Faz 5: Muhasebe
     TransactionsModule,
+    AccountingModule,
     InvoicesModule,
 
     // Faz 6: Kampanyalar

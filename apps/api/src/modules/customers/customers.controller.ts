@@ -15,54 +15,63 @@ import {
     ApiResponse,
     ApiBearerAuth,
 } from '@nestjs/swagger';
-import { CustomersService } from './customers.service';
-import { CreateCustomerDto, UpdateCustomerDto, CustomerQueryDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
-import { Roles } from '../../common/decorators';
+import { CurrentUser, Roles } from '../../common/decorators';
+import { CustomerNotesService } from './customer-notes.service';
+import { CustomersService } from './customers.service';
+import {
+    CreateCustomerDto,
+    UpdateCustomerDto,
+    CustomerQueryDto,
+    CreateCustomerNoteDto,
+} from './dto';
 
 @ApiTags('Customers')
 @Controller('customers')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth('JWT-auth')
 export class CustomersController {
-    constructor(private readonly customersService: CustomersService) { }
+    constructor(
+        private readonly customersService: CustomersService,
+        private readonly customerNotesService: CustomerNotesService,
+    ) { }
 
     @Get()
     @Roles('admin', 'manager', 'staff')
-    @ApiOperation({ summary: 'Müşteri listesi' })
-    @ApiResponse({ status: 200, description: 'Müşteri listesi döner' })
+    @ApiOperation({ summary: 'Musteri listesi' })
+    @ApiResponse({ status: 200, description: 'Musteri listesi doner' })
     async findAll(@Query() query: CustomerQueryDto) {
         return this.customersService.findAll(query);
     }
 
     @Get('search')
     @Roles('admin', 'manager', 'staff')
-    @ApiOperation({ summary: 'Hızlı müşteri arama (autocomplete)' })
+    @ApiOperation({ summary: 'Hizli musteri arama (autocomplete)' })
     async quickSearch(@Query('q') term: string, @Query('limit') limit?: number) {
         return this.customersService.quickSearch(term, limit);
     }
 
     @Get('phone/:phone')
     @Roles('admin', 'manager', 'staff')
-    @ApiOperation({ summary: 'Telefon ile müşteri ara (POS için)' })
-    @ApiResponse({ status: 200, description: 'Müşteri bulundu' })
-    @ApiResponse({ status: 404, description: 'Müşteri bulunamadı' })
+    @ApiOperation({ summary: 'Telefon ile musteri ara (POS icin)' })
+    @ApiResponse({ status: 200, description: 'Musteri bulundu' })
+    @ApiResponse({ status: 404, description: 'Musteri bulunamadi' })
     async findByPhone(@Param('phone') phone: string) {
         return this.customersService.findByPhone(phone);
     }
 
     @Get(':id')
     @Roles('admin', 'manager', 'staff')
-    @ApiOperation({ summary: 'Müşteri detayı' })
-    @ApiResponse({ status: 200, description: 'Müşteri bulundu' })
-    @ApiResponse({ status: 404, description: 'Müşteri bulunamadı' })
+    @ApiOperation({ summary: 'Musteri detayi' })
+    @ApiResponse({ status: 200, description: 'Musteri bulundu' })
+    @ApiResponse({ status: 404, description: 'Musteri bulunamadi' })
     async findOne(@Param('id') id: string) {
         return this.customersService.findOne(id);
     }
 
     @Get(':id/orders')
     @Roles('admin', 'manager', 'staff')
-    @ApiOperation({ summary: 'Müşteri siparişleri' })
+    @ApiOperation({ summary: 'Musteri siparisleri' })
     async findOrders(
         @Param('id') id: string,
         @Query('page') page?: number,
@@ -73,23 +82,41 @@ export class CustomersController {
 
     @Get(':id/stats')
     @Roles('admin', 'manager', 'staff')
-    @ApiOperation({ summary: 'Müşteri istatistikleri' })
+    @ApiOperation({ summary: 'Musteri istatistikleri' })
     async getStats(@Param('id') id: string) {
         return this.customersService.getStats(id);
     }
 
+    @Get(':id/notes')
+    @Roles('admin', 'manager', 'staff')
+    @ApiOperation({ summary: 'Musteri etkilesim notlari' })
+    async findNotes(@Param('id') id: string) {
+        return this.customerNotesService.findAll(id);
+    }
+
+    @Post(':id/notes')
+    @Roles('admin', 'manager', 'staff')
+    @ApiOperation({ summary: 'Musteri etkilesim notu ekle' })
+    async createNote(
+        @Param('id') id: string,
+        @Body() createCustomerNoteDto: CreateCustomerNoteDto,
+        @CurrentUser('id') userId: string,
+    ) {
+        return this.customerNotesService.create(id, createCustomerNoteDto, userId);
+    }
+
     @Post()
     @Roles('admin', 'manager', 'staff')
-    @ApiOperation({ summary: 'Yeni müşteri oluştur' })
-    @ApiResponse({ status: 201, description: 'Müşteri oluşturuldu' })
+    @ApiOperation({ summary: 'Yeni musteri olustur' })
+    @ApiResponse({ status: 201, description: 'Musteri olusturuldu' })
     async create(@Body() createCustomerDto: CreateCustomerDto) {
         return this.customersService.create(createCustomerDto);
     }
 
     @Patch(':id')
     @Roles('admin', 'manager', 'staff')
-    @ApiOperation({ summary: 'Müşteri güncelle' })
-    @ApiResponse({ status: 200, description: 'Müşteri güncellendi' })
+    @ApiOperation({ summary: 'Musteri guncelle' })
+    @ApiResponse({ status: 200, description: 'Musteri guncellendi' })
     async update(
         @Param('id') id: string,
         @Body() updateCustomerDto: UpdateCustomerDto,
@@ -99,8 +126,8 @@ export class CustomersController {
 
     @Delete(':id')
     @Roles('admin', 'manager')
-    @ApiOperation({ summary: 'Müşteri sil' })
-    @ApiResponse({ status: 200, description: 'Müşteri silindi' })
+    @ApiOperation({ summary: 'Musteri sil' })
+    @ApiResponse({ status: 200, description: 'Musteri silindi' })
     async remove(@Param('id') id: string) {
         return this.customersService.remove(id);
     }

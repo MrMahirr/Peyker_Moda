@@ -1,5 +1,6 @@
 import {
     IsString,
+    IsNotEmpty,
     IsOptional,
     IsBoolean,
     IsEmail,
@@ -11,6 +12,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from '@prisma/client';
+import { CustomerNoteType } from '../customer-notes.types';
 
 export class CreateCustomerDto {
     @ApiProperty({ example: 'Ayşe', description: 'Müşteri adı' })
@@ -151,4 +153,15 @@ export class CustomerQueryDto {
     @IsString()
     @IsOptional()
     sortOrder?: 'asc' | 'desc';
+}
+
+export class CreateCustomerNoteDto {
+    @ApiProperty({ example: 'Musteri ile telefon gorusmesi yapildi.' })
+    @IsString()
+    @IsNotEmpty()
+    content: string;
+
+    @ApiProperty({ enum: CustomerNoteType, example: CustomerNoteType.CALL })
+    @IsEnum(CustomerNoteType)
+    type: CustomerNoteType;
 }

@@ -16,6 +16,7 @@ import {
     ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
+import { CustomerAnalyticsService } from './customer-analytics.service';
 import { CurrentUser, Roles } from '../../common/decorators';
 import { CustomerNotesService } from './customer-notes.service';
 import { CustomersService } from './customers.service';
@@ -34,6 +35,7 @@ export class CustomersController {
     constructor(
         private readonly customersService: CustomersService,
         private readonly customerNotesService: CustomerNotesService,
+        private readonly customerAnalyticsService: CustomerAnalyticsService,
     ) { }
 
     @Get()
@@ -85,6 +87,13 @@ export class CustomersController {
     @ApiOperation({ summary: 'Musteri istatistikleri' })
     async getStats(@Param('id') id: string) {
         return this.customersService.getStats(id);
+    }
+
+    @Get(':id/analytics')
+    @Roles('admin', 'manager', 'staff')
+    @ApiOperation({ summary: 'Musteri analiz verileri' })
+    async getAnalytics(@Param('id') id: string) {
+        return this.customerAnalyticsService.getAnalytics(id);
     }
 
     @Get(':id/notes')

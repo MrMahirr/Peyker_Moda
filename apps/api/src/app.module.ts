@@ -23,6 +23,9 @@ import { VariantsModule } from './modules/variants/variants.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { CustomerGroupsModule } from './modules/customer-groups/customer-groups.module';
 import { LoyaltyModule } from './modules/loyalty/loyalty.module';
+import { BannersModule } from './modules/banners/banners.module';
+import { MessagingModule } from './modules/messaging/messaging.module';
+import { PriceListsModule } from './modules/price-lists/price-lists.module';
 
 // Faz 4: Sales & POS
 import { OrdersModule } from './modules/orders/orders.module';
@@ -40,6 +43,7 @@ import { WebsocketModule } from './websocket/websocket.module';
 
 // Faz 8: Dashboard
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { CmsModule } from './modules/cms/cms.module';
 
 // Faz 9: Storefront
 import { StorefrontModule } from './modules/storefront/storefront.module';
@@ -96,6 +100,9 @@ import { ShippingModule } from './modules/shipping/shipping.module';
     CustomersModule,
     CustomerGroupsModule,
     LoyaltyModule,
+    BannersModule,
+    MessagingModule,
+    PriceListsModule,
 
     // Faz 4: Sales & POS
     OrdersModule,
@@ -114,6 +121,7 @@ import { ShippingModule } from './modules/shipping/shipping.module';
 
     // Faz 8: Dashboard
     DashboardModule,
+    CmsModule,
 
     // Faz 9: Storefront (Public API)
     StorefrontModule,

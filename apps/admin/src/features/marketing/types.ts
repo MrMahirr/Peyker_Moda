@@ -1,3 +1,14 @@
+export interface Banner {
+    id: string;
+    title: string;
+    imageUrl: string;
+    linkUrl?: string;
+    position: number;
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
 export interface Campaign {
     id: string;
     name: string;

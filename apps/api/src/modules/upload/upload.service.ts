@@ -1,104 +1,165 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { PrismaService } from '../../prisma/prisma.service';
 import * as path from 'path';
-
-export interface UploadResult {
-    filename: string;
-    originalName: string;
-    path: string;
-    url: string;
-    size: number;
-    mimetype: string;
-}
 
 @Injectable()
 export class UploadService {
     private readonly logger = new Logger(UploadService.name);
-    private readonly uploadDir: string;
+    private readonly s3Client: S3Client;
+    private readonly bucketName: string;
     private readonly baseUrl: string;
 
-    constructor(private configService: ConfigService) {
-        // Default to local storage, can be extended for S3/Cloudinary
-        this.uploadDir = this.configService.get<string>('UPLOAD_DIR') || './uploads';
-        this.baseUrl = this.configService.get<string>('UPLOAD_BASE_URL') || 'http://localhost:5000/uploads';
+    constructor(
+        private configService: ConfigService,
+        private prisma: PrismaService,
+    ) {
+        this.bucketName = this.configService.get<string>('S3_BUCKET', 'peyker-media');
+        this.baseUrl = this.configService.get<string>('UPLOAD_BASE_URL', 'http://localhost:9000/peyker-media');
 
-        // Ensure upload directory exists
-        this.ensureUploadDir();
-    }
+        const useSSL = this.configService.get<string>('S3_USE_SSL') === 'true';
 
-    private ensureUploadDir() {
-        const dirs = ['products', 'categories', 'users', 'invoices'];
-        dirs.forEach(dir => {
-            const fullPath = path.join(this.uploadDir, dir);
-            if (!fs.existsSync(fullPath)) {
-                fs.mkdirSync(fullPath, { recursive: true });
-                this.logger.log(`Created upload directory: ${fullPath}`);
-            }
+        this.s3Client = new S3Client({
+            region: this.configService.get<string>('S3_REGION', 'us-east-1'),
+            endpoint: this.configService.get<string>('S3_ENDPOINT', 'http://localhost:9000'),
+            forcePathStyle: true, // MinIO için gerekli
+            credentials: {
+                accessKeyId: this.configService.get<string>('S3_ACCESS_KEY', 'minioadmin'),
+                secretAccessKey: this.configService.get<string>('S3_SECRET_KEY', 'minioadmin'),
+            },
         });
     }
 
-    async uploadFile(file: Express.Multer.File, folder: string = 'products'): Promise<UploadResult> {
-        if (!file) {
-            throw new BadRequestException('Dosya bulunamadı');
-        }
-
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        if (!allowedTypes.includes(file.mimetype)) {
-            throw new BadRequestException('Geçersiz dosya tipi. Sadece JPEG, PNG, WebP ve GIF desteklenir.');
-        }
-
-        // Validate file size (max 5MB)
-        const maxSize = 5 * 1024 * 1024;
-        if (file.size > maxSize) {
-            throw new BadRequestException('Dosya boyutu 5MB\'dan büyük olamaz.');
-        }
-
-        // Generate unique filename
+    /**
+     * S3 (MinIO) sunucusuna dosya yükler ve DB'ye Media kaydı açar
+     */
+    async uploadFile(file: Express.Multer.File, folder: string = 'general') {
         const ext = path.extname(file.originalname);
         const timestamp = Date.now();
         const randomStr = Math.random().toString(36).substring(2, 8);
-        const filename = `${timestamp}-${randomStr}${ext}`;
+        const uniqueFilename = `${timestamp}-${randomStr}${ext}`;
+        
+        // Klasör içi yol: "products/123123-abc.jpg"
+        const key = `${folder}/${uniqueFilename}`;
 
-        // Save file
-        const filePath = path.join(this.uploadDir, folder, filename);
-        fs.writeFileSync(filePath, file.buffer);
-
-        const result: UploadResult = {
-            filename,
-            originalName: file.originalname,
-            path: filePath,
-            url: `${this.baseUrl}/${folder}/${filename}`,
-            size: file.size,
-            mimetype: file.mimetype,
-        };
-
-        this.logger.log(`File uploaded: ${result.url}`);
-        return result;
-    }
-
-    async uploadMultiple(files: Express.Multer.File[], folder: string = 'products'): Promise<UploadResult[]> {
-        const results: UploadResult[] = [];
-        for (const file of files) {
-            const result = await this.uploadFile(file, folder);
-            results.push(result);
-        }
-        return results;
-    }
-
-    async deleteFile(filename: string, folder: string = 'products'): Promise<boolean> {
         try {
-            const filePath = path.join(this.uploadDir, folder, filename);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-                this.logger.log(`File deleted: ${filename}`);
-                return true;
-            }
-            return false;
+            await this.s3Client.send(
+                new PutObjectCommand({
+                    Bucket: this.bucketName,
+                    Key: key,
+                    Body: file.buffer,
+                    ContentType: file.mimetype,
+                    // Eğer MinIO ACL desteklemiyorsa bu satırı silebilirsiniz, default public bucket yapısı
+                    // ACL: 'public-read', 
+                })
+            );
+
+            const fileUrl = `${this.baseUrl}/${key}`;
+
+            // Veritabanına kaydet
+            const mediaRecord = await this.prisma.media.create({
+                data: {
+                    filename: file.originalname,
+                    key: key,
+                    url: fileUrl,
+                    mimetype: file.mimetype,
+                    size: file.size,
+                    folder: folder,
+                }
+            });
+
+            this.logger.log(`File uploaded to S3: ${key}`);
+            return mediaRecord;
+
         } catch (error) {
-            this.logger.error(`Failed to delete file: ${error.message}`);
-            return false;
+            this.logger.error(`S3 Upload Error: ${error.message}`);
+            throw new InternalServerErrorException('Dosya yüklenirken bir hata oluştu: ' + error.message);
         }
+    }
+
+    /**
+     * Çoklu dosya yükleme
+     */
+    async uploadMultiple(files: Express.Multer.File[], folder: string = 'general') {
+        const uploadPromises = files.map(file => this.uploadFile(file, folder));
+        return Promise.all(uploadPromises);
+    }
+
+    /**
+     * Dosyayı hem S3'ten hem veritabanından siler
+     */
+    async deleteFile(id: string) {
+        const media = await this.prisma.media.findUnique({
+            where: { id }
+        });
+
+        if (!media) {
+            throw new NotFoundException('Dosya bulunamadı');
+        }
+
+        try {
+            // S3'ten sil
+            await this.s3Client.send(
+                new DeleteObjectCommand({
+                    Bucket: this.bucketName,
+                    Key: media.key,
+                })
+            );
+
+            // Veritabanından sil
+            await this.prisma.media.delete({
+                where: { id: media.id }
+            });
+
+            this.logger.log(`File deleted from S3 and DB: ${media.key}`);
+            return { success: true, message: 'Dosya silindi' };
+        } catch (error) {
+            this.logger.error(`S3 Delete Error: ${error.message}`);
+            throw new InternalServerErrorException('Dosya silinirken bir hata oluştu');
+        }
+    }
+
+    async deleteByKey(key: string) {
+        const media = await this.prisma.media.findUnique({
+            where: { key }
+        });
+
+        if (!media) {
+            throw new NotFoundException('Dosya bulunamadı');
+        }
+
+        return this.deleteFile(media.id);
+    }
+
+    /**
+     * Medya kütüphanesi için listeleme (API)
+     */
+    async findAll(query: { page?: number; limit?: number; folder?: string }) {
+        const page = query.page || 1;
+        const limit = query.limit || 50;
+        const skip = (page - 1) * limit;
+
+        const where = query.folder ? { folder: query.folder } : {};
+
+        const [data, total] = await Promise.all([
+            this.prisma.media.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.media.count({ where }),
+        ]);
+
+        return {
+            data,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
     }
 }

@@ -105,11 +105,11 @@ export class CreateProductDto {
     @IsOptional()
     isActive?: boolean;
 
-    @ApiPropertyOptional({ type: [String], description: 'Ürün görselleri (URL dizisi)' })
+    @ApiPropertyOptional({ type: [String], description: 'Medyaların referans ID dizisi' })
     @IsArray()
-    @IsString({ each: true })
+    @IsUUID('all', { each: true })
     @IsOptional()
-    images?: string[];
+    mediaIds?: string[];
 
     @ApiPropertyOptional({ type: [CreateVariantDto], description: 'Ürün Varyantları' })
     @IsArray()
@@ -177,6 +177,12 @@ export class UpdateProductDto {
     @IsBoolean()
     @IsOptional()
     isActive?: boolean;
+
+    @ApiPropertyOptional({ type: [String], description: 'Medyaların referans ID dizisi' })
+    @IsArray()
+    @IsUUID('all', { each: true })
+    @IsOptional()
+    mediaIds?: string[];
 }
 
 export class ProductQueryDto {

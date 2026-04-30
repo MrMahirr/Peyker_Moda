@@ -30,7 +30,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (token) {
                 try {
                     const response = await api.get('/auth/me');
-                    setUser(response.data?.data || response.data);
+                    const me = response.data?.data || response.data;
+                    setUser({
+                        ...me,
+                        role: me.role || me.roleName || '',
+                    });
                 } catch {
                     console.error('Session expired or invalid token');
                     localStorage.removeItem('token');
@@ -50,7 +54,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (data.accessToken) {
                 localStorage.setItem('token', data.accessToken);
                 localStorage.setItem('refreshToken', data.refreshToken);
-                setUser(data.user);
+                if (data.user) {
+                    setUser(data.user);
+                } else {
+                    const meRes = await api.get('/auth/me');
+                    const me = meRes.data?.data || meRes.data;
+                    setUser({
+                        ...me,
+                        role: me.role || me.roleName || '',
+                    });
+                }
             }
         } catch (error) {
             console.error('Login Error:', error);

@@ -42,7 +42,16 @@ const STEPS = [
     { id: 3, title: 'Görseller & SEO' },
 ];
 
-export const AddProductPage = () => {
+interface AddProductPageProps {
+    onClose?: () => void;
+    onSuccess?: () => void;
+    isModal?: boolean;
+}
+
+const isUuid = (value: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPageProps) => {
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,38 +77,49 @@ export const AddProductPage = () => {
     const { handleSubmit, watch, trigger, setValue } = form;
     const hasVariants = watch('hasVariants');
 
+    const handleClose = () => {
+        if (onClose) {
+            onClose();
+            return;
+        }
+        navigate('/catalog');
+    };
+
     const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
         setIsSubmitting(true);
         setSubmitError(null);
         try {
+            const mediaIds = (data.images || []).filter((id) => isUuid(id));
             const productData: any = {
                 name: data.name,
                 sku: data.sku,
                 description: data.description,
                 price: data.price,
+                cost: data.costPrice || undefined,
                 categoryId: data.category,
                 isActive: true,
-                images: data.images,
+                mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
             };
 
             if (data.hasVariants && data.variants && data.variants.length > 0) {
                 productData.variants = data.variants.map((v: any) => ({
                     sku: v.sku,
                     price: v.price,
-                    stock: v.stock,
-                    size: v.options?.[0] || undefined, 
+                    stock: Number.isFinite(v.stock) ? Math.max(0, Math.round(v.stock)) : 0,
+                    size: v.options?.[0] || undefined,
                     color: v.options?.[1] || undefined,
                 }));
-            } else {
+            } else if (data.manageStock) {
                 productData.variants = [{
                     sku: `${data.sku}-STD`,
                     price: data.price,
-                    stock: data.manageStock ? 100 : 0 // Default stock if no variants
+                    stock: 100,
                 }];
             }
 
             await productsService.create(productData);
-            navigate('/catalog');
+            onSuccess?.();
+            handleClose();
         } catch (err: any) {
             setSubmitError(err.response?.data?.message || 'Ürün kaydedilirken sunucu hatası oluştu');
             console.error('Product create error:', err);
@@ -126,12 +146,12 @@ export const AddProductPage = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20">
+        <div className={`max-w-4xl mx-auto space-y-8 ${isModal ? 'pb-6' : 'pb-20'}`}>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <button 
-                        onClick={() => navigate('/catalog')}
+                        onClick={handleClose}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-900 transition-colors shadow-sm"
                     >
                         <ChevronLeft className="w-4 h-4" />
@@ -142,7 +162,7 @@ export const AddProductPage = () => {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button variant="secondary" onClick={() => navigate('/catalog')}>İptal</Button>
+                    <Button variant="secondary" onClick={handleClose}>İptal</Button>
                     <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isSubmitting}>
                         {!isSubmitting && <Save className="w-4 h-4 mr-1.5" />}
                         Kaydet

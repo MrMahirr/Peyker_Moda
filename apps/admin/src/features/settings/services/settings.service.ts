@@ -1,4 +1,4 @@
-import api from '@/lib/axios';
+﻿import api from '@/lib/axios';
 
 export interface StoreSettings {
     id: string;
@@ -9,6 +9,12 @@ export interface StoreSettings {
     currency: string;
     taxRate: number;
     lowStockThreshold: number;
+    receiptHeader: string;
+    receiptFooter: string;
+    receiptAddress: string;
+    receiptPhone: string;
+    receiptTaxRate: number;
+    receiptShowLogo: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -21,6 +27,12 @@ export interface UpdateSettingsDto {
     currency?: string;
     taxRate?: number;
     lowStockThreshold?: number;
+    receiptHeader?: string;
+    receiptFooter?: string;
+    receiptAddress?: string;
+    receiptPhone?: string;
+    receiptTaxRate?: number;
+    receiptShowLogo?: boolean;
 }
 
 export const settingsService = {
@@ -30,17 +42,24 @@ export const settingsService = {
             return response.data.data;
         } catch (error) {
             // Return defaults if settings endpoint doesn't exist
+            const now = new Date().toISOString();
             return {
                 id: '1',
                 storeName: 'Peyker Moda',
-                storeAddress: 'İstanbul, Türkiye',
+                storeAddress: 'Istanbul, Turkiye',
                 storePhone: '+90 555 123 4567',
                 storeEmail: 'info@peykermoda.com',
                 currency: 'TRY',
                 taxRate: 18,
                 lowStockThreshold: 10,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
+                receiptHeader: 'Peyker Moda',
+                receiptFooter: 'Tesekkur ederiz, yine bekleriz.',
+                receiptAddress: 'Istanbul, Turkiye',
+                receiptPhone: '+90 555 123 4567',
+                receiptTaxRate: 18,
+                receiptShowLogo: true,
+                createdAt: now,
+                updatedAt: now,
             };
         }
     },

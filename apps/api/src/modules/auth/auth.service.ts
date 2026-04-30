@@ -282,4 +282,75 @@ export class AuthService {
       roleName: user.role.name,
     };
   }
+
+  /**
+   * Profil bilgilerini güncelle
+   */
+  async updateProfile(
+    userId: string,
+    data: { firstName?: string; lastName?: string; email?: string },
+  ): Promise<AuthenticatedUser> {
+    if (data.email) {
+      const existingUser = await this.prisma.user.findFirst({
+        where: {
+          email: data.email,
+          NOT: { id: userId },
+        },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('Bu email adresi zaten kullanılıyor');
+      }
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data,
+      include: { role: true },
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      roleId: user.roleId,
+      roleName: user.role.name,
+    };
+  }
+
+  /**
+   * Şifre değiştir
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Kullanıcı bulunamadı');
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Mevcut şifre hatalı');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    return { message: 'Şifre güncellendi' };
+  }
 }

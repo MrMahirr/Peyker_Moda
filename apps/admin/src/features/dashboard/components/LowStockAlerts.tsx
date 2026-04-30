@@ -1,67 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import { dashboardService, LowStockProduct } from '../services/dashboard.service';
+import { AlertTriangle, ChevronRight } from 'lucide-react';
 
-export const LowStockAlerts = () => {
-    const [items, setItems] = useState<LowStockProduct[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const data = await dashboardService.getLowStock(10, 5);
-                setItems(data || []);
-            } catch (err) {
-                setError('Veri yüklenemedi');
-                console.error('Low stock fetch error:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="bg-white rounded-xl border border-zinc-200 shadow-sm h-full flex items-center justify-center p-6">
-                <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
-            </div>
-        );
-    }
-
-    return (
-        <div className="bg-white rounded-xl border border-zinc-200 shadow-sm h-full">
-            <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
-                <h3 className="font-semibold text-zinc-900">Kritik Stok</h3>
-                <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-medium">
-                    {items.length} Ürün
-                </span>
-            </div>
-            <div className="p-6 space-y-4">
-                {items.length === 0 ? (
-                    <p className="text-sm text-zinc-500 text-center">Kritik stok yok 🎉</p>
-                ) : (
-                    items.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                                <div className="h-8 w-8 rounded-full bg-red-50 flex items-center justify-center text-red-500">
-                                    <AlertCircle className="w-4 h-4" />
-                                </div>
-                                <div>
-                                    <span className="text-sm font-medium text-zinc-700 block">
-                                        {item.productName}
-                                    </span>
-                                    <span className="text-xs text-zinc-500">
-                                        {item.size} / {item.color}
-                                    </span>
-                                </div>
-                            </div>
-                            <span className="text-sm font-bold text-red-600">{item.stock} ad.</span>
-                        </div>
-                    ))
-                )}
-            </div>
+export const LowStockAlerts = () => (
+    <div className="bg-white rounded-2xl border border-zinc-200/80 p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+            <h3 className="font-bold text-zinc-900 flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-amber-500" /> Kritik Stok Uyarıları</h3>
+            <button className="text-[12px] font-semibold text-primary hover:underline flex items-center">Tümünü Gör <ChevronRight className="h-3 w-3 ml-1" /></button>
         </div>
-    );
-};
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center mb-3">
+                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+            </div>
+            <p className="text-[14px] font-semibold text-zinc-700">Stoklar iyi durumda</p>
+            <p className="text-[12px] text-zinc-500 mt-1">Kritik seviyeye düşen ürün bulunmuyor.</p>
+        </div>
+    </div>
+);

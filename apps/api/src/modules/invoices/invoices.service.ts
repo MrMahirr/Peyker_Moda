@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateInvoiceDto } from './dto';
+import { InvoiceStatus } from '@prisma/client';
 import PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -64,10 +65,82 @@ export class InvoicesService {
         return invoice;
     }
 
+    async findAll(query: { page?: number; limit?: number; status?: InvoiceStatus; startDate?: string; endDate?: string }) {
+        const page = query.page || 1;
+        const limit = query.limit || 50;
+        const skip = (page - 1) * limit;
+
+        const where: any = {};
+        if (query.status) where.status = query.status;
+        if (query.startDate || query.endDate) {
+            where.createdAt = {
+                ...(query.startDate ? { gte: new Date(query.startDate) } : {}),
+                ...(query.endDate ? { lte: new Date(query.endDate) } : {}),
+            };
+        }
+
+        const [invoices, total] = await Promise.all([
+            this.prisma.invoice.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    order: {
+                        include: { customer: true },
+                    },
+                },
+            }),
+            this.prisma.invoice.count({ where }),
+        ]);
+
+        const data = invoices.map((invoice) => ({
+            id: invoice.id,
+            invoiceNumber: invoice.invoiceNo,
+            type: 'SALES',
+            customerId: invoice.order?.customerId,
+            customer: invoice.order?.customer
+                ? {
+                    firstName: invoice.order.customer.firstName,
+                    lastName: invoice.order.customer.lastName,
+                    phone: invoice.order.customer.phone,
+                }
+                : null,
+            orderId: invoice.orderId,
+            subtotal: Number(invoice.amount) - Number(invoice.taxAmount),
+            tax: Number(invoice.taxAmount),
+            total: Number(invoice.amount),
+            status: invoice.status,
+            createdAt: invoice.createdAt,
+            updatedAt: invoice.updatedAt,
+        }));
+
+        return {
+            data,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
+
     async findOne(id: string) {
         const invoice = await this.prisma.invoice.findUnique({ where: { id }, include: { order: true } });
         if (!invoice) throw new NotFoundException('Fatura bulunamadı');
         return invoice;
+    }
+
+    async updateStatus(id: string, status: InvoiceStatus) {
+        if (!status) {
+            throw new BadRequestException('Status is required');
+        }
+        await this.findOne(id);
+        return this.prisma.invoice.update({
+            where: { id },
+            data: { status },
+        });
     }
 
     async generatePdf(invoiceId: string) {

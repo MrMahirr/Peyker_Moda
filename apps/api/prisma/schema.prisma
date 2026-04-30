@@ -222,6 +222,7 @@ model Order {
   user              User?         @relation(fields: [userId], references: [id])
   payments          Payment[]
   returns           Return[]
+  shipments         Shipment[]
   transactions      Transaction[]
 
   @@index([customerId])
@@ -229,6 +230,66 @@ model Order {
   @@index([status])
   @@index([createdAt])
   @@map("orders")
+}
+
+model Carrier {
+  id        String         @id @default(uuid())
+  name      String
+  code      CarrierCode    @unique
+  apiKey    String?
+  isActive  Boolean        @default(true)
+  logo      String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  rates     ShippingRate[]
+  shipments Shipment[]
+
+  @@index([isActive])
+  @@map("carriers")
+}
+
+model Shipment {
+  id                String          @id @default(uuid())
+  orderId           String
+  carrierId         String
+  trackingNumber    String          @unique
+  status            ShipmentStatus  @default(PREPARING)
+  recipientName     String
+  recipientPhone    String
+  recipientAddress  String
+  weight            Decimal?        @db.Decimal(10, 2)
+  desi              Decimal?        @db.Decimal(10, 2)
+  shippingCost      Decimal         @default(0) @db.Decimal(10, 2)
+  estimatedDelivery DateTime?
+  deliveredAt       DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  order             Order           @relation(fields: [orderId], references: [id])
+  carrier           Carrier         @relation(fields: [carrierId], references: [id])
+
+  @@index([orderId])
+  @@index([carrierId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("shipments")
+}
+
+model ShippingRate {
+  id        String    @id @default(uuid())
+  carrierId String
+  minWeight Decimal   @db.Decimal(10, 2)
+  maxWeight Decimal   @db.Decimal(10, 2)
+  zone      String
+  price     Decimal   @db.Decimal(10, 2)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  carrier   Carrier   @relation(fields: [carrierId], references: [id])
+
+  @@index([carrierId])
+  @@index([isActive])
+  @@unique([carrierId, minWeight, maxWeight, zone])
+  @@map("shipping_rates")
 }
 
 model OrderItem {
@@ -411,6 +472,23 @@ model Setting {
   @@map("settings")
 }
 
+model Media {
+  id        String   @id @default(uuid())
+  filename  String   // Orijinal dosya adı
+  key       String   @unique // S3 içerisindeki benzersiz dosya anahtarı (örn: products/123-abc.jpg)
+  url       String   // Dosyaya erişim linki
+  mimetype  String   // Dosya tipi (image/jpeg, vb.)
+  size      Int      // Dosya boyutu (byte)
+  folder    String   // Hangi klasöre yüklendiği (products, categories, vb.)
+  alt       String?  // Görüntüler için alternatif metin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([folder])
+  @@index([mimetype])
+  @@map("media")
+}
+
 // UserRole enum REMOVED — replaced by dynamic Role model
 
 enum OrderStatus {
@@ -463,6 +541,26 @@ enum DiscountType {
   FIXED_AMOUNT
 }
 
+enum CarrierCode {
+  ARAS
+  MNG
+  YURTICI
+  PTT
+  SURAT
+  UPS
+  OTHER
+}
+
+enum ShipmentStatus {
+  PREPARING
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  RETURNED
+  FAILED
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -470,7 +568,8 @@ enum Gender {
 }
 
 enum InvoiceStatus {
-  DRAFT
-  ISSUED
-  CANCELLED
+    DRAFT
+    ISSUED
+    PAID
+    CANCELLED
 }

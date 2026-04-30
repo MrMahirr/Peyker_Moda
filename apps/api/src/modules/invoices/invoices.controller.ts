@@ -1,6 +1,6 @@
-import { Controller, Post, Body, Get, Param, Res, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Res, UseGuards, Patch, Query, BadRequestException } from '@nestjs/common';
 import { InvoicesService } from './invoices.service';
-import { CreateInvoiceDto } from './dto';
+import { CreateInvoiceDto, UpdateInvoiceDto, InvoiceQueryDto } from './dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles } from '../../common/decorators';
@@ -21,11 +21,28 @@ export class InvoicesController {
         return this.invoicesService.createFromOrder(createInvoiceDto);
     }
 
+    @Get()
+    @Roles('admin', 'manager')
+    @ApiOperation({ summary: 'Fatura listesi' })
+    async findAll(@Query() query: InvoiceQueryDto) {
+        return this.invoicesService.findAll(query);
+    }
+
     @Get(':id')
     @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Fatura detayı' })
     async findOne(@Param('id') id: string) {
         return this.invoicesService.findOne(id);
+    }
+
+    @Patch(':id')
+    @Roles('admin', 'manager')
+    @ApiOperation({ summary: 'Fatura durumunu güncelle' })
+    async updateStatus(@Param('id') id: string, @Body() updateDto: UpdateInvoiceDto) {
+        if (!updateDto.status) {
+            throw new BadRequestException('status is required');
+        }
+        return this.invoicesService.updateStatus(id, updateDto.status);
     }
 
     @Get(':id/pdf')

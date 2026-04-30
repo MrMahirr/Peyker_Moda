@@ -1,74 +1,131 @@
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Shield, Plus, Lock } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
+import { Shield, Plus, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { staffService } from '../services/staff.service';
+import type { Role, Permission } from '../types';
+import { RoleModal } from './RoleModal';
 
-const roles = [
-    {
-        id: 1,
-        name: 'Sistem Yöneticisi',
-        description: 'Tüm modüllere ve ayarlara tam erişim yetkisi.',
-        permissions: ['all'],
-        usersCount: 2
-    },
-    {
-        id: 2,
-        name: 'Satış Temsilcisi',
-        description: 'POS, Kasa işlemleri ve Müşteri listesi ekranlarına erişim.',
-        permissions: ['pos.read', 'pos.write', 'crm.read'],
-        usersCount: 5
-    },
-    {
-        id: 3,
-        name: 'Depo Sorumlusu',
-        description: 'Ürün yönetimi, stok takibi ve katalog düzenlemesi.',
-        permissions: ['catalog.read', 'catalog.write'],
-        usersCount: 3
-    },
-];
+const RESOURCE_LABELS: Record<string, string> = {
+    products: 'Urun',
+    categories: 'Kategori',
+    variants: 'Varyant',
+    orders: 'Siparis',
+    customers: 'Musteri',
+    'customer-groups': 'Musteri grubu',
+    transactions: 'Islem',
+    invoices: 'Fatura',
+    campaigns: 'Kampanya',
+    coupons: 'Kupon',
+    pos: 'POS',
+    dashboard: 'Gosterge Paneli',
+    users: 'Kullanici',
+    roles: 'Rol',
+    settings: 'Ayarlar',
+    media: 'Medya',
+    'audit-logs': 'Denetim Kaydi',
+    cms: 'CMS',
+    cargo: 'Kargo',
+};
+
+const ACTION_LABELS: Record<string, string> = {
+    create: 'olusturma',
+    read: 'goruntuleme',
+    update: 'guncelleme',
+    delete: 'silme',
+};
+
+const titleCase = (value: string) =>
+    value
+        .split('-')
+        .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+        .join(' ');
 
 export const RoleManager = () => {
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [permissions, setPermissions] = useState<Permission[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [expandedRoles, setExpandedRoles] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const [r, p] = await Promise.all([staffService.getRoles(), staffService.getPermissions()]);
+            setRoles(r || []);
+            setPermissions(p || []);
+        } catch {
+            toast.error('Yetki/Rol verileri yuklenemedi');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getPermissionLabel = (permId: string) => {
+        const perm = permissions.find((x) => x.id === permId);
+        const raw = perm?.name || permId;
+        if (!raw.includes(':')) return raw;
+        const [resource, action] = raw.split(':');
+        const resourceLabel = RESOURCE_LABELS[resource] || titleCase(resource);
+        const actionLabel = ACTION_LABELS[action] || action;
+        return `${resourceLabel} ${actionLabel} izni`;
+    };
+
+    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-zinc-900" /></div>;
+
     return (
-        <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {roles.map((role) => (
-                <div key={role.id} className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm flex flex-col p-6 hover:shadow-md transition-all duration-200 group">
-                    <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 bg-zinc-50 border border-zinc-200/80 rounded-xl flex items-center justify-center text-zinc-900 shadow-sm group-hover:scale-105 transition-transform">
-                            {role.id === 1 ? <Shield className="w-6 h-6" /> : <Lock className="w-6 h-6 text-zinc-500" />}
-                        </div>
-                        <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 px-2 py-1 rounded">
-                            {role.usersCount} Personel
-                        </span>
-                    </div>
-                    
-                    <h3 className="text-[16px] font-bold text-zinc-900 mb-1.5">{role.name}</h3>
-                    <p className="text-[13px] font-medium text-zinc-500 leading-relaxed min-h-[40px] mb-6">
-                        {role.description}
-                    </p>
-
-                    <div className="mt-auto space-y-4">
-                        <div className="flex items-center gap-2 p-3 bg-zinc-50 border border-zinc-200/50 rounded-xl">
-                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                            <span className="text-[13px] font-bold text-zinc-700">{role.permissions.length} Yetki Tanımlı</span>
+        <div className="space-y-6 p-6">
+            <div className="flex justify-between items-center">
+                <div><h2 className="text-xl font-bold text-zinc-900">Rol & Yetki Yonetimi</h2><p className="text-[13px] text-zinc-500 mt-1">Personel rollerini ve erisim yetkilerini yonetin.</p></div>
+                <Button icon={<Plus className="w-4 h-4" />} className="font-semibold shadow-md" onClick={() => setIsModalOpen(true)}>Yeni Rol</Button>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-4">
+                {roles.map(role => (
+                    <div key={role.id} className="bg-white rounded-2xl border border-zinc-200/80 p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-red-50 rounded-xl"><Shield className="h-5 w-5 text-red-600" /></div>
+                                <div><h3 className="font-bold text-zinc-900">{role.name}</h3><span className="text-[11px] text-zinc-500">{role.description}</span></div>
+                            </div>
+                            {role.isSystem && <Badge variant="neutral">Sistem</Badge>}
                         </div>
 
-                        <Button 
-                            variant="secondary" 
-                            className="w-full h-11 bg-white border border-zinc-200/80 shadow-sm hover:bg-zinc-50 font-bold text-zinc-700" 
-                            onClick={() => toast.info('Düzenleme özelliği yakında gelecek.', { className: 'font-medium' })}
-                        >
-                            İzinleri Düzenle
-                        </Button>
-                    </div>
-                </div>
-            ))}
+                        <div className="flex items-center justify-between">
+                            <span className="text-[12px] text-zinc-500">{role.permissions.length} izin</span>
+                            <button
+                                onClick={() => setExpandedRoles((prev) => ({ ...prev, [role.id]: !prev[role.id] }))}
+                                className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-zinc-600 hover:text-zinc-900"
+                            >
+                                Yetkiler
+                                {expandedRoles[role.id] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </button>
+                        </div>
 
-            <button className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/50 hover:bg-zinc-50 hover:border-zinc-300 transition-all group min-h-[300px]">
-                <div className="h-14 w-14 bg-white rounded-full border border-zinc-200 flex items-center justify-center mb-4 shadow-sm group-hover:border-zinc-900 group-hover:text-zinc-900 transition-colors">
-                    <Plus className="h-6 w-6 text-zinc-400 group-hover:text-zinc-900" />
-                </div>
-                <h3 className="text-[16px] font-bold text-zinc-900">Özel Rol Oluştur</h3>
-                <p className="text-[13px] font-medium text-zinc-500 mt-1 max-w-[200px] text-center">İhtiyacınıza göre özel izinlere sahip yeni bir rol tanımlayın.</p>
-            </button>
+                        {expandedRoles[role.id] && (
+                            <div className="mt-4 space-y-2">
+                                {role.permissions.map((p) => (
+                                    <div key={p} className="text-[12px] text-zinc-700 bg-zinc-50 border border-zinc-200/70 px-3 py-2 rounded-lg">
+                                        {getPermissionLabel(p)}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            <RoleModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                permissions={permissions}
+                onSuccess={loadData}
+            />
         </div>
     );
 };

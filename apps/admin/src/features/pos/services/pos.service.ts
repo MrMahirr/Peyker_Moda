@@ -13,35 +13,44 @@ export interface PosProduct {
 
 export interface PosSession {
     id: string;
-    status: 'OPEN' | 'CLOSED';
-    openingCash: number;
-    closingCash?: number;
+    openingBalance: number;
+    closingBalance?: number;
+    expectedBalance?: number;
+    difference?: number;
     totalSales?: number;
     totalTransactions?: number;
+    notes?: string;
     openedAt: string;
     closedAt?: string;
 }
+
+export type PaymentMethod = 'CASH' | 'CREDIT_CARD' | 'DEBIT_CARD' | 'BANK_TRANSFER' | 'OTHER';
 
 export interface CreateSaleDto {
     customerId?: string;
     items: {
         variantId: string;
         quantity: number;
-        unitPrice: number;
+        price: number;
+        discount?: number;
     }[];
-    paymentMethod: 'CASH' | 'CARD' | 'MIXED';
-    cashAmount?: number;
-    cardAmount?: number;
     discountAmount?: number;
+    couponCode?: string;
+    payments: {
+        method: PaymentMethod;
+        amount: number;
+    }[];
     notes?: string;
 }
 
 export interface SaleResult {
-    id: string;
-    saleNumber: string;
-    total: number;
+    order?: {
+        orderNumber?: string;
+    };
     change?: number;
-    receiptUrl?: string;
+    receipt?: {
+        orderNumber?: string;
+    };
 }
 
 export const posService = {
@@ -75,20 +84,20 @@ export const posService = {
         }
     },
 
-    async openSession(openingCash: number): Promise<PosSession> {
-        const response = await api.post('/pos/sessions/open', { openingCash });
+    async openSession(openingBalance: number): Promise<PosSession> {
+        const response = await api.post('/pos/sessions/open', { openingBalance });
         return response.data.data;
     },
 
-    async closeSession(closingCash: number): Promise<PosSession> {
-        const response = await api.post('/pos/sessions/close', { closingCash });
+    async closeSession(closingBalance: number): Promise<PosSession> {
+        const response = await api.post('/pos/sessions/close', { closingBalance });
         return response.data.data;
     },
 
     // Sales
     async createSale(data: CreateSaleDto): Promise<SaleResult> {
         const response = await api.post('/pos/sale', data);
-        return response.data;
+        return response.data.data;
     },
 
     async getSales(sessionId?: string) {

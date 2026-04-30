@@ -16,19 +16,23 @@ export const ProductList = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await productsService.getAll({ limit: 50 });
+            setProducts(response.data || []);
+        } catch (err) {
+            setError('Ürünler yüklenemedi');
+            console.error('Products fetch error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await productsService.getAll({ limit: 50 });
-                setProducts(response.data || []);
-            } catch (err) {
-                setError('Ürünler yüklenemedi');
-                console.error('Products fetch error:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchProducts();
     }, []);
 
@@ -40,6 +44,18 @@ export const ProductList = () => {
             } catch (err) {
                 console.error('Delete error:', err);
             }
+        }
+    };
+
+    const togglePublish = async (id: string, isActive: boolean) => {
+        setUpdatingId(id);
+        try {
+            const updated = await productsService.update(id, { isActive: !isActive });
+            setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...updated } : p)));
+        } catch (err) {
+            console.error('Publish toggle error:', err);
+        } finally {
+            setUpdatingId(null);
         }
     };
 
@@ -113,6 +129,28 @@ export const ProductList = () => {
             },
         },
         {
+            id: 'publish',
+            header: 'Yayin',
+            cell: ({ row }) => {
+                const isActive = row.original.isActive;
+                const isUpdating = updatingId === row.original.id;
+                return (
+                    <Button
+                        variant={isActive ? 'secondary' : 'primary'}
+                        size="sm"
+                        className={isActive ? 'text-amber-700 border-amber-200/60 bg-amber-50 hover:bg-amber-100' : ''}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            togglePublish(row.original.id, isActive);
+                        }}
+                        disabled={isUpdating}
+                    >
+                        {isUpdating ? 'Isleniyor...' : isActive ? 'Yayindan Al' : 'Yayinda'}
+                    </Button>
+                );
+            },
+        },
+        {
             id: 'actions',
             cell: ({ row }) => {
                 return (
@@ -121,7 +159,10 @@ export const ProductList = () => {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 text-zinc-400 hover:text-primary hover:bg-zinc-50"
-                            onClick={() => navigate(`/catalog/${row.original.id}`)}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                navigate(`/catalog/${row.original.id}`);
+                            }}
                         >
                             <Eye className="h-4 w-4" />
                         </Button>
@@ -129,7 +170,10 @@ export const ProductList = () => {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
-                            onClick={() => navigate(`/catalog/${row.original.id}/edit`)}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                navigate(`/catalog/${row.original.id}/edit`);
+                            }}
                         >
                             <Edit className="h-4 w-4" />
                         </Button>
@@ -137,7 +181,10 @@ export const ProductList = () => {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
-                            onClick={() => handleDelete(row.original.id)}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                handleDelete(row.original.id);
+                            }}
                         >
                             <Trash className="h-4 w-4" />
                         </Button>
@@ -185,7 +232,9 @@ export const ProductList = () => {
                 columns={columns}
                 data={products}
                 searchKey="name"
+                onRowClick={(row) => navigate(`/catalog/${row.id}`)}
             />
+
         </div>
     );
 };

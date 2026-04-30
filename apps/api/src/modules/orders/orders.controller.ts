@@ -74,6 +74,7 @@ export class OrdersController {
     ) {
         return this.ordersService.shipOrder(id);
     }
+    @Post(':id/cancel')
     @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Sipariş iptal et' })
     async cancel(

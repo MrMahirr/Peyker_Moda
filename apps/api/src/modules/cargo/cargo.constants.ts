@@ -1,0 +1,1 @@
+export const CARGO_PROVIDER = 'CARGO_PROVIDER';

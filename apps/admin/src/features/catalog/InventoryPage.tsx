@@ -1,9 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { InventoryStats } from './components/InventoryStats';
 import { InventoryFilters } from './components/InventoryFilters';
 import { InventoryTable } from './components/InventoryTable';
 import { Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 
 export const InventoryPage = () => {
@@ -30,6 +30,7 @@ export const InventoryPage = () => {
                 <InventoryFilters />
                 <InventoryTable />
             </div>
+
         </DashboardLayout>
     );
 };

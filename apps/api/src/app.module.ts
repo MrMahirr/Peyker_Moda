@@ -48,6 +48,8 @@ import { PaymentModule } from './modules/payment/payment.module';
 import { EmailModule } from './modules/email/email.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { CargoModule } from './modules/cargo/cargo.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { ShippingModule } from './modules/shipping/shipping.module';
 
 @Module({
   imports: [
@@ -122,6 +124,12 @@ import { CargoModule } from './modules/cargo/cargo.module';
 
     // Cargo Integration
     CargoModule,
+
+    // Shipping & Logistics
+    ShippingModule,
+
+    // Settings
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [

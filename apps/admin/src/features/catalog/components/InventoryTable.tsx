@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MoreVertical, Edit, Trash2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
@@ -11,6 +12,7 @@ const calculateStatus = (stock: number = 0) => {
 };
 
 export const InventoryTable = () => {
+    const navigate = useNavigate();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);
@@ -80,9 +82,17 @@ export const InventoryTable = () => {
                                     : 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=150&auto=format&fit=crop&sepia=100'; // Default placeholder
 
                                 return (
-                                    <tr key={product.id} className="hover:bg-zinc-50/50 transition-colors group relative">
+                                    <tr
+                                        key={product.id}
+                                        className="hover:bg-zinc-50/50 transition-colors group relative cursor-pointer"
+                                        onClick={() => navigate(`/catalog/${product.id}`)}
+                                    >
                                         <td className="p-4 pl-6">
-                                            <input type="checkbox" className="rounded border-zinc-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer" />
+                                            <input
+                                                type="checkbox"
+                                                className="rounded border-zinc-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                                                onClick={(event) => event.stopPropagation()}
+                                            />
                                         </td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
@@ -127,13 +137,22 @@ export const InventoryTable = () => {
                                         </td>
                                         <td className="p-4 pr-6 text-right">
                                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-1.5 text-zinc-400 hover:text-primary hover:bg-zinc-100 rounded-md transition-colors">
+                                                <button
+                                                    className="p-1.5 text-zinc-400 hover:text-primary hover:bg-zinc-100 rounded-md transition-colors"
+                                                    onClick={(event) => event.stopPropagation()}
+                                                >
                                                     <Edit className="w-4 h-4" />
                                                 </button>
-                                                <button className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+                                                <button
+                                                    className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                                                    onClick={(event) => event.stopPropagation()}
+                                                >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
-                                                <button className="p-1.5 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-md transition-colors">
+                                                <button
+                                                    className="p-1.5 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-md transition-colors"
+                                                    onClick={(event) => event.stopPropagation()}
+                                                >
                                                     <MoreVertical className="w-4 h-4" />
                                                 </button>
                                             </div>

@@ -85,6 +85,13 @@ export class PosController {
         return this.posService.cancelHeldSale(id);
     }
 
+    @Get('sessions/current')
+    @Roles('admin', 'manager', 'staff')
+    @ApiOperation({ summary: 'Aktif kasa oturumu' })
+    async getCurrentSession(@CurrentUser('id') userId: string) {
+        return this.posService.getCurrentSession(userId);
+    }
+
     @Post('sessions/open')
     @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Kasa oturumu aç' })
@@ -93,6 +100,16 @@ export class PosController {
         @CurrentUser('id') userId: string,
     ) {
         return this.posService.openSession(openDto, userId);
+    }
+
+    @Post('sessions/close')
+    @Roles('admin', 'manager', 'staff')
+    @ApiOperation({ summary: 'Kasa oturumunu kapat (aktif oturum)' })
+    async closeCurrentSession(
+        @Body() closeDto: CloseSessionDto,
+        @CurrentUser('id') userId: string,
+    ) {
+        return this.posService.closeCurrentSession(closeDto, userId);
     }
 
     @Post('sessions/:id/close')

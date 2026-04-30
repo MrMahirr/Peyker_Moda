@@ -63,6 +63,25 @@ export const navigation = [
             { title: 'Fiş/Yazıcı', path: '/settings/printer' },
             { title: 'Profilim', path: '/settings/profile' }
         ]
+    },
+    {
+        title: 'Kargo & Lojistik',
+        path: '/shipping',
+        icon: 'truck',
+    },
+    {
+        title: 'Tedarikçiler',
+        path: '/suppliers',
+        icon: 'building',
+    },
+    {
+        title: 'Raporlar',
+        path: '/reports',
+        icon: 'bar-chart-2',
+    },
+    {
+        title: 'CMS (İçerik)',
+        path: '/cms',
+        icon: 'file-text',
     }
 ];
-

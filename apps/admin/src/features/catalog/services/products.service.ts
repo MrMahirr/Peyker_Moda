@@ -46,12 +46,14 @@ export interface CreateProductDto {
     name: string;
     sku: string;
     description?: string;
-    basePrice: number;
-    salePrice?: number;
-    categoryId?: string;
+    price: number;
+    comparePrice?: number;
+    cost?: number;
+    categoryId: string;
+    brand?: string;
     isActive?: boolean;
     isFeatured?: boolean;
-    images?: string[];
+    mediaIds?: string[];
     variants?: {
         sku: string;
         price?: number;
@@ -59,6 +61,7 @@ export interface CreateProductDto {
         size?: string;
         color?: string;
         barcode?: string;
+        colorCode?: string;
     }[];
 }
 
@@ -84,7 +87,15 @@ export const productsService = {
         if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
 
         const response = await api.get(`/products?${queryParams}`);
-        return response.data.data;
+        const payload = response.data?.data ?? response.data ?? [];
+        const data = Array.isArray(payload) ? payload : [];
+        const meta = response.data?.meta ?? {
+            total: data.length,
+            page: params?.page ?? 1,
+            limit: params?.limit ?? data.length,
+            totalPages: 1
+        };
+        return { data, meta };
     },
 
     async getById(id: string): Promise<Product> {

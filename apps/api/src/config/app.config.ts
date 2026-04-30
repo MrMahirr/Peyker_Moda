@@ -21,6 +21,13 @@ export default registerAs('app', () => ({
     throttleTtl: parseInt(process.env.THROTTLE_TTL || '60000', 10), // 60 seconds
     throttleLimit: parseInt(process.env.THROTTLE_LIMIT || '100', 10), // 100 requests
 
+    // Default admin user
+    adminEmail: process.env.ADMIN_EMAIL || 'admin@peyker.com',
+    adminPassword: process.env.ADMIN_PASSWORD || 'Admin123!',
+    adminFirstName: process.env.ADMIN_FIRST_NAME || 'Admin',
+    adminLastName: process.env.ADMIN_LAST_NAME || 'Peyker',
+    adminForcePassword: process.env.ADMIN_FORCE_PASSWORD || 'false',
+
     // Redis
     redisHost: process.env.REDIS_HOST || 'localhost',
     redisPort: parseInt(process.env.REDIS_PORT || '6379', 10),

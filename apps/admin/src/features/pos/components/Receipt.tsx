@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+﻿import { forwardRef } from 'react';
 import { CartItem } from '@/context/PosContext';
 
 interface ReceiptProps {
@@ -8,10 +8,43 @@ interface ReceiptProps {
     date: Date;
     receiptNo: string;
     cashierName: string;
+    headerText?: string;
+    address?: string;
+    phone?: string;
+    footerText?: string;
+    taxRate?: number;
+    showLogo?: boolean;
 }
 
 export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
-    ({ cart, total, paymentMethod, date, receiptNo, cashierName }, ref) => {
+    (
+        {
+            cart,
+            total,
+            paymentMethod,
+            date,
+            receiptNo,
+            cashierName,
+            headerText,
+            address,
+            phone,
+            footerText,
+            taxRate,
+            showLogo,
+        },
+        ref
+    ) => {
+        const header = headerText || 'PEYKER MODA';
+        const addressLines = (address || 'Bagdat Caddesi No: 123\nKadikoy / ISTANBUL')
+            .split('\n')
+            .map((line) => line.trim())
+            .filter(Boolean);
+        const phoneText = phone || '(0216) 123 45 67';
+        const footer = footerText || '*** IYI GUNLER DILERIZ ***';
+        const rate = typeof taxRate === 'number' ? taxRate : 10;
+        const taxAmount = (total * rate) / 100;
+        const showLogoResolved = showLogo ?? true;
+
         return (
             <div
                 ref={ref}
@@ -24,10 +57,16 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             >
                 {/* Header */}
                 <div className="text-center mb-2">
-                    <h1 className="text-base font-bold text-black uppercase tracking-wider">PEYKER MODA</h1>
-                    <p className="text-[10px] mt-1">Bağdat Caddesi No: 123</p>
-                    <p className="text-[10px]">Kadıköy / İSTANBUL</p>
-                    <p className="text-[10px]">Tel: (0216) 123 45 67</p>
+                    {showLogoResolved && (
+                        <div className="mx-auto mb-2 h-10 w-10 rounded-full border border-black/20 flex items-center justify-center text-[8px]">
+                            LOGO
+                        </div>
+                    )}
+                    <h1 className="text-base font-bold text-black uppercase tracking-wider">{header}</h1>
+                    {addressLines.map((line) => (
+                        <p key={line} className="text-[10px] mt-1">{line}</p>
+                    ))}
+                    <p className="text-[10px]">Tel: {phoneText}</p>
                     <p className="text-[10px]">Mersis: 1234567890123456</p>
                 </div>
 
@@ -39,7 +78,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
                         <span>{date.toLocaleDateString('tr-TR')} {date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     <div className="flex justify-between">
-                        <span>Fiş No:</span>
+                        <span>Fis No:</span>
                         <span>{receiptNo}</span>
                     </div>
                     <div className="flex justify-between">
@@ -69,24 +108,24 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
                         <span>{total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL</span>
                     </div>
                     <div className="flex justify-between text-[10px] mt-1">
-                        <span>KDV (%10):</span>
-                        <span>{(total * 0.1).toFixed(2)} TL</span>
+                        <span>KDV (%{rate}):</span>
+                        <span>{taxAmount.toFixed(2)} TL</span>
                     </div>
                 </div>
 
                 {/* Payment Type */}
                 <div className="border-t border-black border-dashed my-2 pt-2 text-[11px]">
                     <div className="flex justify-between uppercase">
-                        <span>Ödeme Tipi:</span>
-                        <span>{paymentMethod === 'cash' ? 'Nakit' : paymentMethod === 'credit_card' ? 'Kredi Kartı' : 'Diğer'}</span>
+                        <span>Odeme Tipi:</span>
+                        <span>{paymentMethod === 'cash' ? 'Nakit' : paymentMethod === 'credit_card' ? 'Kredi Karti' : 'Diger'}</span>
                     </div>
                 </div>
 
                 {/* Footer */}
                 <div className="text-center mt-4 text-[10px] space-y-1">
-                    <p>*** İYİ GÜNLER DİLERİZ ***</p>
-                    <p>Değişim için fiş ibrazı zorunludur.</p>
-                    <p>Kıyafetlerde iade yoktur.</p>
+                    <p>{footer}</p>
+                    <p>Degisim icin fis ibrazi zorunludur.</p>
+                    <p>Kiyafetlerde iade yoktur.</p>
                     <div className="mt-2 flex justify-center py-2 bg-white">
                         {/* Barcode Mock */}
                         <div className="flex gap-[2px] h-8 justify-center items-end opacity-80">

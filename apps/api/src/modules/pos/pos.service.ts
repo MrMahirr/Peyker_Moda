@@ -294,8 +294,31 @@ export class PosService {
     }
 
     /**
-     * Kasa oturumu aç
+     * Kasa oturumu (aktif)
      */
+    async getCurrentSession(userId: string) {
+        return this.prisma.posSession.findFirst({
+            where: { userId, closedAt: null },
+            orderBy: { openedAt: 'desc' },
+        });
+    }
+
+    /**
+     * Kasa oturumunu kapat (aktif oturum)
+     */
+    async closeCurrentSession(closeDto: CloseSessionDto, userId: string) {
+        const session = await this.prisma.posSession.findFirst({
+            where: { userId, closedAt: null },
+            orderBy: { openedAt: 'desc' },
+        });
+
+        if (!session) {
+            throw new NotFoundException('Açık oturum bulunamadı');
+        }
+
+        return this.closeSession(session.id, closeDto, userId);
+    }
+
     async openSession(openDto: OpenSessionDto, userId: string) {
         // Açık oturum var mı kontrol et
         const existingSession = await this.prisma.posSession.findFirst({

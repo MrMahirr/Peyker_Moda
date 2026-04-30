@@ -22,6 +22,7 @@ import { VariantsModule } from './modules/variants/variants.module';
 // Faz 3: CRM
 import { CustomersModule } from './modules/customers/customers.module';
 import { CustomerGroupsModule } from './modules/customer-groups/customer-groups.module';
+import { LoyaltyModule } from './modules/loyalty/loyalty.module';
 
 // Faz 4: Sales & POS
 import { OrdersModule } from './modules/orders/orders.module';
@@ -94,6 +95,7 @@ import { ShippingModule } from './modules/shipping/shipping.module';
     // Faz 3: CRM
     CustomersModule,
     CustomerGroupsModule,
+    LoyaltyModule,
 
     // Faz 4: Sales & POS
     OrdersModule,

@@ -1,5 +1,6 @@
 import {
     IsString,
+    IsNotEmpty,
     IsOptional,
     IsNumber,
     IsInt,
@@ -139,4 +140,16 @@ export class AddPaymentDto {
     @IsString()
     @IsOptional()
     note?: string;
+}
+
+export class CreateOrderNoteDto {
+    @ApiProperty({ example: 'Musteri teslimat saati icin tekrar aranacak.' })
+    @IsString()
+    @IsNotEmpty()
+    content: string;
+
+    @ApiPropertyOptional({ example: true })
+    @IsBoolean()
+    @IsOptional()
+    isInternal?: boolean;
 }

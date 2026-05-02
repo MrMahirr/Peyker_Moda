@@ -44,6 +44,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsLoading(false);
         };
         checkAuth();
+
+        // Global 401 hatalarını (Axios üzerinden gelen) yakalayıp kullanıcıyı logout yapıyoruz
+        const handleUnauthorized = () => {
+            console.warn('Unauthorized access detected, performing automatic logout...');
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            setUser(null);
+            // window.location.href = '/login'; // Opsiyonel yönlendirme
+        };
+
+        window.addEventListener('auth:unauthorized', handleUnauthorized as EventListener);
+        
+        return () => {
+            window.removeEventListener('auth:unauthorized', handleUnauthorized as EventListener);
+        };
     }, []);
 
     const login = async (credentials: Record<string, unknown>) => {

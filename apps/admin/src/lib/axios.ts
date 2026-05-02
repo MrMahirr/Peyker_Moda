@@ -22,7 +22,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        // TODO: Handle global errors (e.g. 401 Unauthorized)
+        // HTTP 401 Unauthorized hatası yakalandığında sisteme global bir event fırlatıyoruz.
+        // Bu sayede Axios, React'e bağımlı kalmadan "Decoupled" çalışıyor (SOLID - Dependency Inversion).
+        if (error.response?.status === 401) {
+            window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+        }
+        
         return Promise.reject(error);
     }
 );

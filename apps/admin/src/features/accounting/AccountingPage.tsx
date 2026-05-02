@@ -1,13 +1,47 @@
-import { useState } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { useState, useEffect } from 'react';
 import { TransactionList } from './cash-flow/TransactionList';
 import { InvoiceList } from './invoices/InvoiceList';
 import { ZReport } from './reports/ZReport';
-import { Wallet, PieChart, FileText, TrendingUp, TrendingDown } from 'lucide-react';
+import { Wallet, PieChart, FileText, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
+import { cashService } from './services/cash.service';
+import { transactionsService } from './services/transactions.service';
 
 export const AccountingPage = () => {
     const [activeTab, setActiveTab] = useState<'transactions' | 'invoices' | 'reports'>('transactions');
+    const [cashBalance, setCashBalance] = useState(0);
+    const [monthlyIncome, setMonthlyIncome] = useState(0);
+    const [monthlyExpense, setMonthlyExpense] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDashboardStats = async () => {
+            try {
+                // 1. Kasa bakiyesi: Tüm aktif kasaların bakiyelerinin toplamı
+                const registers = await cashService.getRegisters();
+                const totalBalance = registers.reduce((sum, reg) => sum + Number(reg.balance || 0), 0);
+                setCashBalance(totalBalance);
+
+                // 2. Aylık gelir / gider hesaplaması
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+                const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
+                
+                const summary = await transactionsService.getSummary(startOfMonth, endOfMonth);
+                setMonthlyIncome(summary.income?.total || 0);
+                setMonthlyExpense(summary.expense?.total || 0);
+            } catch (error) {
+                console.error("Ön muhasebe verileri çekilirken hata oluştu:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchDashboardStats();
+    }, []);
+
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
+    };
 
     return (
         <div className="space-y-6">
@@ -60,7 +94,9 @@ export const AccountingPage = () => {
                     <div className="relative z-10 flex justify-between items-start">
                         <div>
                             <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">Kasa Bakiyesi</p>
-                            <h3 className="text-[32px] font-black mt-2 tracking-tight">124.500 ₺</h3>
+                            <h3 className="text-[32px] font-black mt-2 tracking-tight">
+                                {isLoading ? <Loader2 className="h-8 w-8 animate-spin mt-1 text-zinc-500" /> : formatCurrency(cashBalance)}
+                            </h3>
                         </div>
                         <div className="p-3 bg-zinc-800 rounded-xl shadow-inner border border-zinc-700/50">
                             <Wallet className="h-6 w-6 text-zinc-300" />
@@ -72,7 +108,9 @@ export const AccountingPage = () => {
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Bu Ay Giren</p>
-                            <h3 className="text-2xl font-black mt-2 text-emerald-600 tracking-tight">+45.250 ₺</h3>
+                            <h3 className="text-2xl font-black mt-2 text-emerald-600 tracking-tight flex items-center gap-1">
+                                {isLoading ? <Loader2 className="h-6 w-6 animate-spin mt-1 text-emerald-200" /> : `+${formatCurrency(monthlyIncome)}`}
+                            </h3>
                         </div>
                         <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-100/50">
                             <TrendingUp className="h-5 w-5 text-emerald-600" />
@@ -84,7 +122,9 @@ export const AccountingPage = () => {
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Bu Ay Çıkan</p>
-                            <h3 className="text-2xl font-black mt-2 text-red-600 tracking-tight">-12.800 ₺</h3>
+                            <h3 className="text-2xl font-black mt-2 text-red-600 tracking-tight flex items-center gap-1">
+                                {isLoading ? <Loader2 className="h-6 w-6 animate-spin mt-1 text-red-200" /> : `-${formatCurrency(monthlyExpense)}`}
+                            </h3>
                         </div>
                         <div className="p-2.5 bg-red-50 rounded-xl border border-red-100/50">
                             <TrendingDown className="h-5 w-5 text-red-600" />

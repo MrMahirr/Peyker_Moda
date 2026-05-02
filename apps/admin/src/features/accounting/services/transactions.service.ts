@@ -40,6 +40,13 @@ export interface PaginatedResponse<T> {
     };
 }
 
+export interface ReportSummary {
+    period: { start: string; end: string };
+    income: { transactions: number; sales: number; total: number; count: number };
+    expense: { total: number; count: number };
+    netProfit: number;
+}
+
 export const transactionsService = {
     async getAll(params?: TransactionQueryParams): Promise<PaginatedResponse<Transaction>> {
         const queryParams = new URLSearchParams();
@@ -63,5 +70,10 @@ export const transactionsService = {
     async create(data: Partial<Transaction>): Promise<Transaction> {
         const response = await api.post('/transactions', data);
         return response.data.data;
+    },
+
+    async getSummary(startDate: string, endDate: string): Promise<ReportSummary> {
+        const response = await api.get(`/reports/summary?startDate=${startDate}&endDate=${endDate}`);
+        return response.data?.data || response.data;
     }
 };

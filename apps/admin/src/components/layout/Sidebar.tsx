@@ -8,19 +8,28 @@ import {
     CreditCard,
     BarChart3,
     Store,
-    Calculator
+    Calculator,
+    Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 export const Sidebar = () => {
+    const { user } = useAuth();
+    const userRole = user?.role?.toLowerCase() || '';
+
     const navItems = [
-        { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
-        { name: 'Inventory', icon: Package, path: '/inventory' },
-        { name: 'Orders', icon: ShoppingBag, path: '/orders' },
-        { name: 'Customers', icon: Users, path: '/customers' },
-        { name: 'Accounting', icon: CreditCard, path: '/accounting' },
-        { name: 'Marketing', icon: BarChart3, path: '/marketing' },
+        { name: 'Dashboard', icon: LayoutDashboard, path: '/', allowedRoles: ['admin', 'manager', 'staff'] },
+        { name: 'Inventory', icon: Package, path: '/inventory', allowedRoles: ['admin', 'manager'] },
+        { name: 'Orders', icon: ShoppingBag, path: '/sales/orders', allowedRoles: ['admin', 'manager', 'staff'] },
+        { name: 'Customers', icon: Users, path: '/crm', allowedRoles: ['admin', 'manager', 'staff'] },
+        { name: 'Accounting', icon: CreditCard, path: '/accounting', allowedRoles: ['admin', 'manager'] },
+        { name: 'Marketing', icon: BarChart3, path: '/marketing/campaigns', allowedRoles: ['admin', 'manager'] },
+        { name: 'Settings', icon: Settings, path: '/settings/general', allowedRoles: ['admin'] },
     ];
+
+    // Filter navigation items based on the user's role
+    const filteredNavItems = navItems.filter(item => item.allowedRoles.includes(userRole));
 
     return (
         <aside className="w-64 bg-sidebar border-r border-sidebar-hover flex flex-col h-full shrink-0 transition-colors duration-200">
@@ -32,12 +41,15 @@ export const Sidebar = () => {
                     <h1 className="text-primary-dark text-lg font-black leading-tight tracking-tight">
                         Peyker Admin
                     </h1>
-                    <p className="text-primary/70 text-[11px] font-bold uppercase tracking-widest mt-0.5">Yönetim Paneli</p>
+                    <p className="text-primary/70 text-[11px] font-bold uppercase tracking-widest mt-0.5">
+                        {user?.firstName ? `${user.firstName} - ` : ''} 
+                        {userRole.toUpperCase()}
+                    </p>
                 </div>
             </div>
 
             <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto mt-4">
-                {navItems.map((item) => (
+                {filteredNavItems.map((item) => (
                     <NavLink
                         key={item.name}
                         to={item.path}

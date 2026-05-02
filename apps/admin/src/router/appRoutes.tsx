@@ -29,6 +29,7 @@ import { ReportsPage } from '@/features/reports/ReportsPage';
 import { SuppliersPage } from '@/features/suppliers/SuppliersPage';
 import { CmsPage } from '@/features/cms/CmsPage';
 import { useAuth } from '@/context/AuthContext';
+import { RequireRole } from '@/components/layout/RequireRole';
 
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
     const { isAuthenticated, isLoading } = useAuth();
@@ -37,7 +38,7 @@ const RequireAuth = ({ children }: { children: JSX.Element }) => {
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center text-sm font-semibold text-zinc-500">
-                Yukleniyor...
+                Yükleniyor...
             </div>
         );
     }
@@ -67,45 +68,50 @@ export const AppRoutes = () => {
             ),
             children: [
                 { index: true, element: <DashboardPage /> },
-                { path: 'staff', element: <StaffPage /> },
-                { path: 'inventory', element: <InventoryPage /> },
-                { path: 'catalog', element: <CatalogPage /> },
-                { path: 'catalog/new', element: <AddProductPage /> },
-                { path: 'catalog/:id', element: <ProductDetailPage /> },
-                { path: 'catalog/categories', element: <CategoryList /> },
+                { path: 'staff', element: <RequireRole allowedRoles={['admin']}><StaffPage /></RequireRole> },
+                { path: 'inventory', element: <RequireRole allowedRoles={['admin', 'manager']}><InventoryPage /></RequireRole> },
+                { path: 'catalog', element: <RequireRole allowedRoles={['admin', 'manager']}><CatalogPage /></RequireRole> },
+                { path: 'catalog/new', element: <RequireRole allowedRoles={['admin', 'manager']}><AddProductPage /></RequireRole> },
+                { path: 'catalog/:id', element: <RequireRole allowedRoles={['admin', 'manager']}><ProductDetailPage /></RequireRole> },
+                { path: 'catalog/categories', element: <RequireRole allowedRoles={['admin', 'manager']}><CategoryList /></RequireRole> },
                 {
                     path: 'sales',
                     children: [
-                        { path: 'orders', element: <OrderList /> },
-                        { path: 'orders/:id', element: <OrderDetail /> },
+                        { path: 'orders', element: <RequireRole allowedRoles={['admin', 'manager', 'staff']}><OrderList /></RequireRole> },
+                        { path: 'orders/:id', element: <RequireRole allowedRoles={['admin', 'manager', 'staff']}><OrderDetail /></RequireRole> },
                     ]
                 },
                 {
                     path: 'crm',
                     children: [
-                        { index: true, element: <CRMPage /> },
-                        { path: ':id', element: <CustomerDetail /> }
+                        { index: true, element: <RequireRole allowedRoles={['admin', 'manager', 'staff']}><CRMPage /></RequireRole> },
+                        { path: ':id', element: <RequireRole allowedRoles={['admin', 'manager', 'staff']}><CustomerDetail /></RequireRole> }
                     ]
                 },
-                { path: 'returns', element: <ReturnRequests /> },
-                { path: 'accounting', element: <AccountingPage /> },
+                { path: 'returns', element: <RequireRole allowedRoles={['admin', 'manager', 'staff']}><ReturnRequests /></RequireRole> },
+                { path: 'accounting', element: <RequireRole allowedRoles={['admin', 'manager']}><AccountingPage /></RequireRole> },
                 {
                     path: 'marketing',
                     children: [
-                        { path: 'campaigns', element: <CampaignList /> },
-                        { path: 'campaigns/new', element: <CampaignForm /> },
-                        { path: 'price-lists', element: <PriceListManager /> },
-                        { path: 'bulk-messages', element: <BulkMessageSender /> },
+                        { path: 'campaigns', element: <RequireRole allowedRoles={['admin', 'manager']}><CampaignList /></RequireRole> },
+                        { path: 'campaigns/new', element: <RequireRole allowedRoles={['admin', 'manager']}><CampaignForm /></RequireRole> },
+                        { path: 'price-lists', element: <RequireRole allowedRoles={['admin', 'manager']}><PriceListManager /></RequireRole> },
+                        { path: 'bulk-messages', element: <RequireRole allowedRoles={['admin', 'manager']}><BulkMessageSender /></RequireRole> },
                     ]
                 },
                 {
                     path: 'settings',
                     children: [
-                        { path: 'general', element: <StoreSettings /> },
-                        { path: 'printer', element: <ReceiptDesigner /> },
-                        { path: 'profile', element: <UserProfile /> },
+                        { path: 'general', element: <RequireRole allowedRoles={['admin']}><StoreSettings /></RequireRole> },
+                        { path: 'printer', element: <RequireRole allowedRoles={['admin']}><ReceiptDesigner /></RequireRole> },
+                        { path: 'profile', element: <UserProfile /> }, // Everyone can see their profile
                     ]
-                }
+                },
+                // Additional routes mentioned in navigation
+                { path: 'shipping', element: <RequireRole allowedRoles={['admin', 'manager']}><ShippingPage /></RequireRole> },
+                { path: 'suppliers', element: <RequireRole allowedRoles={['admin', 'manager']}><SuppliersPage /></RequireRole> },
+                { path: 'reports', element: <RequireRole allowedRoles={['admin', 'manager']}><ReportsPage /></RequireRole> },
+                { path: 'cms', element: <RequireRole allowedRoles={['admin', 'manager']}><CmsPage /></RequireRole> }
             ],
         },
         {

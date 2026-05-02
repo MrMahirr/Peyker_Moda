@@ -344,5 +344,42 @@ export const storeApi = {
         } catch (error) {
             return { valid: false, discount: 0, discountType: 'percentage', message: 'Kupon doğrulanamadı' };
         }
-    }
+    },
+
+    // Banners / Hero Slides
+    async getBanners(position?: string): Promise<Array<{ id: string; title: string; imageUrl: string; link?: string; order: number }>> {
+        try {
+            const params = position ? `?position=${position}` : '';
+            const response = await fetch(`${API_BASE_URL}/store/banners${params}`);
+            const data = await response.json();
+            return data.data || [];
+        } catch (error) {
+            console.error('Failed to fetch banners:', error);
+            return [];
+        }
+    },
+
+    // Top Products (Best Sellers)
+    async getTopProducts(limit = 10): Promise<Product[]> {
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/products?sortBy=bestselling&limit=${limit}`);
+            const data = await response.json();
+            return data.data || [];
+        } catch (error) {
+            console.error('Failed to fetch top products:', error);
+            return [];
+        }
+    },
+
+    // New Arrivals
+    async getNewArrivals(limit = 8): Promise<Product[]> {
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/products?sortBy=newest&limit=${limit}`);
+            const data = await response.json();
+            return data.data || [];
+        } catch (error) {
+            console.error('Failed to fetch new arrivals:', error);
+            return [];
+        }
+    },
 };

@@ -1,13 +1,41 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { categories } from "@/lib/data";
+import { categories as fallbackCategories } from "@/lib/data";
+import { storeApi } from "@/lib/api";
 import { fadeInUp } from "@/lib/utils";
 import Link from 'next/link';
 
+interface CategoryDisplay {
+  name: string;
+  image: string;
+  slug?: string;
+}
+
 export default function CategoriesSection() {
+  const [categories, setCategories] = useState<CategoryDisplay[]>(fallbackCategories);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const apiCategories = await storeApi.getCategories();
+        if (apiCategories.length > 0) {
+          setCategories(apiCategories.map(c => ({
+            name: c.name,
+            image: c.image || fallbackCategories[0]?.image || '',
+            slug: c.slug,
+          })));
+        }
+      } catch {
+        // Fallback data.ts categories remain
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <section className="py-24 bg-white">
       <div className="container mx-auto px-4 md:px-8">
@@ -28,9 +56,8 @@ export default function CategoriesSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {categories.map((cat, idx) => (
-            <Link href={`/giyim/${idx}`}>
+            <Link key={idx} href={cat.slug ? `/giyim?category=${cat.slug}` : `/giyim/${idx}`}>
             <motion.div
-              key={idx}
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

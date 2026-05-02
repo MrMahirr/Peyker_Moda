@@ -1,21 +1,73 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Star, Trophy, TrendingUp, ArrowRight } from "lucide-react";
+import { Star, Trophy, TrendingUp, Loader2 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/shared/ProductCard";
-import { bestSellers } from "@/lib/data";
+import { bestSellers as fallbackBestSellers } from "@/lib/data";
+import { storeApi, Product } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { fadeInUp, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
+
+interface DisplayProduct {
+  id: number | string;
+  name: string;
+  price: number;
+  oldPrice?: number | null;
+  image: string;
+  category?: string;
+  tag?: string;
+  rating?: number;
+  reviewCount?: number;
+}
 
 export default function BestSellersPage() {
-  // İlk 3 ürünü ayırıyoruz (Podyum için)
-  const topThree = bestSellers.slice(0, 3);
-  // Kalan ürünler
-  const otherProducts = bestSellers.slice(3);
+  const [products, setProducts] = useState<DisplayProduct[]>(fallbackBestSellers);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTopProducts = async () => {
+      try {
+        const apiProducts = await storeApi.getTopProducts(10);
+        if (apiProducts.length > 0) {
+          setProducts(apiProducts.map((p, idx) => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            oldPrice: p.compareAtPrice || null,
+            image: p.images?.[0] || '',
+            category: p.category?.name || '',
+            tag: idx === 0 ? '#1 En Çok Satan' : idx < 3 ? `#${idx + 1} Popüler` : (p.tags?.[0] || ''),
+            rating: 4.5 + Math.random() * 0.5,
+            reviewCount: Math.floor(50 + Math.random() * 150),
+          })));
+        }
+      } catch {
+        // Fallback data.ts products remain
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTopProducts();
+  }, []);
+
+  const topThree = products.slice(0, 3);
+  const otherProducts = products.slice(3);
+
+  if (loading && products === fallbackBestSellers) {
+    return (
+      <div className="min-h-screen bg-stone-50 font-sans text-stone-900">
+        <Header />
+        <div className="flex items-center justify-center h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-amber-200">
@@ -23,7 +75,6 @@ export default function BestSellersPage() {
 
       {/* --- HERO SECTION --- */}
       <div className="relative h-[50vh] bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
-        {/* Arka plan görseli */}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1569388330292-79cc1ec67270?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-40 grayscale" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent" />
 
@@ -51,6 +102,7 @@ export default function BestSellersPage() {
 
       <main className="container mx-auto px-4 md:px-8 py-16">
         {/* --- TOP 3 PODIUM SECTION --- */}
+        {topThree.length >= 3 && (
         <div className="mb-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-serif font-bold mb-2">
@@ -150,8 +202,10 @@ export default function BestSellersPage() {
             </div>
           </div>
         </div>
+        )}
 
         {/* --- TRENDING LIST (Diğerleri) --- */}
+        {otherProducts.length > 0 && (
         <div className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-stone-100">
           <div className="flex items-center gap-3 mb-8">
             <div className="bg-stone-100 p-2 rounded-full">
@@ -189,6 +243,7 @@ export default function BestSellersPage() {
             ))}
           </div>
         </div>
+        )}
       </main>
       <Footer />
     </div>

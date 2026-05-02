@@ -9,7 +9,6 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
-        // TODO: Add auth token to headers
         const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -22,8 +21,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        // HTTP 401 Unauthorized hatası yakalandığında sisteme global bir event fırlatıyoruz.
-        // Bu sayede Axios, React'e bağımlı kalmadan "Decoupled" çalışıyor (SOLID - Dependency Inversion).
+        // HTTP 401: Global event dispatch for session expiry (Decoupled - SOLID DIP)
         if (error.response?.status === 401) {
             window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         }

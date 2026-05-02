@@ -110,7 +110,7 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - Satır 87: `-12.800 ₺` **hardcoded** aylık gider
 - Bu değerler API'den çekilmiyor, sabit yazılmış
 
-### 4.2 Dashboard — Hardcoded Yüzdeler
+### *4.2 Dashboard — Hardcoded Yüzdeler
 
 - **Dosya:** [DashboardPage.tsx](file:///c:/Users/MrMahirr/Desktop/Peyker_Moda_Web/peyker-moda/apps/admin/src/features/dashboard/DashboardPage.tsx#L72-L99)
 - `+12.5% düne göre`, `+8.2% hedefe göre`, `+5.7% artış` gibi değişim yüzdeleri hardcoded

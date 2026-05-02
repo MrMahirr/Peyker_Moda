@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
+
+const THEME_STORAGE_KEY = 'peyker-admin-theme';
 
 interface ThemeContextType {
     theme: Theme;
@@ -9,12 +11,22 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const getStoredTheme = (): Theme => {
+    if (typeof window === 'undefined') return 'light';
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    return stored === 'dark' ? 'dark' : 'light';
+};
+
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-    const [theme, setTheme] = useState<Theme>('light');
+    const [theme, setTheme] = useState<Theme>(getStoredTheme);
+
+    useEffect(() => {
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+    }, [theme]);
 
     const toggleTheme = () => {
         setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-        // TODO: persist theme to local storage
     };
 
     return (

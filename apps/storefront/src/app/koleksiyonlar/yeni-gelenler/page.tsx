@@ -1,14 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowDown, Sparkles } from 'lucide-react';
+import { ArrowDown, Sparkles, Loader2 } from 'lucide-react';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/shared/ProductCard";
-import { newArrivals } from "@/lib/data";
+import { newArrivals as fallbackArrivals } from "@/lib/data";
+import { storeApi, Product } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+
+interface DisplayProduct {
+  id: number | string;
+  name: string;
+  price: number;
+  oldPrice?: number | null;
+  image: string;
+  category?: string;
+  tag?: string;
+}
 
 // Kayan yazı için animasyon varyantı
 const marqueeVariants = {
@@ -26,6 +37,33 @@ const marqueeVariants = {
 };
 
 export default function NewArrivalsPage() {
+  const [products, setProducts] = useState<DisplayProduct[]>(fallbackArrivals);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNewArrivals = async () => {
+      try {
+        const apiProducts = await storeApi.getNewArrivals(8);
+        if (apiProducts.length > 0) {
+          setProducts(apiProducts.map(p => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            oldPrice: p.compareAtPrice || null,
+            image: p.images?.[0] || '',
+            category: p.category?.name || '',
+            tag: p.tags?.[0] || 'Yeni',
+          })));
+        }
+      } catch {
+        // Fallback data.ts products remain
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNewArrivals();
+  }, []);
+
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-amber-200">
       <Header />
@@ -113,7 +151,7 @@ export default function NewArrivalsPage() {
 
         {/* --- SPOTLIGHT SECTION (İlk 2 ürün büyük) --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {newArrivals.slice(0, 2).map((product) => (
+          {products.slice(0, 2).map((product) => (
             <div key={product.id} className="relative group overflow-hidden h-[600px]">
               <Image
                 src={product.image}
@@ -142,7 +180,7 @@ export default function NewArrivalsPage() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
-          {newArrivals.slice(2).map((product) => (
+          {products.slice(2).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

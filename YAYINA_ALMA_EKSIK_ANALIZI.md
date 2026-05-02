@@ -59,7 +59,7 @@ Frontend (admin panel) birçok modülde API çağrıları yapıyor ancak **backe
 - `.env.example`'da varsayılan admin şifresi `Admin123!` olarak belirtilmiş
 - Production'da bu değiştirilmezse ciddi güvenlik riski
 
-### 2.5 RBAC Enforcement Eksik
+### *2.5 RBAC Enforcement Eksik
 
 - `JwtAuthGuard` var ancak route bazlı **Permission kontrolü** yapılmıyor
 - Admin panel'de tüm route'lar sadece `isAuthenticated` kontrolü yapıyor

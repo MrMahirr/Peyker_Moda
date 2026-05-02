@@ -12,7 +12,7 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
-export class CreateVariantDto {
+export class CreateProductVariantDto {
     @ApiProperty({ example: 'SKU-VAR-1', description: 'Varyant SKU' })
     @IsString()
     sku: string;
@@ -111,12 +111,12 @@ export class CreateProductDto {
     @IsOptional()
     mediaIds?: string[];
 
-    @ApiPropertyOptional({ type: [CreateVariantDto], description: 'Ürün Varyantları' })
+    @ApiPropertyOptional({ type: [CreateProductVariantDto], description: 'Ürün Varyantları' })
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => CreateVariantDto)
+    @Type(() => CreateProductVariantDto)
     @IsOptional()
-    variants?: CreateVariantDto[];
+    variants?: CreateProductVariantDto[];
 }
 
 export class UpdateProductDto {

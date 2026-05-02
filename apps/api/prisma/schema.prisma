@@ -573,3 +573,20 @@ enum InvoiceStatus {
     PAID
     CANCELLED
 }
+
+
+model Supplier {
+  id          String   @id @default(uuid())
+  name        String
+  contactName String?
+  email       String?
+  phone       String?
+  address     String?
+  taxNumber   String?
+  taxOffice   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("suppliers")
+}

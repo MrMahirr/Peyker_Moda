@@ -44,6 +44,8 @@ import { WebsocketModule } from './websocket/websocket.module';
 // Faz 8: Dashboard
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { CmsModule } from './modules/cms/cms.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
 
 // Faz 9: Storefront
 import { StorefrontModule } from './modules/storefront/storefront.module';
@@ -122,6 +124,8 @@ import { ShippingModule } from './modules/shipping/shipping.module';
     // Faz 8: Dashboard
     DashboardModule,
     CmsModule,
+    ReportsModule,
+    SuppliersModule,
 
     // Faz 9: Storefront (Public API)
     StorefrontModule,

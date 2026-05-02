@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { Building, Truck, ShoppingCart } from 'lucide-react';
 import { SupplierList } from './components/SupplierList';
 import { PageHeader } from '@/components/shared/PageHeader';
 

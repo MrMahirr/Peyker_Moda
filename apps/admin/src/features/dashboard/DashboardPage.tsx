@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { StatCard } from './components/StatCard';
 import { SalesChart } from './components/SalesChart';
 import { InventoryAlerts } from './components/InventoryAlerts';
@@ -17,8 +17,7 @@ export const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState<string>('');
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             const data = await dashboardService.getSummary();
             setSummary(data);
@@ -28,7 +27,7 @@ export const DashboardPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchData();

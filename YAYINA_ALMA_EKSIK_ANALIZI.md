@@ -136,7 +136,7 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 
 ## 🟡 5. Frontend Tasarım Uyuşmazlıkları
 
-### 5.1 Tutarsız Sayfa Başlıkları
+### *5.1 Tutarsız Sayfa Başlıkları
 
 - Dashboard: `font-black tracking-tight` (h1)
 - Accounting: `font-bold tracking-tight` (h1)
@@ -144,18 +144,18 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - CRM: h1 yok, doğrudan `CustomerList` render ediliyor
 - **Çözüm:** Tüm sayfalarda aynı header stili kullanılmalı
 
-### 5.2 POS Sayfasında Türkçe Karakter Sorunu
+### *5.2 POS Sayfasında Türkçe Karakter Sorunu
 
 - **Dosya:** [PosPage.tsx](file:///c:/Users/MrMahirr/Desktop/Peyker_Moda_Web/peyker-moda/apps/admin/src/features/pos/PosPage.tsx)
 - `Urun bulunamadi`, `Sepet bos`, `Iade/Degisim`, `ODEME AL` — Türkçe karakterler (ü, ö, ş, ı, ç) **eksik**
 - Karşılaştır: Diğer tüm sayfalar düzgün Türkçe kullanıyor
 
-### 5.3 Kullanılmayan Import'lar
+### *5.3 Kullanılmayan Import'lar
 
 - [SuppliersPage.tsx](file:///c:/Users/MrMahirr/Desktop/Peyker_Moda_Web/peyker-moda/apps/admin/src/features/suppliers/SuppliersPage.tsx#L2): `Building`, `Truck`, `ShoppingCart` import ediliyor ama hiçbiri kullanılmıyor
 - [SuppliersPage.tsx](file:///c:/Users/MrMahirr/Desktop/Peyker_Moda_Web/peyker-moda/apps/admin/src/features/suppliers/SuppliersPage.tsx#L1): `useState` import ediliyor ama kullanılmıyor
 
-### 5.4 Navigation'da Eksik Route'lar
+### *5.4 Navigation'da Eksik Route'lar
 
 - Navigation'da `shipping`, `suppliers`, `reports`, `cms` ve `inventory` sayfa linkleri var
 - Ancak route tanımında `shipping`, `suppliers`, `reports`, `cms` ve `inventory` **YOK** — 404 verir

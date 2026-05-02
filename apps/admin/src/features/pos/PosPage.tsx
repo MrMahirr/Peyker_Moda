@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { PosProductGrid } from './components/ProductGrid';
 import { PaymentModal } from './components/PaymentModal';
 import { ReturnExchangeModal } from './components/ReturnExchangeModal';
@@ -20,26 +20,26 @@ export const PosPage = () => {
             const searchInput = document.querySelector('input[placeholder*="Ara"]') as HTMLInputElement;
             if (searchInput) {
                 searchInput.focus();
-                toast.info('Arama odaklandi (F2)', { className: 'font-medium' });
+                toast.info('Arama odaklandı (F2)', { className: 'font-medium' });
             }
         },
         onPayment: () => {
             if (cart.length > 0) {
                 setIsPaymentModalOpen(true);
             } else {
-                toast.warning('Sepet bos!', { className: 'font-medium' });
+                toast.warning('Sepet boş!', { className: 'font-medium' });
             }
         },
         onBarcodeScanned: async (barcode) => {
             try {
                 const product = await posService.getProductByBarcode(barcode);
                 if (!product) {
-                    toast.error(`Urun bulunamadi: ${barcode}`, { className: 'font-medium' });
+                    toast.error(`Ürün bulunamadı: ${barcode}`, { className: 'font-medium' });
                     return;
                 }
 
                 if (product.stock <= 0) {
-                    toast.error('Bu urun stokta yok!', { className: 'font-medium' });
+                    toast.error('Bu ürün stokta yok!', { className: 'font-medium' });
                     return;
                 }
 
@@ -49,10 +49,10 @@ export const PosPage = () => {
                     price: product.price,
                     image: product.image
                 });
-                toast.success(`Urun eklendi: ${product.name}`, { className: 'font-medium' });
+                toast.success(`Ürün eklendi: ${product.name}`, { className: 'font-medium' });
             } catch (err) {
                 console.error('Barcode lookup failed:', err);
-                toast.error(`Urun bulunamadi: ${barcode}`, { className: 'font-medium' });
+                toast.error(`Ürün bulunamadı: ${barcode}`, { className: 'font-medium' });
             }
         }
     });
@@ -82,7 +82,7 @@ export const PosPage = () => {
                             onClick={() => setIsReturnModalOpen(true)}
                         >
                             <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                            Iade/Degisim
+                            İade/Değişim
                         </Button>
                         {cart.length > 0 && (
                             <Button
@@ -92,11 +92,11 @@ export const PosPage = () => {
                                 onClick={() => {
                                     swal.fire({
                                         title: 'Sepeti Temizle?',
-                                        text: 'Tum urunler sepetten cikarilacak.',
+                                        text: 'Tüm ürünler sepetten çıkarılacak.',
                                         icon: 'warning',
                                         showCancelButton: true,
                                         confirmButtonText: 'Evet, Temizle',
-                                        cancelButtonText: 'Vazgec',
+                                        cancelButtonText: 'Vazgeç',
                                         customClass: {
                                             confirmButton: 'bg-zinc-900 border-none hover:bg-zinc-800 text-white font-medium rounded-lg px-4 py-2',
                                             cancelButton: 'bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-medium rounded-lg px-4 py-2 mr-2'
@@ -122,8 +122,8 @@ export const PosPage = () => {
                             <div className="w-16 h-16 bg-zinc-100 rounded-2xl flex items-center justify-center mb-4 border border-zinc-200/50">
                                 <ShoppingCart className="h-6 w-6 text-zinc-300" />
                             </div>
-                            <p className="text-zinc-600 font-semibold mb-1">Sepetiniz bos.</p>
-                            <p className="text-sm text-zinc-400 font-medium max-w-[200px]">Urun eklemek icin sol taraftaki listeyi kullanin.</p>
+                            <p className="text-zinc-600 font-semibold mb-1">Sepetiniz boş.</p>
+                            <p className="text-sm text-zinc-400 font-medium max-w-[200px]">Ürün eklemek için sol taraftaki listeyi kullanın.</p>
                         </div>
                     ) : (
                         cart.map((item) => (
@@ -191,7 +191,7 @@ export const PosPage = () => {
                         disabled={cart.length === 0}
                         onClick={() => setIsPaymentModalOpen(true)}
                     >
-                        ODEME AL
+                        ÖDEME AL
                     </Button>
                 </div>
             </div>

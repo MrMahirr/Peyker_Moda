@@ -5,6 +5,7 @@ import { Building, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../../lib/axios';
 import type { CurrentAccount } from '../types';
+import type { CellContext } from '@tanstack/react-table';
 
 const formatCurrency = (v: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(v);
 
@@ -26,8 +27,7 @@ export const SupplierAccounts = () => {
     const columns = [
         {
             header: 'Tedarikçi', accessorKey: 'name',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => (
+            cell: (info: CellContext<CurrentAccount, unknown>) => (
                 <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-zinc-400" />
                     <span className="font-semibold text-[14px] text-zinc-900">{info.row.original.name}</span>
@@ -36,18 +36,15 @@ export const SupplierAccounts = () => {
         },
         {
             header: 'Borç', accessorKey: 'totalDebt',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => <span className="font-bold font-mono text-red-600">{formatCurrency(info.row.original.totalDebt)}</span>,
+            cell: (info: CellContext<CurrentAccount, unknown>) => <span className="font-bold font-mono text-red-600">{formatCurrency(info.row.original.totalDebt)}</span>,
         },
         {
             header: 'Alacak', accessorKey: 'totalCredit',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => <span className="font-bold font-mono text-emerald-600">{formatCurrency(info.row.original.totalCredit)}</span>,
+            cell: (info: CellContext<CurrentAccount, unknown>) => <span className="font-bold font-mono text-emerald-600">{formatCurrency(info.row.original.totalCredit)}</span>,
         },
         {
             header: 'Bakiye', accessorKey: 'balance',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => {
+            cell: (info: CellContext<CurrentAccount, unknown>) => {
                 const b = info.row.original.balance;
                 return <Badge variant={b >= 0 ? 'success' : 'danger'}>{formatCurrency(b)}</Badge>;
             },

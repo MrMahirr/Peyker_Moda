@@ -1,29 +1,71 @@
-import React, { useState } from 'react';
-import { Bell, X, CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, CheckCircle, AlertTriangle, Info, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/Button';
-
-// Mock notifications
-const MOCK_NOTIFICATIONS = [
-    { id: 1, type: 'info', title: 'Yeni sipariş', message: '#1234 numaralı sipariş alındı.', time: '5 dk önce', read: false },
-    { id: 2, type: 'warning', title: 'Stok Uyarısı', message: 'Keten Gömlek stokları azalıyor.', time: '1 saat önce', read: false },
-    { id: 3, type: 'success', title: 'Ödeme Alındı', message: '#1230 siparişi için ödeme onaylandı.', time: '2 saat önce', read: true },
-    { id: 4, type: 'error', title: 'İade Talebi', message: '#1225 için iade talebi oluşturuldu.', time: '1 gün önce', read: true },
-];
+import { notificationService, AppNotification } from '../services/notification.service';
+import { socket } from '@/lib/socket';
 
 export const NotificationCenter = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    const [loading, setLoading] = useState(true);
     const unreadCount = notifications.filter(n => !n.read).length;
+
+    const fetchNotifications = useCallback(async () => {
+        try {
+            setLoading(true);
+            const data = await notificationService.getRecent();
+            setNotifications(data);
+        } catch (error) {
+            console.error('Fetch notifications error:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchNotifications();
+
+        // Listen for real-time notifications
+        const handlePushNotification = (payload: any) => {
+            const newNotif: AppNotification = {
+                id: Math.random().toString(36).substr(2, 9),
+                type: payload.data.type || 'info',
+                title: payload.data.title,
+                message: payload.data.message,
+                time: 'Az önce',
+                read: false,
+                createdAt: new Date().toISOString(),
+            };
+            setNotifications(prev => [newNotif, ...prev.slice(0, 9)]);
+        };
+
+        socket.on('notification:push', handlePushNotification);
+        socket.on('order:new', (payload: any) => {
+            handlePushNotification({
+                data: {
+                    type: 'success',
+                    title: 'Yeni Sipariş',
+                    message: `#${payload.data.orderNumber} numaralı yeni sipariş alındı.`
+                }
+            });
+        });
+
+        return () => {
+            socket.off('notification:push');
+            socket.off('order:new');
+        };
+    }, [fetchNotifications]);
 
     const handleMarkAsRead = () => {
         setNotifications(notifications.map(n => ({ ...n, read: true })));
     };
 
+    const toggleOpen = () => setIsOpen(!isOpen);
+
     return (
         <div className="relative">
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={toggleOpen}
                 className="relative p-2 rounded-full hover:bg-zinc-100 text-zinc-500 transition-colors"
             >
                 <Bell className="w-5 h-5" />
@@ -51,7 +93,11 @@ export const NotificationCenter = () => {
                             )}
                         </div>
                         <div className="max-h-[400px] overflow-y-auto">
-                            {notifications.length === 0 ? (
+                            {loading ? (
+                                <div className="p-8 flex justify-center">
+                                    <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+                                </div>
+                            ) : notifications.length === 0 ? (
                                 <div className="p-8 text-center text-zinc-500 text-sm">
                                     Bildiriminiz yok.
                                 </div>

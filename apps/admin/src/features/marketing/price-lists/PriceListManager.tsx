@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-import { PageHeader } from '@/components/shared/PageHeader';
     priceListsService,
     type CreatePriceListDto,
     type PriceList,
@@ -21,6 +20,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
     type PriceListMetadata,
     type PriceListScopeType,
 } from '../services/price-lists.service';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 const emptyForm: CreatePriceListDto = {
     name: '',

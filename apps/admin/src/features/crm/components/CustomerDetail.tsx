@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { ArrowLeft, User, ShoppingBag, Calendar, Phone, Mail, MapPin, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { customersService, Customer } from '../api/customerService';
+import { SalesHistory } from './SalesHistory';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -131,6 +132,10 @@ export const CustomerDetail = () => {
                     )}
                 </Card>
             </div>
+
+            <Card className="p-6">
+                <SalesHistory customerId={customer.id} />
+            </Card>
         </div>
     );
 };

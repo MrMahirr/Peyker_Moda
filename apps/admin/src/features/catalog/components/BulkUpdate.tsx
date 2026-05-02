@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { SlidersHorizontal, Wand2 } from 'lucide-react';
+import { SlidersHorizontal, Wand2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { productsService } from '../services/products.service';
 
 type UpdateTarget = 'price' | 'stock' | 'status';
 
@@ -53,20 +54,46 @@ const STATUS_OPTIONS = [
     { value: 'inactive', label: 'Pasif' },
 ];
 
-const MOCK_PRODUCTS = [
-    { id: 'PRD-1001', name: 'Slim Fit Gomlek', price: 799, stock: 12, status: 'active' as const },
-    { id: 'PRD-1002', name: 'Keten Pantolon', price: 1099, stock: 8, status: 'active' as const },
-    { id: 'PRD-1003', name: 'Uzun Triko Elbise', price: 1299, stock: 4, status: 'inactive' as const },
-];
-
 const formatCurrency = (value: number) =>
     new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
+
+interface RawProduct {
+    id: string;
+    name: string;
+    price: number;
+    stock: number;
+    isActive: boolean;
+}
 
 export const BulkUpdate = () => {
     const [target, setTarget] = useState<UpdateTarget>('price');
     const [mode, setMode] = useState<UpdateMode>('set');
     const [value, setValue] = useState('');
     const [statusValue, setStatusValue] = useState<'active' | 'inactive'>('active');
+    const [products, setProducts] = useState<RawProduct[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await productsService.getAll({ limit: 50 });
+                const items = response.data || [];
+                setProducts(items.map((p: any) => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price || 0,
+                    stock: p.stock || 0,
+                    isActive: p.isActive ?? true,
+                })));
+            } catch (err) {
+                console.error('Products fetch error:', err);
+                toast.error('Ürünler yüklenemedi', { className: 'font-medium' });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     useEffect(() => {
         if (!MODE_OPTIONS[target].find((m) => m.value === mode)) {
@@ -76,10 +103,11 @@ export const BulkUpdate = () => {
 
     const previewData: ProductPreview[] = useMemo(() => {
         const numericValue = Number(value);
-        return MOCK_PRODUCTS.map((p) => {
+        return products.map((p) => {
+            const status = p.isActive ? 'active' as const : 'inactive' as const;
             let nextPrice = p.price;
             let nextStock = p.stock;
-            let nextStatus = p.status;
+            let nextStatus = status;
 
             if (target === 'price' && !Number.isNaN(numericValue)) {
                 switch (mode) {
@@ -127,12 +155,13 @@ export const BulkUpdate = () => {
 
             return {
                 ...p,
+                status,
                 nextPrice,
                 nextStock,
                 nextStatus,
             };
         });
-    }, [target, mode, value, statusValue]);
+    }, [target, mode, value, statusValue, products]);
 
     const modeOptions = useMemo(
         () => MODE_OPTIONS[target].map((option) => ({ value: option.value, label: option.label })),

@@ -1,20 +1,64 @@
+import { useEffect, useState } from 'react';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
-import { Eye, FileText } from 'lucide-react';
+import { Eye, FileText, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
+import api from '../../../lib/axios';
 
-const MOCK_SALES = [
-    { id: '1001', date: '2024-01-20 14:30', total: 1250.00, items: 3, status: 'Tamamlandı' },
-    { id: '1002', date: '2024-01-15 11:00', total: 450.50, items: 1, status: 'Tamamlandı' },
-    { id: '1003', date: '2023-12-30 16:45', total: 3200.00, items: 5, status: 'İade Edildi' },
-    { id: '1004', date: '2023-12-10 10:15', total: 890.00, items: 2, status: 'Tamamlandı' },
-];
+interface SaleRecord {
+    id: string;
+    date: string;
+    total: number;
+    items: number;
+    status: string;
+}
 
-export const SalesHistory = () => {
+const STATUS_MAP: Record<string, { label: string; variant: 'success' | 'error' | 'neutral' }> = {
+    DELIVERED: { label: 'Tamamlandı', variant: 'success' },
+    CANCELLED: { label: 'İptal', variant: 'error' },
+    RETURNED: { label: 'İade Edildi', variant: 'error' },
+    PENDING: { label: 'Bekliyor', variant: 'neutral' },
+    PROCESSING: { label: 'İşleniyor', variant: 'neutral' },
+    SHIPPED: { label: 'Kargoda', variant: 'neutral' },
+};
+
+interface SalesHistoryProps {
+    customerId: string;
+}
+
+export const SalesHistory = ({ customerId }: SalesHistoryProps) => {
+    const [sales, setSales] = useState<SaleRecord[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSales = async () => {
+            try {
+                const response = await api.get(`/orders?customerId=${customerId}&limit=20`);
+                const orders = response.data?.data?.data || response.data?.data || [];
+                setSales(orders.map((order: any) => ({
+                    id: order.orderNumber || order.id,
+                    date: new Date(order.createdAt).toLocaleString('tr-TR'),
+                    total: order.total || 0,
+                    items: order.items?.length || 0,
+                    status: order.status || 'PENDING',
+                })));
+            } catch (err) {
+                console.error('Sales history fetch error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (customerId) {
+            fetchSales();
+        }
+    }, [customerId]);
+
     const columns = [
         {
             header: 'Sipariş No',
             accessorKey: 'id',
-            cell: (info: any) => <span className="font-mono font-medium">#{info.getValue()}</span>
+            cell: ({ row }: { row: { original: SaleRecord } }) => <span className="font-mono font-medium">#{row.original.id}</span>
         },
         {
             header: 'Tarih',
@@ -23,29 +67,22 @@ export const SalesHistory = () => {
         {
             header: 'Adet',
             accessorKey: 'items',
-            cell: (info: any) => <span>{info.getValue()} ürün</span>
+            cell: ({ row }: { row: { original: SaleRecord } }) => <span>{row.original.items} ürün</span>
         },
         {
             header: 'Durum',
             accessorKey: 'status',
-            cell: (info: any) => {
-                const status = info.getValue() as string;
-                return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'Tamamlandı' ? 'bg-green-100 text-green-800' :
-                            status === 'İade Edildi' ? 'bg-red-100 text-red-800' :
-                                'bg-zinc-100 text-zinc-800'
-                        }`}>
-                        {status}
-                    </span>
-                );
+            cell: ({ row }: { row: { original: SaleRecord } }) => {
+                const info = STATUS_MAP[row.original.status] || { label: row.original.status, variant: 'neutral' as const };
+                return <Badge variant={info.variant} dot>{info.label}</Badge>;
             }
         },
         {
             header: 'Toplam',
             accessorKey: 'total',
-            cell: (info: any) => (
+            cell: ({ row }: { row: { original: SaleRecord } }) => (
                 <span className="font-bold text-zinc-900">
-                    {info.getValue().toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
+                    {row.original.total.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
                 </span>
             )
         },
@@ -65,13 +102,26 @@ export const SalesHistory = () => {
         }
     ];
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-32 gap-3">
+                <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+                <span className="text-sm text-zinc-500">Satış geçmişi yükleniyor...</span>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-4">
             <h3 className="text-lg font-semibold text-zinc-900">Satış Geçmişi</h3>
-            <DataGrid
-                data={MOCK_SALES}
-                columns={columns}
-            />
+            {sales.length === 0 ? (
+                <div className="text-center py-10 text-zinc-500 text-sm">Bu müşteriye ait sipariş bulunamadı.</div>
+            ) : (
+                <DataGrid
+                    data={sales}
+                    columns={columns}
+                />
+            )}
         </div>
     );
 };

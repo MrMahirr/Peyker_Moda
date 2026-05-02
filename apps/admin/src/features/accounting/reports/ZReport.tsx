@@ -1,31 +1,38 @@
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Printer, Calendar, ArrowUpRight, ArrowDownLeft, CreditCard, Banknote, Info } from 'lucide-react';
+import { Printer, Calendar, ArrowUpRight, ArrowDownLeft, CreditCard, Banknote, Info, Loader2 } from 'lucide-react';
+import { zReportService, ZReportData } from '../services/zreport.service';
 
 export const ZReport = () => {
-    // Mock Data for End of Day Report
-    const reportData = {
-        date: new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-        reportNo: 'Z-20240122',
-        summary: {
-            totalSales: 24500.00,
-            totalReturns: 1250.00,
-            netSales: 23250.00,
-            totalTax: 2325.00,
-            transactionCount: 45
-        },
-        payments: {
-            cash: 8500.00,
-            creditCard: 14750.00,
-            other: 0.00
-        },
-        cashFlow: {
-            startBalance: 1200.00,
-            cashIn: 8500.00,
-            cashOut: 350.00, // Expenses paid from cash
-            safeBalance: 9350.00
-        }
-    };
+    const [reportData, setReportData] = useState<ZReportData | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchReport = async () => {
+            try {
+                setLoading(true);
+                const data = await zReportService.getTodayReport();
+                setReportData(data);
+            } catch (error) {
+                console.error('Failed to fetch Z report:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReport();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
+                <p className="text-[13px] font-medium text-zinc-500">Gün sonu raporu hazırlanıyor...</p>
+            </div>
+        );
+    }
+
+    if (!reportData) return null;
 
     return (
         <div className="p-6 space-y-8 pb-10">

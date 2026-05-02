@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { X, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { returnsService } from '../services/returns.service';
 
 interface RefundModalProps {
     isOpen: boolean;
@@ -12,9 +13,15 @@ interface RefundModalProps {
 export const RefundModal = ({ isOpen, onClose, data }: RefundModalProps) => {
     if (!isOpen || !data) return null;
 
-    const handleConfirm = () => {
-        toast.success(`İade onaylandı: ${data.amount} ₺ iade edilecek.`);
-        onClose();
+    const handleConfirm = async () => {
+        try {
+            await returnsService.approve(data.orderId);
+            toast.success(`İade onaylandı: ${data.amount} ₺ iade edilecek.`);
+            onClose();
+        } catch (error) {
+            console.error('Refund approval error:', error);
+            toast.error('İade onaylanırken bir hata oluştu.');
+        }
     };
 
     return (

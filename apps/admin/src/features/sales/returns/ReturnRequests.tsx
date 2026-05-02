@@ -1,37 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
-import { BadgeCheck, XCircle, FileText, Search, Filter } from 'lucide-react';
+import { BadgeCheck, XCircle, FileText, Search, Filter, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { RefundModal } from './RefundModal';
 import { Badge } from '@/components/ui/Badge';
 import { PageHeader } from '@/components/shared/PageHeader';
-
-const MOCK_RETURNS = [
-    { id: 'RET-1001', orderId: 'TR-45920', customer: 'Ayşe Yılmaz', date: '2024-01-22', amount: 450.00, status: 'Bekliyor', reason: 'Beden Uymadı' },
-    { id: 'RET-1002', orderId: 'TR-45921', customer: 'Mehmet Demir', date: '2024-01-21', amount: 1250.00, status: 'Onaylandı', reason: 'Kusurlu Ürün' },
-    { id: 'RET-1003', orderId: 'TR-45922', customer: 'Zeynep Kaya', date: '2024-01-20', amount: 320.00, status: 'Reddedildi', reason: 'Kullanıcı Hatası' },
-];
+import { returnsService, ReturnRequest } from '../services/returns.service';
 
 export const ReturnRequests = () => {
+    const [returns, setReturns] = useState<ReturnRequest[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [selectedReturn, setSelectedReturn] = useState<any>(null);
+    const [selectedReturn, setSelectedReturn] = useState<ReturnRequest | null>(null);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleApprove = (ret: any) => {
+    const fetchReturns = useCallback(async () => {
+        try {
+            setLoading(true);
+            const data = await returnsService.getAll();
+            setReturns(data);
+        } catch (err) {
+            console.error('Returns fetch error:', err);
+            toast.error('İade talepleri yüklenemedi', { className: 'font-medium' });
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchReturns();
+    }, [fetchReturns]);
+
+    const handleApprove = (ret: ReturnRequest) => {
         setSelectedReturn(ret);
         setIsRefundModalOpen(true);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleReject = (ret: any) => {
-        showDeleteConfirm('İadeyi Reddet?', `${ret.id} numaralı iade talebi reddedilecek.`).then((result) => {
+    const handleReject = (ret: ReturnRequest) => {
+        showDeleteConfirm('İadeyi Reddet?', `${ret.id} numaralı iade talebi reddedilecek.`).then(async (result) => {
             if (result.isConfirmed) {
-                toast.info('İade talebi reddedildi.', { className: 'font-medium' });
+                try {
+                    await returnsService.reject(ret.orderId);
+                    toast.info('İade talebi reddedildi.', { className: 'font-medium' });
+                    fetchReturns();
+                } catch {
+                    toast.error('İade reddedilemedi.', { className: 'font-medium' });
+                }
             }
         });
     };
@@ -40,47 +57,41 @@ export const ReturnRequests = () => {
         {
             header: 'İade No',
             accessorKey: 'id',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => <span className="font-mono text-[13px] font-bold text-zinc-900">{info.getValue()}</span>
+            cell: ({ row }: { row: { original: ReturnRequest } }) => <span className="font-mono text-[13px] font-bold text-zinc-900">{row.original.id}</span>
         },
         {
             header: 'Sipariş No',
             accessorKey: 'orderId',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => <span className="font-mono text-[13px] text-zinc-500 font-medium">{info.getValue()}</span>
+            cell: ({ row }: { row: { original: ReturnRequest } }) => <span className="font-mono text-[13px] text-zinc-500 font-medium">{row.original.orderId}</span>
         },
         {
             header: 'Müşteri',
             accessorKey: 'customer',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => <span className="font-semibold text-zinc-900 text-[14px]">{info.getValue()}</span>
+            cell: ({ row }: { row: { original: ReturnRequest } }) => <span className="font-semibold text-zinc-900 text-[14px]">{row.original.customer}</span>
         },
         {
             header: 'Sebep',
             accessorKey: 'reason',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => <span className="text-[13px] font-medium text-zinc-700">{info.getValue()}</span>
+            cell: ({ row }: { row: { original: ReturnRequest } }) => <span className="text-[13px] font-medium text-zinc-700">{row.original.reason}</span>
         },
         {
             header: 'Tutar',
             accessorKey: 'amount',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => <span className="font-bold text-[15px] font-mono text-zinc-900">{info.getValue().toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</span>
+            cell: ({ row }: { row: { original: ReturnRequest } }) => <span className="font-bold text-[15px] font-mono text-zinc-900">{row.original.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</span>
         },
         {
             header: 'Durum',
             accessorKey: 'status',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => {
-                const status = info.getValue() as string;
+            cell: ({ row }: { row: { original: ReturnRequest } }) => {
+                const status = row.original.status;
                 let variant: 'neutral' | 'info' | 'success' | 'warning' | 'error' = 'neutral';
-                if (status === 'Onaylandı') variant = 'success';
-                if (status === 'Reddedildi') variant = 'error';
-                if (status === 'Bekliyor') variant = 'warning';
-                
+                if (status === 'APPROVED') variant = 'success';
+                if (status === 'REJECTED') variant = 'error';
+                if (status === 'PENDING') variant = 'warning';
+
                 return (
                     <Badge variant={variant} dot>
-                        {status}
+                        {returnsService.getStatusLabel(status)}
                     </Badge>
                 );
             }
@@ -88,16 +99,15 @@ export const ReturnRequests = () => {
         {
             header: 'İşlemler',
             id: 'actions',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            cell: (info: any) => (
+            cell: ({ row }: { row: { original: ReturnRequest } }) => (
                 <div className="flex justify-end items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    {info.row.original.status === 'Bekliyor' && (
+                    {row.original.status === 'PENDING' && (
                         <>
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 w-8 p-0 text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50"
-                                onClick={() => handleApprove(info.row.original)}
+                                onClick={() => handleApprove(row.original)}
                                 title="Onayla"
                             >
                                 <BadgeCheck className="h-4 w-4" />
@@ -106,7 +116,7 @@ export const ReturnRequests = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
-                                onClick={() => handleReject(info.row.original)}
+                                onClick={() => handleReject(row.original)}
                                 title="Reddet"
                             >
                                 <XCircle className="h-4 w-4" />
@@ -126,11 +136,20 @@ export const ReturnRequests = () => {
         }
     ];
 
-    const filteredData = MOCK_RETURNS.filter(r =>
+    const filteredData = returns.filter(r =>
         r.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.orderId.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
+                <p className="text-[13px] font-medium text-zinc-500">İade talepleri yükleniyor...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -143,9 +162,6 @@ export const ReturnRequests = () => {
                     <Button variant="secondary" className="shadow-sm border border-zinc-200/80 bg-white hover:bg-zinc-50">
                         <Filter className="mr-2 h-4 w-4" />
                         Filtrele
-                    </Button>
-                    <Button variant="primary" className="shadow-md">
-                        Manuel İade Oluştur
                     </Button>
                 </div>
             </div>

@@ -6,6 +6,7 @@ import { RecentTransactions } from './components/RecentTransactions';
 import { Banknote, ShoppingBag, Users, TrendingUp, Loader2, Download, Calendar } from 'lucide-react';
 import { dashboardService, DashboardSummary } from './services/dashboard.service';
 import { Button } from '@/components/ui/Button';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 const formatCurrency = (value: number) => {
     return '₺' + new Intl.NumberFormat('tr-TR', { style: 'decimal' }).format(value);
@@ -57,23 +58,20 @@ export const DashboardPage = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header Area */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">Genel Bakış</h1>
-                    <p className="text-[13px] font-medium text-zinc-500 mt-1">
-                        Mağazanızın bugünkü performansı. Son güncellenme: <span className="font-bold text-zinc-700">{lastUpdate}</span>
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="secondary" className="bg-white" icon={<Calendar className="w-4 h-4" />}>
-                        Bu Hafta
-                    </Button>
-                    <Button variant="primary" className="shadow-md" icon={<Download className="w-4 h-4" />}>
-                        Rapor İndir
-                    </Button>
-                </div>
-            </div>
+            <PageHeader
+                title="Genel Bakış"
+                subtitle={`Mağazanızın bugünkü performansı. Son güncellenme: ${lastUpdate}`}
+                actions={
+                    <>
+                        <Button variant="secondary" className="bg-white" icon={<Calendar className="w-4 h-4" />}>
+                            Bu Hafta
+                        </Button>
+                        <Button variant="primary" className="shadow-md" icon={<Download className="w-4 h-4" />}>
+                            Rapor İndir
+                        </Button>
+                    </>
+                }
+            />
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

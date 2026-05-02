@@ -116,13 +116,13 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - `+12.5% düne göre`, `+8.2% hedefe göre`, `+5.7% artış` gibi değişim yüzdeleri hardcoded
 - Backend'den gelmesi gereken trend verileri statik yazılmış
 
-### 4.3 Storefront — Tamamen Mock Data
+### *4.3 Storefront — Tamamen Mock Data
 
 - **Dosya:** [data.ts](file:///c:/Users/MrMahirr/Desktop/Peyker_Moda_Web/peyker-moda/apps/storefront/src/lib/data.ts) — **491 satır** hardcoded ürün verisi
 - Storefront API'den veri çekmeye çalışıyor (`storeApi.getProducts`) ama birçok sayfa hala `data.ts`'den statik veri kullanıyor
 - Koleksiyonlar, hero slider, kategoriler tamamen hardcoded
 
-### 4.4 Kalan TODO'lar
+### *4.4 Kalan TODO'lar
 
 ```
 ├── validators.ts:8        → // TODO: Add more schemas

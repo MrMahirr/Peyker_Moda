@@ -5,6 +5,7 @@ import { ShipmentCreate } from './components/ShipmentCreate';
 import { ShipmentTracking } from './components/ShipmentTracking';
 import { ShippingRates } from './components/ShippingRates';
 import { DeliveryReport } from './components/DeliveryReport';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 type Tab = 'shipments' | 'carriers' | 'rates' | 'reports';
 
@@ -22,7 +23,7 @@ export const ShippingPage = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Kargo & Lojistik</h1>
+                    <PageHeader title="Kargo & Lojistik" subtitle="Gönderi ve kargo yönetimi." />
                     <p className="text-sm font-medium text-zinc-500 mt-1">Kargo firmaları, gönderiler ve teslimat takibi.</p>
                 </div>
                 <div className="flex bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50 shadow-inner">

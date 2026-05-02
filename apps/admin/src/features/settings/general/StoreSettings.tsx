@@ -5,6 +5,7 @@ import { ImageUpload } from '@/components/shared/ImageUpload';
 import { Store, MapPin, Phone, Mail, Save, Loader2 } from 'lucide-react';
 import { settingsService } from '../services/settings.service';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 interface StoreSettingsForm {
     storeName: string;
@@ -89,7 +90,7 @@ export const StoreSettings = () => {
     return (
         <div className="space-y-6 max-w-4xl">
             <div>
-                <h1 className="text-2xl font-black tracking-tight text-zinc-900">Magaza Ayarlari</h1>
+                <PageHeader title="Mağaza Ayarları" />
                 <p className="text-[13px] font-medium text-zinc-500 mt-1">Sistem uzerindeki genel magaza bilgilerinizi yonetin.</p>
             </div>
 

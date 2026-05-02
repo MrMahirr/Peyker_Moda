@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { productsService } from './services/products.service';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 const productSchema = z.object({
     name: z.string().min(3, 'Ürün adı en az 3 karakter olmalıdır'),
@@ -157,7 +158,7 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
                         <ChevronLeft className="w-4 h-4" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Yeni Ürün Ekle</h1>
+                        <PageHeader title="Yeni Ürün Ekle" />
                         <p className="text-sm font-medium text-zinc-500">Ürün detaylarını doldurarak kataloğunuza işleyin.</p>
                     </div>
                 </div>

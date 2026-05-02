@@ -5,6 +5,7 @@ import { InventoryFilters } from './components/InventoryFilters';
 import { InventoryTable } from './components/InventoryTable';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const InventoryPage = () => {
     const navigate = useNavigate();
@@ -13,7 +14,7 @@ export const InventoryPage = () => {
         <DashboardLayout>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Envanter & Stok</h1>
+                    <PageHeader title="Envanter & Stok" subtitle="Stok ve depo yönetimi." />
                     <p className="text-sm text-zinc-500 mt-1">Mağazada toplam <span className="font-medium text-zinc-700">1,240</span> ürün mevcut</p>
                 </div>
                 <Button 

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { stockService } from '../services/stock.service';
 import type { Tag } from '../types/stock.types';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
 
@@ -70,7 +71,7 @@ export const TagManager = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-black tracking-tight text-zinc-900">Etiket Yönetimi</h1>
+                <PageHeader title="Etiket Yönetimi" />
                 <p className="text-[13px] font-medium text-zinc-500 mt-1">Ürünlerinizi etiketlerle gruplandırın (yeni, trend, sezon sonu vb.).</p>
             </div>
 

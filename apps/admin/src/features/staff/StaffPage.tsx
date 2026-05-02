@@ -3,6 +3,7 @@ import { UserList } from './components/UserList';
 import { RoleManager } from './components/RoleManager';
 import { cn } from '@/lib/utils';
 import { Users, ShieldCheck } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const StaffPage = () => {
     const [activeTab, setActiveTab] = useState<'users' | 'roles'>('users');
@@ -11,7 +12,7 @@ export const StaffPage = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
                 <div>
-                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">Personel Yönetimi</h1>
+                    <PageHeader title="Personel Yönetimi" subtitle="Çalışan hesapları ve yetkilendirme." />
                     <p className="text-[13px] font-medium text-zinc-500 mt-1">Yöneticileri, satış temsilcilerini ve yetkilerini yapılandırın.</p>
                 </div>
 

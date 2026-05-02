@@ -9,6 +9,7 @@ import { showDeleteConfirm } from '@/utils/swal';
 import { customersService, Customer } from '../api/customerService';
 import { Badge } from '@/components/ui/Badge';
 import { CustomerFormModal } from './CustomerFormModal';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -170,22 +171,22 @@ export const CustomerList = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">Müşteri Portföyü</h1>
-                    <p className="text-[13px] font-medium text-zinc-500 mt-1">Müşteri ilişkilerinizi ve satış geçmişlerini yönetin.</p>
-                </div>
-                <Button 
-                    className="font-semibold shadow-md active:scale-[0.98] transition-all" 
-                    icon={<Plus className="w-4 h-4" />}
-                    onClick={() => {
-                        setEditingCustomer(null);
-                        setIsModalOpen(true);
-                    }}
-                >
-                    Yeni Müşteri
-                </Button>
-            </div>
+            <PageHeader
+                title="Müşteri Portföyü"
+                subtitle="Müşteri ilişkilerinizi ve satış geçmişlerini yönetin."
+                actions={
+                    <Button 
+                        className="font-semibold shadow-md active:scale-[0.98] transition-all" 
+                        icon={<Plus className="w-4 h-4" />}
+                        onClick={() => {
+                            setEditingCustomer(null);
+                            setIsModalOpen(true);
+                        }}
+                    >
+                        Yeni Müşteri
+                    </Button>
+                }
+            />
 
             <div className="flex items-center gap-4 bg-zinc-50 p-2 rounded-xl border border-zinc-200/80 shadow-sm">
                 <div className="relative flex-1 max-w-md">

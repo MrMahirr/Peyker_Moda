@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { RefundModal } from './RefundModal';
 import { Badge } from '@/components/ui/Badge';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 const MOCK_RETURNS = [
     { id: 'RET-1001', orderId: 'TR-45920', customer: 'Ayşe Yılmaz', date: '2024-01-22', amount: 450.00, status: 'Bekliyor', reason: 'Beden Uymadı' },
@@ -135,7 +136,7 @@ export const ReturnRequests = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">İade Talepleri</h1>
+                    <PageHeader title="İade Talepleri" subtitle="İade ve değişim talepleri." />
                     <p className="text-[13px] font-medium text-zinc-500 mt-1">Müşteri iade ve değişim süreçlerini yönetin.</p>
                 </div>
                 <div className="flex gap-2">

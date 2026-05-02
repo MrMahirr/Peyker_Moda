@@ -2,12 +2,13 @@ import React from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { User, Lock, Save } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const UserProfile = () => {
     return (
         <div className="p-8 space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-zinc-900">Profil Ayarları</h1>
+                <PageHeader title="Profil Ayarları" />
                 <p className="text-zinc-500">Kişisel bilgilerinizi ve şifrenizi güncelleyin</p>
             </div>
 

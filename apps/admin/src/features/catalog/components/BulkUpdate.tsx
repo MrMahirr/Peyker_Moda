@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { SlidersHorizontal, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 type UpdateTarget = 'price' | 'stock' | 'status';
 
@@ -192,7 +193,7 @@ export const BulkUpdate = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-black tracking-tight text-zinc-900">Toplu Guncelleme</h1>
+                <PageHeader title="Toplu Güncelleme" />
                 <p className="text-[13px] font-medium text-zinc-500 mt-1">Secili urunlerde fiyat, stok veya durum degistirin.</p>
             </div>
 

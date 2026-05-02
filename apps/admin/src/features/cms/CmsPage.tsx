@@ -3,6 +3,7 @@ import { FileText, HelpCircle, Rss } from 'lucide-react';
 import { BlogManager } from './components/BlogManager';
 import { FaqManager } from './components/FaqManager';
 import { PageManager } from './components/PageManager';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 type Tab = 'blog' | 'pages' | 'faq';
 
@@ -18,7 +19,7 @@ export const CmsPage = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Icerik Yonetimi (CMS)</h1>
+                    <PageHeader title="İçerik Yönetimi (CMS)" subtitle="Blog, sayfa ve banner yönetimi." />
                     <p className="text-sm font-medium text-zinc-500 mt-1">
                         Blog yazilari, kurumsal sayfalar ve sikca sorulan sorular.
                     </p>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const CampaignForm = () => {
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ export const CampaignForm = () => {
                     Geri
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-900">Yeni Kampanya</h1>
+                    <PageHeader title="Yeni Kampanya" />
                     <p className="text-zinc-500">Kampanya detaylarını giriniz</p>
                 </div>
             </div>

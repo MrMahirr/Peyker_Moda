@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { stockService } from '../services/stock.service';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const BulkImportExport = () => {
     const [importing, setImporting] = useState(false);
@@ -50,7 +51,7 @@ export const BulkImportExport = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-black tracking-tight text-zinc-900">Toplu Ürün İşlemleri</h1>
+                <PageHeader title="Toplu Ürün İşlemleri" />
                 <p className="text-[13px] font-medium text-zinc-500 mt-1">Excel veya CSV dosyalarıyla toplu ürün içe/dışa aktarımı yapın.</p>
             </div>
 

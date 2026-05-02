@@ -5,6 +5,7 @@ import { ZReport } from './reports/ZReport';
 import { Wallet, PieChart, FileText, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { cashService } from './services/cash.service';
 import { transactionsService } from './services/transactions.service';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const AccountingPage = () => {
     const [activeTab, setActiveTab] = useState<'transactions' | 'invoices' | 'reports'>('transactions');
@@ -47,7 +48,7 @@ export const AccountingPage = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Ön Muhasebe</h1>
+                    <PageHeader title="Ön Muhasebe" subtitle="Gelir, gider ve nakit akışı takibi." />
                     <p className="text-sm font-medium text-zinc-500 mt-1">Gelir/Gider takibi, faturalar ve finansal raporlar.</p>
                 </div>
                 <div className="flex bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50 shadow-inner">

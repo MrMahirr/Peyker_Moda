@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { stockService } from '../services/stock.service';
 import type { Brand } from '../types/stock.types';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const BrandManager = () => {
     const [brands, setBrands] = useState<Brand[]>([]);
@@ -67,7 +68,7 @@ export const BrandManager = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-black tracking-tight text-zinc-900">Marka Yönetimi</h1>
+                <PageHeader title="Marka Yönetimi" />
                 <p className="text-[13px] font-medium text-zinc-500 mt-1">Ürünlerinize ait markaları yönetin.</p>
             </div>
 

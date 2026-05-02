@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { stockService } from '../services/stock.service';
 import type { Season } from '../types/stock.types';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const SeasonManager = () => {
     const [seasons, setSeasons] = useState<Season[]>([]);
@@ -77,7 +78,7 @@ export const SeasonManager = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">Sezon / Koleksiyon Yönetimi</h1>
+                    <PageHeader title="Sezon / Koleksiyon Yönetimi" />
                     <p className="text-[13px] font-medium text-zinc-500 mt-1">Ürünlerinizi sezonlara ve koleksiyonlara göre gruplandırın.</p>
                 </div>
                 <Button

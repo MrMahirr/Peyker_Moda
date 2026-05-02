@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { campaignsService, Campaign } from '../services/campaigns.service';
 import { Badge } from '@/components/ui/Badge';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const CampaignList = () => {
     const navigate = useNavigate();
@@ -167,17 +168,15 @@ export const CampaignList = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-zinc-900 flex items-center gap-2">
-                        Pazarlama Kampanyaları <Sparkles className="w-5 h-5 text-amber-500" />
-                    </h1>
-                    <p className="text-[13px] font-medium text-zinc-500 mt-1">İndirimleri, fırsatları ve kupon kodlarını yönetin.</p>
-                </div>
-                <Button onClick={() => navigate('new')} variant="primary" className="shadow-md" icon={<Plus className="w-4 h-4" />}>
-                    Yeni Kampanya
-                </Button>
-            </div>
+            <PageHeader
+                title="Pazarlama Kampanyaları"
+                subtitle="İndirimleri, fırsatları ve kupon kodlarını yönetin."
+                actions={
+                    <Button onClick={() => navigate('new')} variant="primary" className="shadow-md" icon={<Plus className="w-4 h-4" />}>
+                        Yeni Kampanya
+                    </Button>
+                }
+            />
 
             <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden p-1">
                 <DataGrid

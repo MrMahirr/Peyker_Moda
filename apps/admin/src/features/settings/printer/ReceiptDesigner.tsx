@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/Input';
 import { Ticket, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { settingsService } from '../services/settings.service';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const ReceiptDesigner = () => {
     const [headerText, setHeaderText] = useState('Peyker Moda');
@@ -100,7 +101,7 @@ export const ReceiptDesigner = () => {
         <div className="p-8 space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-900">Fis Tasarimi</h1>
+                    <PageHeader title="Fiş Tasarımı" />
                     <p className="text-zinc-500">Musteri fislerinin gorunumunu ozellestirin</p>
                 </div>
                 <div className="flex space-x-2">

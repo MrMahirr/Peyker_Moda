@@ -7,6 +7,7 @@ import { ArrowDownCircle, ArrowUpCircle, ArrowRightLeft, Search, Plus, Loader2 }
 import { toast } from 'sonner';
 import { stockService } from '../services/stock.service';
 import type { StockMovement, StockMovementType } from '../types/stock.types';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 const formatCurrency = (value: number) =>
     new Intl.NumberFormat('tr-TR', { style: 'decimal' }).format(value);
@@ -150,7 +151,7 @@ export const StockMovements = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">Stok Hareketleri</h1>
+                    <PageHeader title="Stok Hareketleri" />
                     <p className="text-[13px] font-medium text-zinc-500 mt-1">Tüm stok giriş, çıkış ve transfer işlemlerini takip edin.</p>
                 </div>
                 <Button

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
 import { stockService } from '../services/stock.service';
 import type { Warehouse } from '../types/stock.types';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const WarehouseManager = () => {
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -78,7 +79,7 @@ export const WarehouseManager = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">Depo / Mağaza Yönetimi</h1>
+                    <PageHeader title="Depo / Mağaza Yönetimi" />
                     <p className="text-[13px] font-medium text-zinc-500 mt-1">Stok lokasyonlarınızı ve depo bilgilerinizi yönetin.</p>
                 </div>
                 <Button

@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Building, Truck, ShoppingCart } from 'lucide-react';
 import { SupplierList } from './components/SupplierList';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export const SuppliersPage = () => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tedarikçi Yönetimi</h1>
+                    <PageHeader title="Tedarikçi Yönetimi" subtitle="Tedarikçi ve cari hesap yönetimi." />
                     <p className="text-sm font-medium text-zinc-500 mt-1">Ürün tedarik ettiğiniz firmaları ve kişileri yönetin.</p>
                 </div>
             </div>

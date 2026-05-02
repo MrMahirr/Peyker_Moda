@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BarChart3, TrendingUp, PackageSearch } from 'lucide-react';
 import { SalesReport } from './components/SalesReport';
 import { ProductPerformance } from './components/ProductPerformance';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 type Tab = 'sales' | 'products';
 
@@ -17,7 +18,7 @@ export const ReportsPage = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Raporlar & Analizler</h1>
+                    <PageHeader title="Raporlar & Analizler" subtitle="Satış ve performans raporları." />
                     <p className="text-sm font-medium text-zinc-500 mt-1">Mağazanızın satış, ürün ve müşteri istatistiklerini inceleyin.</p>
                 </div>
                 <div className="flex bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50 shadow-inner">

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/Input';
 import { Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import {
+import { PageHeader } from '@/components/shared/PageHeader';
     messagingService,
     type BulkMessageJob,
     type MessagingChannel,
@@ -102,7 +103,7 @@ export const BulkMessageSender = () => {
     return (
         <div className="p-8 space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-zinc-900">Toplu Mesaj Gonderimi</h1>
+                <PageHeader title="Toplu Mesaj Gönderimi" />
                 <p className="text-zinc-500">Musterilere SMS veya e-posta gonderim talepleri olusturun.</p>
             </div>
 

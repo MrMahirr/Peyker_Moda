@@ -6,6 +6,7 @@ import { ClipboardCheck, Plus, Loader2, CheckCircle, AlertTriangle } from 'lucid
 import { toast } from 'sonner';
 import { stockService } from '../services/stock.service';
 import type { StockCount as StockCountType } from '../types/stock.types';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 const statusLabels: Record<string, string> = {
     DRAFT: 'Taslak',
@@ -66,7 +67,7 @@ export const StockCount = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-black tracking-tight text-zinc-900">Stok Sayımı</h1>
+                    <PageHeader title="Stok Sayımı" />
                     <p className="text-[13px] font-medium text-zinc-500 mt-1">Fiziksel sayım yapın ve stok düzeltmeleri uygulayın.</p>
                 </div>
                 <Button

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
+import { PageHeader } from '@/components/shared/PageHeader';
     priceListsService,
     type CreatePriceListDto,
     type PriceList,
@@ -276,7 +277,7 @@ export const PriceListManager = () => {
         <div className="p-8 space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-900">Fiyat Listeleri</h1>
+                    <PageHeader title="Fiyat Listeleri" />
                     <p className="text-zinc-500">Musteri segmentlerine ozel fiyat ve indirim listeleri.</p>
                 </div>
                 <Button icon={<Plus className="w-4 h-4" />} onClick={openCreateForm}>

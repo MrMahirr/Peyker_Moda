@@ -10,11 +10,7 @@ import SearchModal from "@/components/shared/SearchModal";
 import { useCart } from "@/lib/CartContext";
 import { storeApi } from "@/lib/api";
 
-const collections = [
-  { slug: 'kis-2025', title: 'Kış 2025' },
-  { slug: 'yaz-2025', title: 'Yaz 2025' },
-  { slug: 'ozel-seri', title: 'Özel Seri' },
-];
+
 
 export default function Header() {
   const router = useRouter();
@@ -23,10 +19,29 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [collections, setCollections] = useState<any[]>([]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
+
+    // Fetch collections
+    const fetchCollections = async () => {
+      try {
+        const categories = await storeApi.getCategories();
+        // Here we can use categories as collections or fetch separate collections if needed
+        // For now, let's treat top-level categories as "collections" or fetch real campaigns
+        const banners = await storeApi.getBanners();
+        if (banners.length > 0) {
+           setCollections(banners.map(b => ({ slug: b.id, title: b.title })));
+        } else {
+           setCollections(categories.map(c => ({ slug: c.slug, title: c.name })));
+        }
+      } catch (err) {
+        console.error('Header collections fetch failed', err);
+      }
+    };
+    fetchCollections();
 
     // Check auth status
     setIsLoggedIn(storeApi.isLoggedIn());

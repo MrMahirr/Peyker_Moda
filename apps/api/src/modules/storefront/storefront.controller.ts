@@ -18,6 +18,20 @@ import { StoreProductQueryDto, UpdateCartDto, CheckoutDto } from './dto';
 @Controller('store')
 export class StorefrontController {
     constructor(private readonly storefrontService: StorefrontService) { }
+21: 
+22:     // ========== HOME / SETTINGS ==========
+23: 
+24:     @Get('banners')
+25:     @ApiOperation({ summary: 'Banner/Hero listesi' })
+26:     async getBanners(@Query('position') position?: string) {
+27:         return this.storefrontService.getBanners(position);
+28:     }
+29: 
+30:     @Get('attributes')
+31:     @ApiOperation({ summary: 'Filtreleme özellikleri (beden, renk vb.)' })
+32:     async getAttributes() {
+33:         return this.storefrontService.getAttributes();
+34:     }
 
     // ========== CATEGORIES ==========
 
@@ -31,6 +45,12 @@ export class StorefrontController {
     @ApiOperation({ summary: 'Kategori detayı' })
     async getCategoryBySlug(@Param('slug') slug: string) {
         return this.storefrontService.getCategoryBySlug(slug);
+    }
+
+    @Get('collections/:slug')
+    @ApiOperation({ summary: 'Koleksiyon/Kampanya detayı' })
+    async getCollectionBySlug(@Param('slug') slug: string) {
+        return this.storefrontService.getCollectionBySlug(slug);
     }
 
     // ========== PRODUCTS ==========

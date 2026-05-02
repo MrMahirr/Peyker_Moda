@@ -144,15 +144,23 @@ export const storeApi = {
         limit?: number;
         sortBy?: string;
         onSale?: boolean;
+        sizes?: string[];
+        colors?: string[];
+        minPrice?: number;
+        maxPrice?: number;
     }): Promise<{ products: Product[]; total: number; page: number; totalPages: number }> {
         try {
             const searchParams = new URLSearchParams();
-            if (params?.categorySlug) searchParams.append('category', params.categorySlug);
+            if (params?.categorySlug) searchParams.append('categoryId', params.categorySlug);
             if (params?.search) searchParams.append('search', params.search);
             if (params?.page) searchParams.append('page', String(params.page));
             if (params?.limit) searchParams.append('limit', String(params.limit));
-            if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
+            if (params?.sortBy) searchParams.append('sort', params.sortBy);
             if (params?.onSale) searchParams.append('onSale', 'true');
+            if (params?.sizes && params.sizes.length > 0) searchParams.append('sizes', params.sizes.join(','));
+            if (params?.colors && params.colors.length > 0) searchParams.append('colors', params.colors.join(','));
+            if (params?.minPrice) searchParams.append('minPrice', String(params.minPrice));
+            if (params?.maxPrice) searchParams.append('maxPrice', String(params.maxPrice));
 
             const response = await fetch(`${API_BASE_URL}/store/products?${searchParams}`);
             const data = await response.json();
@@ -380,6 +388,28 @@ export const storeApi = {
         } catch (error) {
             console.error('Failed to fetch new arrivals:', error);
             return [];
+        }
+    },
+
+    async getCollectionBySlug(slug: string): Promise<any> {
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/collections/${slug}`);
+            const data = await response.json();
+            return data.data || null;
+        } catch (error) {
+            console.error('Failed to fetch collection:', error);
+            return null;
+        }
+    },
+
+    async getAttributes(): Promise<{ sizes: string[]; colors: Array<{ name: string; value: string }> }> {
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/attributes`);
+            const data = await response.json();
+            return data.data || { sizes: [], colors: [] };
+        } catch (error) {
+            console.error('Failed to fetch attributes:', error);
+            return { sizes: [], colors: [] };
         }
     },
 };

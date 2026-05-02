@@ -12,70 +12,68 @@ import { Button } from "@/components/ui/button";
 import { storeApi, Product } from "@/lib/api";
 import { fadeInUp, formatPrice } from "@/lib/utils";
 
-// Collection metadata
-const collectionMeta: Record<string, {
+interface CollectionData {
+  id: string;
   title: string;
   subtitle: string;
   description: string;
   coverImage: string;
   accentColor: string;
   categorySlug?: string;
-}> = {
-  'kis-2025': {
-    title: 'Kış 2025',
-    subtitle: 'Soğuk kış günlerinde sıcacık kalın.',
-    description: 'Kış koleksiyonumuz ile sezonun en trend parçalarını keşfedin.',
-    coverImage: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=2000',
-    accentColor: 'bg-blue-500',
-    categorySlug: 'giyim',
-  },
-  'yaz-2025': {
-    title: 'Yaz 2025',
-    subtitle: 'Yaz enerjisini hissedin.',
-    description: 'Renkli ve hafif yaz parçaları ile sezonun tadını çıkarın.',
-    coverImage: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2000',
-    accentColor: 'bg-amber-500',
-    categorySlug: 'giyim',
-  },
-  'ozel-seri': {
-    title: 'Özel Seri',
-    subtitle: 'Limitli üretim, sınırsız stil.',
-    description: 'El yapımı, özenle tasarlanmış özel parçalar.',
-    coverImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=2000',
-    accentColor: 'bg-purple-500',
-  },
-};
+}
 
 export default function DynamicCollectionPage() {
   const params = useParams();
   const slug = params.slug as string;
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [collection, setCollection] = useState<CollectionData | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const collection = collectionMeta[slug];
+  const [productsLoading, setProductsLoading] = useState(true);
 
   useEffect(() => {
     if (slug) {
-      fetchProducts();
+      fetchCollectionData();
     }
   }, [slug]);
 
-  const fetchProducts = async () => {
+  const fetchCollectionData = async () => {
     setLoading(true);
     try {
-      const meta = collectionMeta[slug];
+      const data = await storeApi.getCollectionBySlug(slug);
+      if (data) {
+        setCollection(data);
+        fetchProducts(data.categorySlug);
+      }
+    } catch (error) {
+      console.error('Failed to fetch collection metadata:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProducts = async (categorySlug?: string) => {
+    setProductsLoading(true);
+    try {
       const result = await storeApi.getProducts({
-        categorySlug: meta?.categorySlug,
-        limit: 8,
+        categorySlug: categorySlug,
+        limit: 12,
       });
       setProducts(result.products);
     } catch (error) {
       console.error('Failed to fetch products:', error);
     } finally {
-      setLoading(false);
+      setProductsLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-amber-600" />
+      </div>
+    );
+  }
 
   if (!collection) {
     return (
@@ -149,7 +147,7 @@ export default function DynamicCollectionPage() {
 
         {/* --- PRODUCT LOOKBOOK --- */}
         <section className="container mx-auto px-4 md:px-8 pb-32">
-          {loading ? (
+          {productsLoading ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
             </div>

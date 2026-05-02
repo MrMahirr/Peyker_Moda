@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Filter, Loader2 } from "lucide-react";
 import Header from "@/components/layout/Header";
@@ -34,11 +34,18 @@ export default function ClothingPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [sortBy, page]);
+  // Filter State
+  const [filters, setFilters] = useState<{
+    sizes: string[];
+    colors: string[];
+    priceRange: [number, number];
+  }>({
+    sizes: [],
+    colors: [],
+    priceRange: [0, 5000],
+  });
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
       const result = await storeApi.getProducts({
@@ -46,6 +53,10 @@ export default function ClothingPage() {
         page,
         limit: 12,
         sortBy,
+        sizes: filters.sizes,
+        colors: filters.colors,
+        minPrice: filters.priceRange[0],
+        maxPrice: filters.priceRange[1],
       });
       setProducts(result.products);
       setTotalPages(result.totalPages);
@@ -55,6 +66,15 @@ export default function ClothingPage() {
     } finally {
       setLoading(false);
     }
+  }, [sortBy, page, filters]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  const handleFilterChange = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+    setPage(1); // Reset to first page on filter change
   };
 
   const handleLoadMore = () => {
@@ -105,7 +125,7 @@ export default function ClothingPage() {
                 <SheetHeader className="mb-6">
                   <SheetTitle className="font-serif text-2xl">Filtreler</SheetTitle>
                 </SheetHeader>
-                <FilterSidebar />
+                <FilterSidebar onFilterChange={handleFilterChange} />
                 <div className="mt-8 pt-4 border-t border-stone-100">
                   <Button className="w-full bg-stone-900 hover:bg-amber-600 text-white">
                     Sonuçları Göster
@@ -123,7 +143,7 @@ export default function ClothingPage() {
                 <SelectItem value="newest">En Yeniler</SelectItem>
                 <SelectItem value="price-asc">Fiyat: Artan</SelectItem>
                 <SelectItem value="price-desc">Fiyat: Azalan</SelectItem>
-                <SelectItem value="bestseller">Çok Satanlar</SelectItem>
+                <SelectItem value="popular">Popüler</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -133,13 +153,13 @@ export default function ClothingPage() {
           {/* --- SIDEBAR (Desktop) --- */}
           <aside className="hidden md:block w-64 flex-shrink-0">
             <div className="sticky top-32">
-              <FilterSidebar />
+              <FilterSidebar onFilterChange={handleFilterChange} />
             </div>
           </aside>
 
           {/* --- PRODUCT GRID --- */}
           <div className="flex-1">
-            {loading ? (
+            {loading && products.length === 0 ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
               </div>
@@ -174,8 +194,9 @@ export default function ClothingPage() {
                       variant="outline"
                       className="border-stone-300 hover:border-amber-500 hover:text-amber-600 px-8"
                       onClick={handleLoadMore}
+                      disabled={loading}
                     >
-                      Daha Fazla Göster
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Daha Fazla Göster"}
                     </Button>
                   </div>
                 )}
@@ -189,3 +210,4 @@ export default function ClothingPage() {
     </div>
   );
 }
+

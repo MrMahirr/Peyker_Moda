@@ -138,4 +138,14 @@ export class StoreProductQueryDto {
     @IsString()
     @IsOptional()
     sort?: string;
+
+    @ApiPropertyOptional({ example: 'M,L', description: 'Bedenler (virgül ile ayrılmış)' })
+    @IsString()
+    @IsOptional()
+    sizes?: string;
+
+    @ApiPropertyOptional({ example: 'black,red', description: 'Renkler (virgül ile ayrılmış)' })
+    @IsString()
+    @IsOptional()
+    colors?: string;
 }

@@ -10,10 +10,16 @@ export class DashboardService {
     constructor(private prisma: PrismaService) { }
 
     /**
-     * Genel özet istatistikleri
+     * Genel özet istatistikleri ve trendler
      */
     async getSummary(query: DashboardQueryDto) {
         const dateFilter = this.getDateFilter(query);
+        const startOfToday = this.getStartOfDay();
+        const startOfYesterday = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
+        
+        const startOfThisWeek = new Date(startOfToday);
+        startOfThisWeek.setDate(startOfToday.getDate() - startOfToday.getDay() + (startOfToday.getDay() === 0 ? -6 : 1));
+        const startOfLastWeek = new Date(startOfThisWeek.getTime() - 7 * 24 * 60 * 60 * 1000);
 
         const [
             totalOrders,
@@ -22,6 +28,9 @@ export class DashboardService {
             totalProducts,
             pendingOrders,
             todaySales,
+            yesterdaySales,
+            thisWeekCustomers,
+            lastWeekCustomers,
         ] = await Promise.all([
             // Toplam sipariş
             this.prisma.order.count({
@@ -51,13 +60,38 @@ export class DashboardService {
             // Bugünün satışları
             this.prisma.order.aggregate({
                 where: {
-                    createdAt: { gte: this.getStartOfDay() },
+                    createdAt: { gte: startOfToday },
                     status: { not: OrderStatus.CANCELLED },
                 },
                 _sum: { totalAmount: true },
                 _count: true,
             }),
+            // Dünün satışları
+            this.prisma.order.aggregate({
+                where: {
+                    createdAt: { gte: startOfYesterday, lt: startOfToday },
+                    status: { not: OrderStatus.CANCELLED },
+                },
+                _sum: { totalAmount: true },
+                _count: true,
+            }),
+            // Bu hafta yeni müşteri
+            this.prisma.customer.count({
+                where: { createdAt: { gte: startOfThisWeek } },
+            }),
+            // Geçen hafta yeni müşteri
+            this.prisma.customer.count({
+                where: { createdAt: { gte: startOfLastWeek, lt: startOfThisWeek } },
+            })
         ]);
+
+        const calcTrend = (current: number, prev: number) => {
+            if (prev === 0) return current > 0 ? 100 : 0;
+            return Number((((current - prev) / prev) * 100).toFixed(1));
+        };
+
+        const todayAmount = Number(todaySales._sum.totalAmount || 0);
+        const yesterdayAmount = Number(yesterdaySales._sum.totalAmount || 0);
 
         return {
             totalOrders,
@@ -65,9 +99,15 @@ export class DashboardService {
             totalCustomers,
             totalProducts,
             pendingOrders,
+            newCustomersThisWeek: thisWeekCustomers,
+            trends: {
+                salesAmount: calcTrend(todayAmount, yesterdayAmount),
+                salesCount: calcTrend(todaySales._count, yesterdaySales._count),
+                newCustomers: calcTrend(thisWeekCustomers, lastWeekCustomers),
+            },
             todaySales: {
                 count: todaySales._count,
-                amount: todaySales._sum.totalAmount || 0,
+                amount: todayAmount,
             },
         };
     }

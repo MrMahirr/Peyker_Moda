@@ -69,7 +69,7 @@ Frontend (admin panel) birçok modülde API çağrıları yapıyor ancak **backe
 
 - `MINIO_ROOT_USER=minioadmin` ve `MINIO_ROOT_PASSWORD=minioadmin` production için değiştirilmeli
 
-### 2.7 WebSocket Auth Yok
+### *2.7 WebSocket Auth Yok
 
 - Socket bağlantısında token doğrulaması yapılmıyor
 - **Dosya:** [socket.ts](file:///c:/Users/MrMahirr/Desktop/Peyker_Moda_Web/peyker-moda/apps/admin/src/lib/socket.ts) — Auth header gönderilmiyor

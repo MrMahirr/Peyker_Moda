@@ -44,6 +44,17 @@ export const DashboardPage = () => {
         );
     }
 
+    const getTrendData = (value?: number, suffix: string = '') => {
+        if (value === undefined) return { text: 'Hesaplanıyor...', type: 'neutral' as const };
+        if (value > 0) return { text: `+${value}% ${suffix}`, type: 'up' as const };
+        if (value < 0) return { text: `${value}% ${suffix}`, type: 'down' as const };
+        return { text: `0% ${suffix}`, type: 'neutral' as const };
+    };
+
+    const salesTrend = getTrendData(summary?.trends?.salesAmount, 'düne göre');
+    const countTrend = getTrendData(summary?.trends?.salesCount, 'düne göre');
+    const customerTrend = getTrendData(summary?.trends?.newCustomers, 'geçen haftaya göre');
+
     return (
         <div className="space-y-6">
             {/* Header Area */}
@@ -69,17 +80,17 @@ export const DashboardPage = () => {
                 <StatCard
                     title="Günlük Satış (Brüt)"
                     value={summary ? formatCurrency(summary.todaySales.amount) : '₺0'}
-                    change="+12.5% düne göre"
+                    change={salesTrend.text}
                     icon={Banknote}
-                    trend="up"
+                    trend={salesTrend.type}
                     color="blue"
                 />
                 <StatCard
                     title="Satış Adedi Bugün"
                     value={String(summary?.todaySales.count || 0)}
-                    change="+8.2% hedefe göre"
+                    change={countTrend.text}
                     icon={TrendingUp}
-                    trend="up"
+                    trend={countTrend.type}
                     color="indigo"
                 />
                 <StatCard
@@ -93,9 +104,9 @@ export const DashboardPage = () => {
                 <StatCard
                     title="Yeni Müşteri (Haftalık)"
                     value={String(summary?.newCustomersThisWeek || 0)}
-                    change="+5.7% artış"
+                    change={customerTrend.text}
                     icon={Users}
-                    trend="up"
+                    trend={customerTrend.type}
                     color="emerald"
                 />
             </div>

@@ -8,6 +8,11 @@ export interface DashboardSummary {
     totalCustomers: number;
     newCustomersThisWeek: number;
     lowStockCount: number;
+    trends: {
+        salesAmount: number;
+        salesCount: number;
+        newCustomers: number;
+    };
 }
 
 export interface TopProduct {

@@ -208,13 +208,13 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - `prisma/migrations` klasörü yok veya boş — schema değişiklikleri migration ile takip edilmiyor
 - `db_dump_20260314_055446.sql` dosyası root'ta duruyor (temizlenmeli)
 
-### 6.7 Test Coverage Çok Düşük
+### *6.7 Test Coverage Çok Düşük
 
 - Backend'de sadece `auth.service.spec.ts` ve `app.controller.spec.ts` var
 - Frontend'de **hiç test yok**
 - E2E test yok
 
-### 6.8 CORS Konfigürasyonu
+### *6.8 CORS Konfigürasyonu
 
 - Production'da CORS origin'lerin doğru ayarlanması gerekiyor
 - Şu an `localhost:3500,localhost:3501,localhost:5173` — production domain'leri eklenmeli

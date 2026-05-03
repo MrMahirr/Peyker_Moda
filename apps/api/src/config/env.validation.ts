@@ -31,6 +31,8 @@ export const envSchema = z.object({
   // Rate Limiting
   THROTTLE_TTL: z.coerce.number().default(60000),
   THROTTLE_LIMIT: z.coerce.number().default(100),
+  THROTTLE_AUTH_TTL: z.coerce.number().default(60000),
+  THROTTLE_AUTH_LIMIT: z.coerce.number().default(5),
   
   // Uploads
   UPLOAD_PATH: z.string().default('./uploads'),
@@ -67,6 +69,18 @@ export function validate(config: Record<string, unknown>) {
   if (result.data.NODE_ENV === 'production' && result.data.JWT_SECRET === 'super-secret-key-change-in-production') {
     logger.error('❌ Security Error: Default JWT secret is not allowed in production.');
     throw new Error('Insecure JWT secret in production');
+  }
+
+  // Extra custom validation: CORS security in production
+  if (result.data.NODE_ENV === 'production') {
+    if (result.data.CORS_ORIGIN.includes('*')) {
+      logger.error('❌ Security Error: Wildcard (*) CORS origin is not allowed in production.');
+      throw new Error('Insecure CORS configuration in production');
+    }
+    
+    if (result.data.CORS_ORIGIN === 'http://localhost:5173') {
+      logger.warn('⚠️ Security Warning: You are using the default localhost CORS origin in a production environment.');
+    }
   }
 
   return result.data;

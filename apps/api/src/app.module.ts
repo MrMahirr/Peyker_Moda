@@ -84,6 +84,11 @@ import { LoggerModule } from './common/logger/logger.module';
           ttl: config.get('app.throttleTtl', 60000),
           limit: config.get('app.throttleLimit', 100),
         },
+        {
+          name: 'auth',
+          ttl: config.get('app.throttleAuthTtl', 60000),
+          limit: config.get('app.throttleAuthLimit', 5),
+        },
       ],
     }),
 

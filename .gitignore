@@ -42,3 +42,7 @@ yarn-error.log*
 /logs
 apps/api/logs
 *.log
+
+# Backups
+/backups
+*.sql.gz

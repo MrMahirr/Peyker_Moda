@@ -1,4 +1,4 @@
-﻿import {
+import {
     Controller,
     Post,
     Body,
@@ -8,6 +8,7 @@
     HttpStatus,
     Patch,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
     ApiTags,
     ApiOperation,
@@ -25,6 +26,7 @@ export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
     @Post('login')
+    @Throttle({ auth: { limit: 5, ttl: 60000 } })
     @UseGuards(LocalAuthGuard)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Kullanici girisi' })
@@ -35,6 +37,7 @@ export class AuthController {
     }
 
     @Post('register')
+    @Throttle({ auth: { limit: 5, ttl: 60000 } })
     @UseGuards(JwtAuthGuard)
     @Roles('admin', 'manager')
     @ApiBearerAuth('JWT-auth')
@@ -46,6 +49,7 @@ export class AuthController {
     }
 
     @Post('refresh')
+    @Throttle({ auth: { limit: 10, ttl: 60000 } })
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Access token yenile' })
     @ApiResponse({ status: 200, description: 'Token yenilendi' })

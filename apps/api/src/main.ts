@@ -41,8 +41,10 @@ async function bootstrap() {
   // CORS
   const corsOrigin = configService.get<string>('app.corsOrigin', 'http://localhost:5173');
   app.enableCors({
-    origin: corsOrigin.split(','),
+    origin: corsOrigin.split(',').map(o => o.trim()),
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: 'Content-Type,Accept,Authorization,X-Requested-With',
   });
 
   // Global pipes

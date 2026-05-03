@@ -191,7 +191,7 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - API'de `/health` veya `/api/health` endpoint'i yok
 - Load balancer ve monitoring araçları için gerekli
 
-### 6.4 Logging Altyapısı Yetersiz
+### *6.4 Logging Altyapısı Yetersiz
 
 - Sadece `console.error` ve NestJS Logger kullanılıyor
 - Structured logging (Winston, Pino) entegrasyonu yok

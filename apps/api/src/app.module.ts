@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { appConfig } from './config';
+import { validate } from './config/env.validation';
 
 // Faz 1: Auth
 import { AuthModule } from './modules/auth/auth.module';
@@ -69,6 +70,7 @@ import { LoggerModule } from './common/logger/logger.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],
+      validate,
       envFilePath: '.env',
     }),
 

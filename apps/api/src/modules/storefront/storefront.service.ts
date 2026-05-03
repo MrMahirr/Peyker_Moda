@@ -24,39 +24,39 @@ export class StorefrontService {
         private campaignsService: CampaignsService,
         private emailService: EmailService,
     ) { }
-27: 
-28:     // ========== HOME / SETTINGS ==========
-29: 
-30:     async getBanners(position?: string) {
-31:         // Bu endpoint için yeni bir Banner tablosu veya Marketing tablosu kullanılabilir.
-32:         // Mevcut mimaride Marketing tablosu olduğunu varsayalım veya simüle edelim.
-33:         // Şimdilik Kampanyaları banner olarak döndürebiliriz.
-34:         const campaigns = await this.campaignsService.getActiveCampaigns();
-35:         return campaigns.map(c => ({
-36:             id: c.id,
-37:             title: c.name,
-38:             subtitle: c.description,
-39:             image: (c as any).imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
-40:             link: `/koleksiyonlar/${(c as any).slug || c.id}`,
-41:             position: position || 'hero'
-42:         }));
-43:     }
-44: 
-45:     async getAttributes() {
-46:         // Tüm varyantlardan benzersiz beden ve renkleri çek
-47:         const variants = await this.prisma.variant.findMany({
-48:             where: { stock: { gt: 0 } },
-49:             select: { size: true, color: true },
-50:         });
-51: 
-52:         const sizes = Array.from(new Set(variants.map(v => v.size))).filter(Boolean).sort();
-53:         const colors = Array.from(new Set(variants.map(v => v.color))).filter(Boolean).sort();
-54: 
-55:         return {
-56:             sizes,
-57:             colors: colors.map(c => ({ name: c, value: c }))
-58:         };
-59:     }
+
+    // ========== HOME / SETTINGS ==========
+
+    async getBanners(position?: string) {
+        // Bu endpoint için yeni bir Banner tablosu veya Marketing tablosu kullanılabilir.
+        // Mevcut mimaride Marketing tablosu olduğunu varsayalım veya simüle edelim.
+        // Şimdilik Kampanyaları banner olarak döndürebiliriz.
+        const campaigns = await this.campaignsService.getActiveCampaigns();
+        return campaigns.map(c => ({
+            id: c.id,
+            title: c.name,
+            subtitle: c.description,
+            image: (c as any).imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
+            link: `/koleksiyonlar/${(c as any).slug || c.id}`,
+            position: position || 'hero'
+        }));
+    }
+
+    async getAttributes() {
+        // Tüm varyantlardan benzersiz beden ve renkleri çek
+        const variants = await this.prisma.variant.findMany({
+            where: { stock: { gt: 0 } },
+            select: { size: true, color: true },
+        });
+
+        const sizes = Array.from(new Set(variants.map(v => v.size))).filter(Boolean).sort();
+        const colors = Array.from(new Set(variants.map(v => v.color))).filter(Boolean).sort();
+
+        return {
+            sizes,
+            colors: colors.map(c => ({ name: c, value: c }))
+        };
+    }
 
     // ========== CATEGORIES ==========
 
@@ -105,33 +105,33 @@ export class StorefrontService {
                 _count: { select: { products: { where: { isActive: true } } } },
             },
         });
-75: 
-76:         if (!category) {
-77:             throw new NotFoundException('Kategori bulunamadı');
-78:         }
-79: 
-80:         return category;
-81:     }
-82: 
-83:     async getCollectionBySlug(slug: string) {
-84:         // Kampanyaları koleksiyon olarak kullanıyoruz
-85:         const campaigns = await this.campaignsService.findAllCampaigns();
-86:         const campaign = campaigns.find((c: any) => c.slug === slug || c.id === slug);
-87: 
-88:         if (!campaign) {
-89:             throw new NotFoundException('Koleksiyon bulunamadı');
-90:         }
-91: 
-92:         return {
-93:             id: campaign.id,
-94:             title: campaign.name,
-95:             subtitle: campaign.description,
-96:             description: campaign.description,
-97:             coverImage: (campaign as any).imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
-98:             accentColor: 'bg-amber-500',
-99:             categorySlug: 'giyim' // Default
-100:         };
-101:     }
+
+        if (!category) {
+            throw new NotFoundException('Kategori bulunamadı');
+        }
+
+        return category;
+    }
+
+    async getCollectionBySlug(slug: string) {
+        // Kampanyaları koleksiyon olarak kullanıyoruz
+        const campaigns = await this.campaignsService.findAllCampaigns();
+        const campaign = campaigns.find((c: any) => c.slug === slug || c.id === slug);
+
+        if (!campaign) {
+            throw new NotFoundException('Koleksiyon bulunamadı');
+        }
+
+        return {
+            id: campaign.id,
+            title: campaign.name,
+            subtitle: campaign.description,
+            description: campaign.description,
+            coverImage: (campaign as any).imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
+            accentColor: 'bg-amber-500',
+            categorySlug: 'giyim' // Default
+        };
+    }
 
     // ========== PRODUCTS ==========
 
@@ -161,20 +161,20 @@ export class StorefrontService {
             if (query.minPrice) where.basePrice.gte = query.minPrice;
             if (query.maxPrice) where.basePrice.lte = query.maxPrice;
         }
-111: 
-112:         if (query.sizes || query.colors) {
-113:             where.variants = {
-114:                 some: {
-115:                     stock: { gt: 0 }
-116:                 }
-117:             };
-118:             if (query.sizes) {
-119:                 where.variants.some.size = { in: query.sizes.split(',') };
-120:             }
-121:             if (query.colors) {
-122:                 where.variants.some.color = { in: query.colors.split(',') };
-123:             }
-124:         }
+
+        if (query.sizes || query.colors) {
+            where.variants = {
+                some: {
+                    stock: { gt: 0 }
+                }
+            };
+            if (query.sizes) {
+                where.variants.some.size = { in: query.sizes.split(',') };
+            }
+            if (query.colors) {
+                where.variants.some.color = { in: query.colors.split(',') };
+            }
+        }
 
         // Sıralama
         let orderBy: any = { createdAt: 'desc' };

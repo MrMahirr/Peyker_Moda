@@ -161,12 +161,12 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - Ancak route tanımında `shipping`, `suppliers`, `reports`, `cms` ve `inventory` **YOK** — 404 verir
 - **Dosya:** [appRoutes.tsx](file:///c:/Users/MrMahirr/Desktop/Peyker_Moda_Web/peyker-moda/apps/admin/src/router/appRoutes.tsx) — Bu route'lar tanımlanmamış
 
-### 5.5 `PrinterTemplate` Bileşeni Boş
+### *5.5 `PrinterTemplate` Bileşeni Boş
 
 - `PrinterTemplate.tsx` sadece `// TODO: Implement printer template` içeriyor
 - Fiş/yazıcı ayarları sayfası bu nedenle boş render olacak
 
-### 5.6 `eslint-disable` Yorumları
+### *5.6 `eslint-disable` Yorumları
 
 - `DashboardPage.tsx`: `eslint-disable-next-line react-hooks/exhaustive-deps` — `fetchData`'nın dependency olarak eklenmesi gerekiyor, `useCallback` ile sarılmalı
 - `SupplierAccounts.tsx`: Birçok `@typescript-eslint/no-explicit-any` suppress
@@ -175,7 +175,7 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 
 ## 🟡 6. Sistem & Altyapı Eksiklikleri
 
-### 6.1 Production Docker Compose Yok
+### *6.1 Production Docker Compose Yok
 
 - Mevcut `docker-compose.yml` sadece DB, Redis, MinIO servisleri için (development)
 - API ve frontend için Dockerfile yok
@@ -186,7 +186,7 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - GitHub Actions, GitLab CI veya benzeri bir pipeline tanımlanmamış
 - Otomatik test, build ve deploy mekanizması yok
 
-### 6.3 Health Check Endpoint'i Yok
+### *6.3 Health Check Endpoint'i Yok
 
 - API'de `/health` veya `/api/health` endpoint'i yok
 - Load balancer ve monitoring araçları için gerekli

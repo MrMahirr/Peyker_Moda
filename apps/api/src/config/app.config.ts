@@ -47,5 +47,9 @@ export default registerAs('app', () => {
         redisHost: process.env.REDIS_HOST || 'localhost',
         redisPort: parseInt(process.env.REDIS_PORT || '6379', 10),
         redisPassword: process.env.REDIS_PASSWORD || '',
+
+        // Logging
+        logLevel: process.env.LOG_LEVEL || 'info',
+        logDir: process.env.LOG_DIR || './logs',
     };
 });

@@ -1,0 +1,66 @@
+# ============================================
+# Peyker Moda — Docker Build Context Ignore
+# ============================================
+# Bu dosya Docker build context boyutunu minimize
+# ederek image build süresini kısaltır.
+
+# Dependencies (her stage kendi install eder)
+**/node_modules
+**/.pnp
+**/.pnp.js
+
+# Build outputs (her stage kendi build eder)
+**/.next
+**/out
+**/build
+**/dist
+**/coverage
+
+# Version control
+.git
+.gitignore
+
+# IDE & Editor
+.idea
+.vscode
+**/.turbo
+**/*.swp
+**/*.swo
+
+# Environment files (production env docker-compose'dan gelir)
+**/.env
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+
+# Logs
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# Documentation
+**/*.md
+!apps/api/README.md
+
+# Database dumps (production'da olmamalı)
+*.sql
+
+# OS files
+**/.DS_Store
+**/*.pem
+**/Thumbs.db
+
+# Test files
+**/test
+**/*.spec.ts
+**/*.test.ts
+**/*.spec.js
+**/*.test.js
+
+# Misc
+docker-compose.yml
+docker-compose.prod.yml
+Makefile
+LICENSE

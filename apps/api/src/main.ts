@@ -5,13 +5,16 @@ import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { join } from 'path';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter, TransformInterceptor, LoggingInterceptor } from './common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  
   const configService = app.get(ConfigService);
-  const logger = new Logger('Bootstrap');
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
 
   // Serve static uploads
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {

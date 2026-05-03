@@ -219,7 +219,7 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - Production'da CORS origin'lerin doğru ayarlanması gerekiyor
 - Şu an `localhost:3500,localhost:3501,localhost:5173` — production domain'leri eklenmeli
 
-### 6.9 Rate Limiting Yetersiz
+### *6.9 Rate Limiting Yetersiz
 
 - Global `100 req/60s` limiti var
 - Auth endpoint'leri (login, register) için ayrı, daha sıkı limit yok

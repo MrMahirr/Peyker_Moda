@@ -72,6 +72,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
       );
     }
 
+    // Standardized log entry for all errors
+    if (status >= 400) {
+      const logMethod = status >= 500 ? 'error' : 'warn';
+      this.logger[logMethod](
+        `${request.method} ${request.url} ${status} - ${error}: ${JSON.stringify(message)}`,
+        exception instanceof Error ? exception.stack : undefined
+      );
+    }
+
     const errorResponse = {
       success: false,
       error,

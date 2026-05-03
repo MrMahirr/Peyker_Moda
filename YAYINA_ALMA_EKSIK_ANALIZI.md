@@ -203,7 +203,7 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - Eksik env değişkeni olduğunda sessizce fallback değer kullanılıyor
 - Production'da `JWT_SECRET` unset olursa `'super-secret-key-change-in-production'` ile çalışır
 
-### 6.6 Database Migration
+### *6.6 Database Migration
 
 - `prisma/migrations` klasörü yok veya boş — schema değişiklikleri migration ile takip edilmiyor
 - `db_dump_20260314_055446.sql` dosyası root'ta duruyor (temizlenmeli)

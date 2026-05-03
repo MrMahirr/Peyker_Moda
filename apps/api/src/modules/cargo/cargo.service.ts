@@ -10,7 +10,7 @@ export class CargoService {
     constructor(@Inject(CARGO_PROVIDER) private readonly provider: CargoProvider) {}
 
     async createShipment(params: CreateShipmentParams): Promise<CreateShipmentResult> {
-        this.logger.log(`Creating shipment for Order #${params.orderId} via ${this.provider.constructor.name}`);
+        this.logger.log('Creating shipment', { orderId: params.orderId, provider: this.provider.constructor.name });
         return this.provider.createShipment(params);
     }
 

@@ -46,7 +46,7 @@ export class PaymentService {
     }
 
     async processCallback(payload: any): Promise<any> {
-        this.logger.log(`Processing payment callback: ${JSON.stringify(payload)}`);
+        this.logger.log('Processing payment callback', { payload });
 
         // Normalize callback params based on provider (Mock provider expects simple structure)
         // In real implementation, we might need a strategy to parse different provider callbacks

@@ -197,7 +197,7 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 - Structured logging (Winston, Pino) entegrasyonu yok
 - Log aggregation (ELK, Loki) konfigürasyonu yok
 
-### 6.5 Environment Validation Yok
+### *6.5 Environment Validation Yok
 
 - `.env` dosyasındaki değerlerin validate edilmesi yok (joi/zod)
 - Eksik env değişkeni olduğunda sessizce fallback değer kullanılıyor

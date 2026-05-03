@@ -15,23 +15,23 @@ model User {
   lastName      String
   phone         String?
   avatar        String?
-  roleId        String
-  role          Role           @relation(fields: [roleId], references: [id])
   isActive      Boolean        @default(true)
-  lastLoginAt   DateTime?
-  failedLogins  Int            @default(0)
-  lockedUntil   DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  failedLogins  Int            @default(0)
+  lastLoginAt   DateTime?
+  lockedUntil   DateTime?
+  roleId        String
+  blogPosts     BlogPost[]
+  customerNotes CustomerNote[]
   heldSales     HeldSale[]
+  notifications Notification[]
+  orderNotes    OrderNote[]
   orders        Order[]
   posSessions   PosSession[]
-  transactions  Transaction[]
   refreshTokens RefreshToken[]
-  customerNotes CustomerNote[]
-  orderNotes    OrderNote[]
-  blogPosts     BlogPost[]
-  notifications Notification[]
+  transactions  Transaction[]
+  role          Role           @relation(fields: [roleId], references: [id])
 
   @@index([roleId])
   @@map("users")
@@ -43,10 +43,10 @@ model Role {
   displayName String
   description String?
   isSystem    Boolean      @default(false)
-  permissions Permission[]
-  users       User[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  permissions Permission[]
+  users       User[]
 
   @@map("roles")
 }
@@ -190,13 +190,13 @@ model Customer {
   updatedAt     DateTime       @updatedAt
   birthDate     DateTime?
   gender        Gender?
-  group         CustomerGroup? @relation(fields: [groupId], references: [id])
-  heldSales     HeldSale[]
-  orders        Order[]
   loyaltyPoints Int            @default(0)
   loyaltyTierId String?
-  loyaltyTier   LoyaltyTier?   @relation(fields: [loyaltyTierId], references: [id])
   customerNotes CustomerNote[]
+  group         CustomerGroup? @relation(fields: [groupId], references: [id])
+  loyaltyTier   LoyaltyTier?   @relation(fields: [loyaltyTierId], references: [id])
+  heldSales     HeldSale[]
+  orders        Order[]
 
   @@index([groupId])
   @@index([email])
@@ -224,16 +224,16 @@ model Order {
   cargoProvider     String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+  Installment       Installment[]
   invoice           Invoice?
   items             OrderItem[]
+  OrderNote         OrderNote[]
   customer          Customer?     @relation(fields: [customerId], references: [id])
   user              User?         @relation(fields: [userId], references: [id])
   payments          Payment[]
   returns           Return[]
   shipments         Shipment[]
   transactions      Transaction[]
-  Installment       Installment[]
-  OrderNote         OrderNote[]
 
   @@index([customerId])
   @@index([userId])
@@ -251,8 +251,8 @@ model Carrier {
   logo      String?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-  rates     ShippingRate[]
   shipments Shipment[]
+  rates     ShippingRate[]
 
   @@index([isActive])
   @@map("carriers")
@@ -274,8 +274,8 @@ model Shipment {
   deliveredAt       DateTime?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
-  order             Order          @relation(fields: [orderId], references: [id])
   carrier           Carrier        @relation(fields: [carrierId], references: [id])
+  order             Order          @relation(fields: [orderId], references: [id])
 
   @@index([orderId])
   @@index([carrierId])
@@ -484,104 +484,19 @@ model Setting {
 
 model Media {
   id        String   @id @default(uuid())
-  filename  String // Orijinal dosya adı
-  key       String   @unique // S3 içerisindeki benzersiz dosya anahtarı (örn: products/123-abc.jpg)
-  url       String // Dosyaya erişim linki
-  mimetype  String // Dosya tipi (image/jpeg, vb.)
-  size      Int // Dosya boyutu (byte)
-  folder    String // Hangi klasöre yüklendiği (products, categories, vb.)
-  alt       String? // Görüntüler için alternatif metin
+  filename  String
+  key       String   @unique
+  url       String
+  mimetype  String
+  size      Int
+  folder    String
+  alt       String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([folder])
   @@index([mimetype])
   @@map("media")
-}
-
-// UserRole enum REMOVED — replaced by dynamic Role model
-
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  COMPLETED
-  CANCELLED
-  RETURNED
-}
-
-enum OrderSource {
-  POS
-  ONLINE
-  PHONE
-}
-
-enum PaymentMethod {
-  CASH
-  CREDIT_CARD
-  DEBIT_CARD
-  BANK_TRANSFER
-  OTHER
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  PARTIAL
-  REFUNDED
-}
-
-enum ReturnStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  COMPLETED
-}
-
-enum TransactionType {
-  INCOME
-  EXPENSE
-}
-
-enum DiscountType {
-  PERCENTAGE
-  FIXED_AMOUNT
-}
-
-enum CarrierCode {
-  ARAS
-  MNG
-  YURTICI
-  PTT
-  SURAT
-  UPS
-  OTHER
-}
-
-enum ShipmentStatus {
-  PREPARING
-  PICKED_UP
-  IN_TRANSIT
-  OUT_FOR_DELIVERY
-  DELIVERED
-  RETURNED
-  FAILED
-}
-
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
-}
-
-enum InvoiceStatus {
-  DRAFT
-  ISSUED
-  PAID
-  CANCELLED
 }
 
 model Supplier {
@@ -648,13 +563,6 @@ model Check {
   updatedAt   DateTime    @updatedAt
 
   @@map("checks")
-}
-
-enum CheckStatus {
-  PORTFOLIO
-  CASHED
-  BOUNCED
-  RETURNED
 }
 
 model Installment {
@@ -784,4 +692,94 @@ model PriceList {
   updatedAt   DateTime @updatedAt
 
   @@map("price_lists")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  RETURNED
+}
+
+enum OrderSource {
+  POS
+  ONLINE
+  PHONE
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  PARTIAL
+  REFUNDED
+}
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum CarrierCode {
+  ARAS
+  MNG
+  YURTICI
+  PTT
+  SURAT
+  UPS
+  OTHER
+}
+
+enum ShipmentStatus {
+  PREPARING
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  RETURNED
+  FAILED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  CANCELLED
+  PAID
+}
+
+enum CheckStatus {
+  PORTFOLIO
+  CASHED
+  BOUNCED
+  RETURNED
 }

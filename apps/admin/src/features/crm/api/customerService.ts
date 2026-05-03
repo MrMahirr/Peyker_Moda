@@ -54,7 +54,7 @@ export const customersService = {
         if (params?.groupId) queryParams.append('groupId', params.groupId);
 
         const response = await api.get(`/customers?${queryParams}`);
-        return response.data.data;
+        return response.data;
     },
 
     async getById(id: string): Promise<Customer> {

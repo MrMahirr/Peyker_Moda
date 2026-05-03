@@ -19,8 +19,8 @@ export const envSchema = z.object({
   REDIS_PASSWORD: z.string().optional(),
   
   // Admin
-  ADMIN_EMAIL: z.string().email(),
-  ADMIN_PASSWORD: z.string().min(8),
+  ADMIN_EMAIL: z.string().email().default('admin@peyker.com'),
+  ADMIN_PASSWORD: z.string().min(8).default('Admin123!'),
   ADMIN_FIRST_NAME: z.string().default('Admin'),
   ADMIN_LAST_NAME: z.string().default('Peyker'),
   ADMIN_FORCE_PASSWORD: z.coerce.boolean().default(false),

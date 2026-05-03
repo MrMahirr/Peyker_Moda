@@ -62,7 +62,7 @@ export const ordersService = {
         if (params?.search) queryParams.append('search', params.search);
 
         const response = await api.get(`/orders?${queryParams}`);
-        return response.data.data;
+        return response.data;
     },
 
     async getById(id: string): Promise<Order> {

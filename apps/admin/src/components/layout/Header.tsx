@@ -1,5 +1,6 @@
 import React from 'react';
-import { Search, Bell, Settings } from 'lucide-react';
+import { Search, Settings } from 'lucide-react';
+import { NotificationDropdown } from '../features/notifications/components/NotificationDropdown';
 
 export const Header = () => {
     return (
@@ -15,10 +16,7 @@ export const Header = () => {
             </div>
 
             <div className="flex items-center gap-4">
-                <button className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white relative hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-zinc-900"></span>
-                </button>
+                <NotificationDropdown />
                 <button className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
                     <Settings className="w-5 h-5" />
                 </button>

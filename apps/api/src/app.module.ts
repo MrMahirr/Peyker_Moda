@@ -61,11 +61,13 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { ShippingModule } from './modules/shipping/shipping.module';
 import { HealthModule } from './modules/health/health.module';
 import { LoggerModule } from './common/logger/logger.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
     LoggerModule,
     HealthModule,
+    NotificationsModule,
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,

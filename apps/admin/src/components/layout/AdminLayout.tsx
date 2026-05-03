@@ -9,6 +9,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 import { SidebarItem } from './SidebarItem';
+import { NotificationDropdown } from '../../features/notifications/components/NotificationDropdown';
 
 const IconMap: Record<string, React.ElementType> = {
   dashboard: LayoutDashboard,
@@ -151,10 +152,7 @@ export const AdminLayout = () => {
             </div>
 
             {/* Notifications */}
-            <button className="relative p-2.5 rounded-xl hover:bg-zinc-100 text-zinc-500 border border-transparent hover:border-zinc-200 transition-colors">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-primary-dark rounded-full ring-2 ring-white" />
-            </button>
+            <NotificationDropdown />
 
             {/* Divider */}
             <div className="h-8 w-px bg-zinc-200 mx-1" />

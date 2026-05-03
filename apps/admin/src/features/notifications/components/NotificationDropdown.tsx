@@ -116,7 +116,7 @@ export const NotificationDropdown = () => {
         <div className="relative" ref={dropdownRef}>
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2.5 rounded-xl hover:bg-primary-light dark:hover:bg-zinc-800 text-zinc-500 border border-transparent hover:border-primary-light transition-all duration-200 active:scale-95"
+                className="cursor-pointer relative p-2.5 rounded-xl hover:bg-primary-light dark:hover:bg-zinc-200 text-zinc-500 border border-transparent hover:border-primary-light transition-all duration-200 active:scale-95"
             >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
@@ -126,17 +126,17 @@ export const NotificationDropdown = () => {
 
             {isOpen && (
                 <>
-                    <div className="absolute right-4 top-full mt-[1px] w-4 h-4 bg-surface-secondary dark:bg-zinc-800 rotate-45 border-l border-t border-primary-light dark:border-zinc-800 z-[101]" />
+                    <div className="absolute right-4 top-full mt-[1px] w-4 h-4 bg-surface-secondary dark:bg-primary-light rotate-45 border-l border-t border-primary-light dark:border-zinc-800 z-[101]" />
                     
-                    <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-surface dark:bg-primary-dark rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-primary-light dark:border-zinc-800 overflow-hidden z-[100] transform origin-top-right transition-all duration-200 ease-out">
-                        <div className="p-4 border-b border-primary-light dark:border-zinc-800 flex items-center justify-between bg-surface-secondary/50 dark:bg-zinc-800/50">
-                            <h3 className="font-bold text-primary dark:text-white flex items-center gap-2 text-sm">
+                    <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-surface dark:bg-primary-lighte rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-primary-light dark:border-zinc-800 overflow-hidden z-[100] transform origin-top-right transition-all duration-200 ease-out">
+                        <div className="p-4 border-b border-primary-light dark:border-zinc-800 flex items-center justify-between ">
+                            <h3 className="font-bold text-primary-dark  flex items-center gap-2 text-sm">
                                 Bildirimler
                                 {unreadCount > 0 && <span className="text-xs font-medium text-zinc-400">{unreadCount} yeni</span>}
                             </h3>
                             <button 
                                 onClick={handleMarkAllAsRead}
-                                className="text-xs text-primary dark:text-zinc-300 hover:underline flex items-center gap-1 font-bold transition-colors"
+                                className="cursor-pointer text-xs text-primary-dark hover:underline flex items-center gap-1 font-bold transition-colors"
                             >
                                 <Check className="w-3.5 h-3.5" />
                                 Hepsini Oku
@@ -186,8 +186,8 @@ export const NotificationDropdown = () => {
                             )}
                         </div>
 
-                        <div className="p-3 border-t border-primary-light dark:border-zinc-800 text-center bg-surface-secondary/50 dark:bg-zinc-800/50">
-                            <button className="text-[12px] text-zinc-400 hover:text-primary dark:hover:text-white font-bold transition-colors">
+                        <div className="p-3 border-t border-primary-light dark:border-zinc-800 text-center bg-white dark:bg-primary-light">
+                            <button className="cursor-pointer text-[12px] text-zinc-700 hover:text-primary-dark dark:hover:text-white font-bold transition-colors">
                                 Tüm Bildirimleri Gör
                             </button>
                         </div>

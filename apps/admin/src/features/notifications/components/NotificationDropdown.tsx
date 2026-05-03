@@ -186,8 +186,8 @@ export const NotificationDropdown = () => {
                             )}
                         </div>
 
-                        <div className="p-3 border-t border-primary-light dark:border-zinc-800 text-center bg-white dark:bg-primary-light">
-                            <button className="cursor-pointer text-[12px] text-zinc-700 hover:text-primary-dark dark:hover:text-white font-bold transition-colors">
+                        <div className="p-3 border-t border-primary-light dark:border-zinc-300 text-center bg-white dark:bg-primary-light">
+                            <button className="cursor-pointer text-[12px] text-zinc-700 hover:text-primary dark:hover:text-gray-900 font-bold transition-colors">
                                 Tüm Bildirimleri Gör
                             </button>
                         </div>

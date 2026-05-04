@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { Search, Plus, ArrowUpRight, ArrowDownLeft, Filter } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 
 import { Loader2 } from 'lucide-react';
 import { transactionsService, Transaction } from '../services/transactions.service';
+import { TransactionModal } from './TransactionModal';
 
 const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('tr-TR', {
@@ -18,21 +18,23 @@ export const TransactionList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const fetchTransactions = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await transactionsService.getAll({ limit: 50 });
+            setTransactions(response.data || []);
+        } catch (err) {
+            console.error('Failed to fetch transactions:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
-        const fetchTransactions = async () => {
-            try {
-                const response = await transactionsService.getAll({ limit: 50 });
-                setTransactions(response.data || []);
-            } catch (err) {
-                console.error('Failed to fetch transactions:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchTransactions();
-    }, []);
+    }, [fetchTransactions]);
 
     const columns = [
         {
@@ -100,7 +102,7 @@ export const TransactionList = () => {
         (t.category?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
 
-    if (loading) {
+    if (loading && transactions.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-64 gap-4">
                 <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
@@ -118,7 +120,7 @@ export const TransactionList = () => {
                         <Filter className="mr-2 h-4 w-4" />
                         Filtrele
                     </Button>
-                    <Button variant="primary" size="sm">
+                    <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
                         <Plus className="mr-1.5 h-4 w-4" />
                         Yeni İşlem Ekle
                     </Button>
@@ -141,6 +143,13 @@ export const TransactionList = () => {
                 data={filteredData}
                 columns={columns}
             />
+
+            <TransactionModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onSuccess={fetchTransactions}
+            />
         </div>
     );
 };
+

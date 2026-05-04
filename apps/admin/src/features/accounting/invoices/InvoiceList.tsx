@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -6,6 +6,7 @@ import { Search, Plus, Download, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { invoicesService, Invoice, downloadInvoicePdf } from '../services/invoices.service';
 import { Badge } from '@/components/ui/Badge';
+import { InvoiceModal } from './InvoiceModal';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -27,12 +28,9 @@ export const InvoiceList = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [downloading, setDownloading] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(() => {
-        fetchInvoices();
-    }, []);
-
-    const fetchInvoices = async () => {
+    const fetchInvoices = useCallback(async () => {
         try {
             const data = await invoicesService.getAll({ limit: 50 });
             setInvoices(data || []);
@@ -42,7 +40,11 @@ export const InvoiceList = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchInvoices();
+    }, [fetchInvoices]);
 
     const handleDownload = async (invoice: Invoice) => {
         setDownloading(invoice.id);
@@ -85,10 +87,11 @@ export const InvoiceList = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: ({ row }: any) => {
                 const customer = row.original.customer;
-                return customer ? (
+                const customerName = row.original.customerName;
+                return (customer || customerName) ? (
                     <div className="flex flex-col">
-                        <span className="font-semibold text-[14px] text-zinc-900">{customer.firstName} {customer.lastName}</span>
-                        <span className="text-[11px] font-medium text-zinc-500">{customer.phone}</span>
+                        <span className="font-semibold text-[14px] text-zinc-900">{customer ? `${customer.firstName} ${customer.lastName}` : customerName}</span>
+                        {customer && <span className="text-[11px] font-medium text-zinc-500">{customer.phone}</span>}
                     </div>
                 ) : <span className="text-zinc-400 font-medium">-</span>;
             }
@@ -152,10 +155,11 @@ export const InvoiceList = () => {
 
     const filteredData = invoices.filter(i =>
         i.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (i.customer && `${i.customer.firstName} ${i.customer.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()))
+        (i.customer && `${i.customer.firstName} ${i.customer.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (i.customerName && i.customerName.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    if (loading) {
+    if (loading && invoices.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-64 gap-4">
                 <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
@@ -169,7 +173,7 @@ export const InvoiceList = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h3 className="font-semibold text-[17px] text-zinc-900 tracking-tight">Fatura Listesi</h3>
                 <div className="flex items-center gap-2">
-                    <Button variant="primary" size="sm" icon={<Plus className="w-4 h-4" />}>
+                    <Button variant="primary" size="sm" icon={<Plus className="w-4 h-4" />} onClick={() => setIsModalOpen(true)}>
                         Yeni Fatura Kes
                     </Button>
                 </div>
@@ -191,6 +195,13 @@ export const InvoiceList = () => {
                 data={filteredData}
                 columns={columns}
             />
+
+            <InvoiceModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onSuccess={fetchInvoices}
+            />
         </div>
     );
 };
+

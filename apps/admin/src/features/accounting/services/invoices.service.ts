@@ -59,6 +59,11 @@ export const invoicesService = {
         return response.data.data;
     },
 
+    async create(data: Partial<Invoice>): Promise<Invoice> {
+        const response = await api.post('/invoices', data);
+        return response.data.data;
+    },
+
     async cancel(id: string): Promise<Invoice> {
         const response = await api.patch(`/invoices/${id}`, { status: 'CANCELLED' });
         return response.data.data;

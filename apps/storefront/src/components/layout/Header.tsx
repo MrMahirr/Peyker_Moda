@@ -94,7 +94,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide ${isScrolled ? 'text-stone-700' : 'text-stone-850'}`}>
+        <nav className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide ${isScrolled ? 'text-stone-700' : 'text-white'}`}>
           <Link href="/" className="hover:text-amber-500 transition-colors relative group">Ana Sayfa</Link>
 
           <DropdownMenu>
@@ -125,7 +125,7 @@ export default function Header() {
         </nav>
 
         {/* Icons */}
-        <div className={`flex items-center gap-3 md:gap-5 ${isScrolled ? 'text-stone-900' : 'text-stone-850'}`}>
+        <div className={`flex items-center gap-3 md:gap-5 ${isScrolled ? 'text-stone-900' : 'text-white'}`}>
           <button onClick={() => setIsSearchOpen(true)} className="hover:text-amber-500 transition-colors hidden sm:block">
             <Search className="w-5 h-5" />
           </button>

@@ -72,7 +72,7 @@ export interface CheckoutData {
         district: string;
         postalCode: string;
     };
-    paymentMethod: 'CASH_ON_DELIVERY' | 'CREDIT_CARD' | 'BANK_TRANSFER';
+    paymentMethod: 'CASH' | 'CREDIT_CARD' | 'BANK_TRANSFER';
     couponCode?: string;
     notes?: string;
 }
@@ -259,7 +259,7 @@ export const storeApi = {
     },
 
     // Order Tracking
-    async trackOrder(orderNumber: string, phone: string): Promise<OrderResult | null> {
+    async trackOrder(orderNumber: string, phone: string): Promise<any | null> {
         try {
             const response = await fetch(`${API_BASE_URL}/store/orders/track`, {
                 method: 'POST',
@@ -267,7 +267,11 @@ export const storeApi = {
                 body: JSON.stringify({ orderNumber, phone })
             });
             const data = await response.json();
-            return data.data || null;
+            if (!response.ok || !data.data) return null;
+            return {
+                ...data.data,
+                total: data.data.totalAmount
+            };
         } catch (error) {
             console.error('Failed to track order:', error);
             return null;
@@ -288,14 +292,25 @@ export const storeApi = {
 
     // Auth
     async login(email: string, password: string): Promise<{ accessToken: string; user: any }> {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        const response = await fetch(`${API_BASE_URL}/store/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Giriş başarısız');
-        return data.data;
+        return data;
+    },
+
+    async loginGoogle(idToken: string): Promise<{ accessToken: string; user: any }> {
+        const response = await fetch(`${API_BASE_URL}/store/auth/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Google giriş başarısız');
+        return data;
     },
 
     async register(userData: {
@@ -305,14 +320,14 @@ export const storeApi = {
         phone?: string;
         password: string;
     }): Promise<{ success: boolean; message: string }> {
-        const response = await fetch(`${API_BASE_URL}/store/register`, {
+        const response = await fetch(`${API_BASE_URL}/store/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Kayıt başarısız');
-        return { success: true, message: 'Kayıt başarılı' };
+        return data;
     },
 
     async logout(): Promise<void> {

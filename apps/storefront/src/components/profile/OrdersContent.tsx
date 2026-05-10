@@ -100,7 +100,7 @@ const transformOrder = (apiOrder: ApiOrder): Order => {
     items: apiOrder.items?.map((item: any, idx: number) => ({
       id: idx,
       name: item.productName || item.variant?.product?.name || 'Ürün',
-      image: item.variant?.product?.images?.[0] || 'https://via.placeholder.com/200',
+      image: item.variant?.product?.images?.[0] || '/placeholder.svg',
       price: item.unitPrice || 0,
       quantity: item.quantity || 1,
       size: item.variant?.size || '-',

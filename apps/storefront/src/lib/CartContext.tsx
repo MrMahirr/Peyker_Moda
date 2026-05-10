@@ -4,6 +4,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 export interface CartItem {
     id: string;
+    productId: string;
+    variantId?: string;
     name: string;
     price: number;
     image: string;
@@ -13,7 +15,7 @@ export interface CartItem {
 
 interface CartContextType {
     items: CartItem[];
-    addItem: (item: Omit<CartItem, 'quantity'>) => void;
+    addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
     removeItem: (id: string) => void;
     updateQuantity: (id: string, quantity: number) => void;
     clearCart: () => void;
@@ -43,13 +45,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('peyker-cart', JSON.stringify(items));
     }, [items]);
 
-    const addItem = (item: Omit<CartItem, 'quantity'>) => {
+    const addItem = (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
+        const qtyToAdd = item.quantity || 1;
         setItems(prev => {
             const exists = prev.find(i => i.id === item.id);
             if (exists) {
-                return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+                return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + qtyToAdd } : i);
             }
-            return [...prev, { ...item, quantity: 1 }];
+            return [...prev, { ...item, quantity: qtyToAdd }];
         });
     };
 

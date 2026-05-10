@@ -175,6 +175,8 @@ model Customer {
   firstName     String
   lastName      String
   email         String?
+  password      String?
+  googleId      String?        @unique
   phone         String?
   address       String?
   city          String?

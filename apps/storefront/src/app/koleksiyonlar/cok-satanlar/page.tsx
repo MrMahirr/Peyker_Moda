@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Star, Trophy, TrendingUp, Loader2 } from "lucide-react";
 import Header from "@/components/layout/Header";
@@ -22,6 +23,7 @@ interface DisplayProduct {
   tag?: string;
   rating?: number;
   reviewCount?: number;
+  slug?: string;
 }
 
 export default function BestSellersPage() {
@@ -43,6 +45,7 @@ export default function BestSellersPage() {
             tag: idx === 0 ? '#1 En Çok Satan' : idx < 3 ? `#${idx + 1} Popüler` : (p.tags?.[0] || ''),
             rating: 4.5 + Math.random() * 0.5,
             reviewCount: Math.floor(50 + Math.random() * 150),
+            slug: p.slug,
           })));
         }
       } catch {
@@ -114,91 +117,97 @@ export default function BestSellersPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
             {/* 2. Sıra (Solda) */}
             <div className="order-2 lg:order-1 relative group">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-lg border-2 border-stone-200 group-hover:border-stone-900 transition-colors">
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-stone-900 font-bold px-3 py-1 z-20 rounded-sm shadow-sm flex items-center gap-1">
-                  <span className="text-2xl font-serif">2</span>
-                  <span className="text-xs uppercase tracking-wider text-stone-500">
-                    Numara
-                  </span>
+              <Link href={`/urun/${topThree[1].slug || 'product-' + topThree[1].id}`}>
+                <div className="relative aspect-[3/4] overflow-hidden rounded-lg border-2 border-stone-200 group-hover:border-stone-900 transition-colors">
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-stone-900 font-bold px-3 py-1 z-20 rounded-sm shadow-sm flex items-center gap-1">
+                    <span className="text-2xl font-serif">2</span>
+                    <span className="text-xs uppercase tracking-wider text-stone-500">
+                      Numara
+                    </span>
+                  </div>
+                  <Image
+                    src={topThree[1].image}
+                    alt={topThree[1].name}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
                 </div>
-                <Image
-                  src={topThree[1].image}
-                  alt={topThree[1].name}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-              </div>
-              <div className="mt-4 text-center">
-                <h3 className="font-bold text-lg">{topThree[1].name}</h3>
-                <p className="text-stone-600">
-                  {formatPrice(topThree[1].price)}
-                </p>
-              </div>
+                <div className="mt-4 text-center">
+                  <h3 className="font-bold text-lg group-hover:text-amber-600 transition-colors">{topThree[1].name}</h3>
+                  <p className="text-stone-600">
+                    {formatPrice(topThree[1].price)}
+                  </p>
+                </div>
+              </Link>
             </div>
 
             {/* 1. Sıra (Ortada, Daha Büyük) */}
             <div className="order-1 lg:order-2 relative group -mt-12 lg:-mt-0">
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-30">
-                <div className="bg-amber-500 text-white rounded-full p-3 shadow-lg shadow-amber-500/30">
-                  <Trophy className="w-8 h-8" />
+              <Link href={`/urun/${topThree[0].slug || 'product-' + topThree[0].id}`}>
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-30">
+                  <div className="bg-amber-500 text-white rounded-full p-3 shadow-lg shadow-amber-500/30">
+                    <Trophy className="w-8 h-8" />
+                  </div>
                 </div>
-              </div>
-              <div className="relative aspect-[3/4] overflow-hidden rounded-lg border-4 border-amber-500 shadow-2xl scale-105 z-10">
-                <div className="absolute top-6 left-6 bg-amber-500 text-white font-bold px-4 py-1 z-20 rounded-sm shadow-sm flex items-center gap-1">
-                  <span className="text-3xl font-serif">1</span>
-                  <span className="text-xs uppercase tracking-wider text-amber-100">
-                    Numara
-                  </span>
+                <div className="relative aspect-[3/4] overflow-hidden rounded-lg border-4 border-amber-500 shadow-2xl scale-105 z-10">
+                  <div className="absolute top-6 left-6 bg-amber-500 text-white font-bold px-4 py-1 z-20 rounded-sm shadow-sm flex items-center gap-1">
+                    <span className="text-3xl font-serif">1</span>
+                    <span className="text-xs uppercase tracking-wider text-amber-100">
+                      Numara
+                    </span>
+                  </div>
+                  <Image
+                    src={topThree[0].image}
+                    alt={topThree[0].name}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
-                <Image
-                  src={topThree[0].image}
-                  alt={topThree[0].name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="mt-6 text-center">
-                <div className="flex justify-center gap-1 text-amber-500 mb-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
-                  ))}
+                <div className="mt-6 text-center">
+                  <div className="flex justify-center gap-1 text-amber-500 mb-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-current" />
+                    ))}
+                  </div>
+                  <h3 className="font-bold text-2xl font-serif group-hover:text-amber-600 transition-colors">
+                    {topThree[0].name}
+                  </h3>
+                  <p className="text-xl text-amber-600 font-semibold">
+                    {formatPrice(topThree[0].price)}
+                  </p>
+                  <Button className="mt-4 bg-stone-900 hover:bg-amber-600">
+                    Hemen İncele
+                  </Button>
                 </div>
-                <h3 className="font-bold text-2xl font-serif">
-                  {topThree[0].name}
-                </h3>
-                <p className="text-xl text-amber-600 font-semibold">
-                  {formatPrice(topThree[0].price)}
-                </p>
-                <Button className="mt-4 bg-stone-900 hover:bg-amber-600">
-                  Hemen İncele
-                </Button>
-              </div>
+              </Link>
             </div>
 
             {/* 3. Sıra (Sağda) */}
             <div className="order-3 lg:order-3 relative group">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-lg border-2 border-stone-200 group-hover:border-stone-900 transition-colors">
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-stone-900 font-bold px-3 py-1 z-20 rounded-sm shadow-sm flex items-center gap-1">
-                  <span className="text-2xl font-serif">3</span>
-                  <span className="text-xs uppercase tracking-wider text-stone-500">
-                    Numara
-                  </span>
+              <Link href={`/urun/${topThree[2].slug || 'product-' + topThree[2].id}`}>
+                <div className="relative aspect-[3/4] overflow-hidden rounded-lg border-2 border-stone-200 group-hover:border-stone-900 transition-colors">
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-stone-900 font-bold px-3 py-1 z-20 rounded-sm shadow-sm flex items-center gap-1">
+                    <span className="text-2xl font-serif">3</span>
+                    <span className="text-xs uppercase tracking-wider text-stone-500">
+                      Numara
+                    </span>
+                  </div>
+                  <Image
+                    src={topThree[2].image}
+                    alt={topThree[2].name}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
                 </div>
-                <Image
-                  src={topThree[2].image}
-                  alt={topThree[2].name}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-              </div>
-              <div className="mt-4 text-center">
-                <h3 className="font-bold text-lg">{topThree[2].name}</h3>
-                <p className="text-stone-600">
-                  {formatPrice(topThree[2].price)}
-                </p>
-              </div>
+                <div className="mt-4 text-center">
+                  <h3 className="font-bold text-lg group-hover:text-amber-600 transition-colors">{topThree[2].name}</h3>
+                  <p className="text-stone-600">
+                    {formatPrice(topThree[2].price)}
+                  </p>
+                </div>
+              </Link>
             </div>
           </div>
         </div>

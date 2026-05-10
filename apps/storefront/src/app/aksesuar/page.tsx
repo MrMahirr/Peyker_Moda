@@ -146,8 +146,9 @@ export default function AccessoriesPage() {
                           name: product.name,
                           price: product.price,
                           oldPrice: product.compareAtPrice || null,
-                          image: product.images[0] || 'https://via.placeholder.com/400',
+                          image: product.images[0] || '/placeholder.svg',
                           tag: product.tags?.[0] || '',
+                          slug: product.slug,
                         }}
                       />
                     ))}

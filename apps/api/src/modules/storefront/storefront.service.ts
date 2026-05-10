@@ -3,12 +3,21 @@ import {
     NotFoundException,
     BadRequestException,
     Logger,
+    UnauthorizedException,
+    ConflictException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcryptjs';
+import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
     StoreProductQueryDto,
     CheckoutDto,
-    CartItemDto
+    CartItemDto,
+    CustomerLoginDto,
+    CustomerRegisterDto,
+    GoogleLoginDto
 } from './dto';
 import { CampaignsService } from '../campaigns/campaigns.service';
 import { EmailService } from '../email/email.service';
@@ -23,7 +32,151 @@ export class StorefrontService {
         private prisma: PrismaService,
         private campaignsService: CampaignsService,
         private emailService: EmailService,
+        private jwtService: JwtService,
+        private configService: ConfigService,
     ) { }
+
+    // ========== AUTHENTICATION ==========
+
+    async loginGoogle(dto: GoogleLoginDto) {
+        const clientId = this.configService.get<string>('app.googleClientId');
+        if (!clientId) {
+            this.logger.error('Google Client ID configuration is missing.');
+            throw new BadRequestException('Google giriş sistemi şu an aktif değil.');
+        }
+
+        const client = new OAuth2Client(clientId);
+        let payload;
+
+        try {
+            const ticket = await client.verifyIdToken({
+                idToken: dto.idToken,
+                audience: clientId,
+            });
+            payload = ticket.getPayload();
+        } catch (error) {
+            this.logger.error('Failed to verify Google ID Token:', error);
+            throw new UnauthorizedException('Geçersiz Google kimlik doğrulaması.');
+        }
+
+        if (!payload || !payload.email) {
+            throw new BadRequestException('Google profilinden geçerli bir e-posta adresi alınamadı.');
+        }
+
+        const email = payload.email;
+        const googleId = payload.sub;
+        const firstName = payload.given_name || 'Google';
+        const lastName = payload.family_name || 'Kullanıcısı';
+
+        // Find customer by Google ID or by Email
+        let customer = await this.prisma.customer.findFirst({
+            where: {
+                OR: [
+                    { googleId },
+                    { email }
+                ]
+            }
+        });
+
+        if (customer) {
+            // If they match by email but didn't have googleId linked, update it
+            if (!customer.googleId) {
+                customer = await this.prisma.customer.update({
+                    where: { id: customer.id },
+                    data: { googleId }
+                });
+            }
+        } else {
+            // Create a new customer
+            customer = await this.prisma.customer.create({
+                data: {
+                    email,
+                    googleId,
+                    firstName,
+                    lastName,
+                    isActive: true,
+                }
+            });
+        }
+
+        if (!customer.isActive) {
+            throw new UnauthorizedException('Bu hesap aktif değil.');
+        }
+
+        const jwtPayload = { sub: customer.id, email: customer.email, type: 'CUSTOMER' };
+        const accessToken = this.jwtService.sign(jwtPayload);
+
+        return {
+            accessToken,
+            user: {
+                id: customer.id,
+                firstName: customer.firstName,
+                lastName: customer.lastName,
+                email: customer.email,
+                phone: customer.phone
+            }
+        };
+    }
+
+    async loginCustomer(dto: CustomerLoginDto) {
+        const customer = await this.prisma.customer.findFirst({
+            where: { email: dto.email }
+        });
+
+        if (!customer || !customer.isActive) {
+            throw new UnauthorizedException('Giriş başarısız. Bilgilerinizi kontrol edin.');
+        }
+
+        if (!customer.password) {
+            throw new UnauthorizedException('Bu hesap için şifre tanımlanmamış. Lütfen şifremi unuttum adımını kullanın veya yeni kayıt olun.');
+        }
+
+        const isPasswordValid = await bcrypt.compare(dto.password, customer.password);
+        if (!isPasswordValid) {
+            throw new UnauthorizedException('Giriş başarısız. Bilgilerinizi kontrol edin.');
+        }
+
+        const payload = { sub: customer.id, email: customer.email, type: 'CUSTOMER' };
+        const accessToken = this.jwtService.sign(payload);
+
+        return {
+            accessToken,
+            user: {
+                id: customer.id,
+                firstName: customer.firstName,
+                lastName: customer.lastName,
+                email: customer.email,
+                phone: customer.phone
+            }
+        };
+    }
+
+    async registerCustomer(dto: CustomerRegisterDto) {
+        const existingCustomer = await this.prisma.customer.findFirst({
+            where: { email: dto.email }
+        });
+
+        if (existingCustomer) {
+            throw new ConflictException('Bu e-posta adresi zaten kullanılıyor.');
+        }
+
+        const hashedPassword = await bcrypt.hash(dto.password, 12);
+
+        const customer = await this.prisma.customer.create({
+            data: {
+                firstName: dto.firstName,
+                lastName: dto.lastName,
+                email: dto.email,
+                phone: dto.phone,
+                password: hashedPassword,
+            }
+        });
+
+        return {
+            success: true,
+            message: 'Kayıt başarılı. Şimdi giriş yapabilirsiniz.'
+        };
+    }
 
     // ========== HOME / SETTINGS ==========
 
@@ -418,6 +571,13 @@ export class StorefrontService {
                 notes: checkoutDto.notes,
                 status: OrderStatus.PENDING,
                 paymentStatus: PaymentStatus.PENDING,
+                payments: {
+                    create: {
+                        amount: cart.total,
+                        method: checkoutDto.paymentMethod,
+                        status: PaymentStatus.PENDING,
+                    }
+                },
                 items: {
                     create: cart.items.map((item) => ({
                         variantId: item.variantId,

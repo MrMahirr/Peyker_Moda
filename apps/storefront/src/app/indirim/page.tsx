@@ -111,10 +111,11 @@ export default function SalePage() {
                     name: product.name,
                     price: product.price,
                     oldPrice: product.compareAtPrice || null,
-                    image: product.images[0] || 'https://via.placeholder.com/400',
+                    image: product.images[0] || '/placeholder.svg',
                     tag: product.compareAtPrice
                       ? `%${Math.round((1 - product.price / product.compareAtPrice) * 100)} İndirim`
                       : '',
+                    slug: product.slug,
                   }}
                 />
               ))}

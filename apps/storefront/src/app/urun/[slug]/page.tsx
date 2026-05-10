@@ -23,12 +23,23 @@ export default function ProductDetailPage() {
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [added, setAdded] = useState(false);
+    const [selectedSize, setSelectedSize] = useState<string>('');
+    const [selectedColor, setSelectedColor] = useState<string>('');
 
     useEffect(() => {
         if (slug) {
             fetchProduct();
         }
     }, [slug]);
+
+    useEffect(() => {
+        if (product) {
+            const sizes = Array.from(new Set(product.variants?.map(v => v.attributes.size || v.attributes.beden || v.attributes.Beden || v.attributes.Size).filter(Boolean))) as string[];
+            const colors = Array.from(new Set(product.variants?.map(v => v.attributes.color || v.attributes.renk || v.attributes.Renk || v.attributes.Color).filter(Boolean))) as string[];
+            if (sizes.length > 0) setSelectedSize(sizes[0]);
+            if (colors.length > 0) setSelectedColor(colors[0]);
+        }
+    }, [product]);
 
     const fetchProduct = async () => {
         setLoading(true);
@@ -45,11 +56,25 @@ export default function ProductDetailPage() {
     const handleAddToCart = () => {
         if (!product) return;
 
+        // Find matching variant
+        const selectedVariant = product.variants?.find(v => {
+            const sizeAttr = v.attributes.size || v.attributes.beden || v.attributes.Beden || v.attributes.Size;
+            const colorAttr = v.attributes.color || v.attributes.renk || v.attributes.Renk || v.attributes.Color;
+            return (sizeAttr === selectedSize || !sizeAttr) && (colorAttr === selectedColor || !colorAttr);
+        });
+
+        const cartItemId = selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id;
+        const variantDesc = [selectedSize, selectedColor].filter(Boolean).join(' / ');
+
         addItem({
-            id: product.id,
+            id: cartItemId,
+            productId: product.id,
+            variantId: selectedVariant?.id,
             name: product.name,
-            price: product.price,
+            price: selectedVariant?.price || product.price,
             image: product.images[0] || '',
+            variant: variantDesc || undefined,
+            quantity: quantity,
         });
 
         setAdded(true);
@@ -87,6 +112,9 @@ export default function ProductDetailPage() {
         ? Math.round((1 - product.price / product.compareAtPrice) * 100)
         : 0;
 
+    const availableSizes = Array.from(new Set(product.variants?.map(v => v.attributes.size || v.attributes.beden || v.attributes.Beden || v.attributes.Size).filter(Boolean))) as string[];
+    const availableColors = Array.from(new Set(product.variants?.map(v => v.attributes.color || v.attributes.renk || v.attributes.Renk || v.attributes.Color).filter(Boolean))) as string[];
+
     return (
         <div className="min-h-screen bg-stone-50 font-sans text-stone-900">
             <Header />
@@ -108,7 +136,7 @@ export default function ProductDetailPage() {
                             className="relative aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden"
                         >
                             <Image
-                                src={product.images[selectedImage] || 'https://via.placeholder.com/600x800'}
+                                src={product.images[selectedImage] || '/placeholder.svg'}
                                 alt={product.name}
                                 fill
                                 className="object-cover"
@@ -166,6 +194,49 @@ export default function ProductDetailPage() {
                             <p className="text-stone-600 leading-relaxed">
                                 {product.description}
                             </p>
+                        )}
+
+                        {/* Variants Selector */}
+                        {availableSizes.length > 0 && (
+                            <div className="space-y-3">
+                                <span className="text-sm font-medium text-stone-700">Beden:</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {availableSizes.map(size => (
+                                        <button
+                                            key={size}
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`min-w-[48px] h-12 px-4 border rounded-md text-sm font-medium transition-all ${
+                                                selectedSize === size
+                                                    ? 'border-amber-600 bg-amber-50 text-amber-900 shadow-sm font-bold'
+                                                    : 'border-stone-200 hover:border-stone-400 bg-white text-stone-800'
+                                            }`}
+                                        >
+                                            {size}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {availableColors.length > 0 && (
+                            <div className="space-y-3">
+                                <span className="text-sm font-medium text-stone-700">Renk:</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {availableColors.map(color => (
+                                        <button
+                                            key={color}
+                                            onClick={() => setSelectedColor(color)}
+                                            className={`h-12 px-5 border rounded-md text-sm font-medium transition-all ${
+                                                selectedColor === color
+                                                    ? 'border-amber-600 bg-amber-50 text-amber-900 shadow-sm font-bold'
+                                                    : 'border-stone-200 hover:border-stone-400 bg-white text-stone-800'
+                                            }`}
+                                        >
+                                            {color}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         )}
 
                         {/* Quantity */}

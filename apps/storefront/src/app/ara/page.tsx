@@ -170,7 +170,7 @@ export default function SearchPage() {
                                         <Link href={`/urun/${product.slug}`}>
                                             <div className="relative aspect-[3/4] bg-stone-100 rounded-lg overflow-hidden mb-3">
                                                 <Image
-                                                    src={product.images[0] || "https://via.placeholder.com/400x500"}
+                                                    src={product.images[0] || "/placeholder.svg"}
                                                     alt={product.name}
                                                     fill
                                                     className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -206,6 +206,7 @@ export default function SearchPage() {
                                                 className="w-full mt-2 bg-stone-900 hover:bg-amber-600 text-white"
                                                 onClick={() => addItem({
                                                     id: product.id,
+                                                    productId: product.id,
                                                     name: product.name,
                                                     price: product.price,
                                                     image: product.images[0] || "",

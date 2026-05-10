@@ -135,7 +135,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                         >
                                             <div className="relative w-16 h-20 bg-stone-100 rounded-lg overflow-hidden flex-shrink-0">
                                                 <Image
-                                                    src={product.images[0] || "https://via.placeholder.com/100"}
+                                                    src={product.images[0] || "/placeholder.svg"}
                                                     alt={product.name}
                                                     fill
                                                     className="object-cover"

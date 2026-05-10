@@ -31,7 +31,7 @@ export default function CheckoutPage() {
         city: '',
         district: '',
         postalCode: '',
-        paymentMethod: 'CASH_ON_DELIVERY' as 'CASH_ON_DELIVERY' | 'CREDIT_CARD' | 'BANK_TRANSFER',
+        paymentMethod: 'CASH' as 'CASH' | 'CREDIT_CARD' | 'BANK_TRANSFER',
         notes: ''
     });
 
@@ -69,7 +69,8 @@ export default function CheckoutPage() {
             // 1. Create Order (Pending Payment)
             const orderResult = await storeApi.createOrder({
                 items: items.map(item => ({
-                    productId: item.id,
+                    productId: item.productId || item.id,
+                    variantId: item.variantId || undefined,
                     quantity: item.quantity,
                     price: item.price
                 })),
@@ -89,32 +90,11 @@ export default function CheckoutPage() {
                 notes: form.notes
             });
 
-            if (form.paymentMethod === 'CASH_ON_DELIVERY') {
+            if (form.paymentMethod === 'CASH') {
                 // If cash, finish immediately
                 setOrderNumber(orderResult.orderNumber);
                 clearCart();
                 setStep('success');
-            } else if (form.paymentMethod === 'CREDIT_CARD') {
-                // If credit card, initialize payment
-                try {
-                    const paymentResult = await storeApi.initializePayment({
-                        orderId: orderResult.id,
-                        cardInfo: {
-                            ...cardInfo,
-                            cardNumber: cardInfo.cardNumber.replace(/\s/g, '')
-                        }
-                    });
-
-                    if (paymentResult.status === 'SUCCESS' && paymentResult.threeDSecureUrl) {
-                        // Redirect to 3D Secure (or show Mock 3D Secure page)
-                        window.location.href = paymentResult.threeDSecureUrl;
-                    } else {
-                        throw new Error('Ödeme başlatılamadı');
-                    }
-                } catch (paymentError: any) {
-                    setError('Ödeme işlemi sırasında bir hata oluştu: ' + (paymentError.message || 'Bilinmeyen hata'));
-                    // Order stays pending/cancelled depending on logic
-                }
             } else {
                 setOrderNumber(orderResult.orderNumber);
                 clearCart();
@@ -248,11 +228,9 @@ export default function CheckoutPage() {
                                 <CreditCard className="w-5 h-5 text-amber-600" />
                                 Ödeme Yöntemi
                             </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className="grid grid-cols-1 gap-4 mb-6">
                                 {[
-                                    { value: 'CASH_ON_DELIVERY', label: 'Kapıda Ödeme', icon: Truck },
-                                    { value: 'CREDIT_CARD', label: 'Kredi Kartı', icon: CreditCard },
-                                    { value: 'BANK_TRANSFER', label: 'Havale/EFT', icon: MapPin },
+                                    { value: 'CASH', label: 'Kapıda Ödeme', icon: Truck },
                                 ].map(method => (
                                     <label
                                         key={method.value}
@@ -275,72 +253,7 @@ export default function CheckoutPage() {
                                 ))}
                             </div>
 
-                            {/* Kredi Kartı Formu */}
-                            {form.paymentMethod === 'CREDIT_CARD' && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    className="bg-stone-50 p-5 rounded-lg border border-stone-200 space-y-4"
-                                >
-                                    <div className="flex items-center gap-2 text-stone-600 mb-2">
-                                        <Lock className="w-4 h-4" />
-                                        <span className="text-sm font-medium">Güvenli Ödeme (SSL ile Okunur)</span>
-                                    </div>
-                                    <Input
-                                        name="cardHolderName"
-                                        placeholder="Kart Üzerindeki İsim"
-                                        value={cardInfo.cardHolderName}
-                                        onChange={handleCardChange}
-                                        required={form.paymentMethod === 'CREDIT_CARD'}
-                                    />
-                                    <div className="relative">
-                                        <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-                                        <Input
-                                            name="cardNumber"
-                                            placeholder="Kart Numarası"
-                                            className="pl-10 font-mono"
-                                            value={cardInfo.cardNumber}
-                                            onChange={handleCardChange}
-                                            maxLength={19}
-                                            required={form.paymentMethod === 'CREDIT_CARD'}
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="flex gap-2">
-                                            <Input
-                                                name="expireMonth"
-                                                placeholder="AA"
-                                                className="text-center"
-                                                maxLength={2}
-                                                value={cardInfo.expireMonth}
-                                                onChange={handleCardChange}
-                                                required={form.paymentMethod === 'CREDIT_CARD'}
-                                            />
-                                            <span className="self-center">/</span>
-                                            <Input
-                                                name="expireYear"
-                                                placeholder="YY"
-                                                className="text-center"
-                                                maxLength={2}
-                                                value={cardInfo.expireYear}
-                                                onChange={handleCardChange}
-                                                required={form.paymentMethod === 'CREDIT_CARD'}
-                                            />
-                                        </div>
-                                        <Input
-                                            name="cvc"
-                                            placeholder="CVC"
-                                            maxLength={3}
-                                            className="text-center"
-                                            value={cardInfo.cvc}
-                                            onChange={handleCardChange}
-                                            required={form.paymentMethod === 'CREDIT_CARD'}
-                                        />
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {form.paymentMethod === 'CASH_ON_DELIVERY' && (
+                            {form.paymentMethod === 'CASH' && (
                                 <p className="text-sm text-stone-500 bg-stone-50 p-4 rounded-lg">
                                     Ödemeyi siparişiniz teslim edildiğinde nakit veya kredi kartı ile kuryeye yapabilirsiniz.
                                 </p>

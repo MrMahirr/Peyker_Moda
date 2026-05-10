@@ -55,9 +55,19 @@ export default function CategoriesSection() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((cat, idx) => (
-            <Link key={idx} href={cat.slug ? `/giyim?category=${cat.slug}` : `/giyim/${idx}`}>
-            <motion.div
+          {categories.map((cat, idx) => {
+            const getCategoryLink = (slug?: string) => {
+              if (!slug) return '/giyim';
+              const normalized = slug.toLowerCase().trim();
+              if (normalized === 'aksesuar' || normalized === 'aksesuarlar' || normalized === 'accessories') return '/aksesuar';
+              if (normalized === 'indirim' || normalized === 'firsat' || normalized === 'sale') return '/indirim';
+              if (normalized === 'giyim' || normalized === 'clothing' || normalized === 'elbise') return '/giyim';
+              return `/giyim?category=${slug}`;
+            };
+
+            return (
+              <Link key={idx} href={getCategoryLink(cat.slug)}>
+                <motion.div
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -81,8 +91,9 @@ export default function CategoriesSection() {
                 </p>
               </div>
             </motion.div>
-            </Link>
-          ))}
+          </Link>
+        );
+      })}
         </div>
       </div>
     </section>

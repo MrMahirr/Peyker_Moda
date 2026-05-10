@@ -47,7 +47,7 @@ export default function HomePage() {
       name: p.name,
       price: p.price,
       oldPrice: p.compareAtPrice || null,
-      image: p.images[0] || 'https://via.placeholder.com/400',
+      image: p.images[0] || '/placeholder.svg',
       tag: p.tags?.[0] || '',
       slug: p.slug,
     }));

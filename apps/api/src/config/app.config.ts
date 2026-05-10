@@ -39,5 +39,9 @@ export default registerAs('app', () => {
         // Logging
         logLevel: process.env.LOG_LEVEL || 'info',
         logDir: process.env.LOG_DIR || './logs',
+
+        // Google OAuth
+        googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+        googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     };
 });

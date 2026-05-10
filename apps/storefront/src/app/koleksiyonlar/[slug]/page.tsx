@@ -170,7 +170,7 @@ export default function DynamicCollectionPage() {
                   className="w-full md:w-1/2 relative h-[600px] md:h-[800px] group overflow-hidden shadow-xl"
                 >
                   <Image
-                    src={product.images[0] || 'https://via.placeholder.com/800x1000'}
+                    src={product.images[0] || '/placeholder.svg'}
                     alt={product.name}
                     fill
                     className="object-cover transition-transform duration-[1.5s] group-hover:scale-110"

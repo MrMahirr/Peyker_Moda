@@ -31,6 +31,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
     addItem({
       id: String(product.id),
+      productId: String(product.id),
       name: product.name,
       price: product.price,
       image: product.image,

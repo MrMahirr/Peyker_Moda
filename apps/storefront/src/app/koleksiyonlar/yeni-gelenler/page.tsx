@@ -19,6 +19,7 @@ interface DisplayProduct {
   image: string;
   category?: string;
   tag?: string;
+  slug?: string;
 }
 
 // Kayan yazı için animasyon varyantı
@@ -53,6 +54,7 @@ export default function NewArrivalsPage() {
             image: p.images?.[0] || '',
             category: p.category?.name || '',
             tag: p.tags?.[0] || 'Yeni',
+            slug: p.slug,
           })));
         }
       } catch {

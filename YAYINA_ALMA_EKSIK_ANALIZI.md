@@ -229,25 +229,25 @@ Prisma schema'da **birçok frontend özelliği için tablo/model tanımlanmamı�
 
 ## 🟡 7. Storefront (Müşteri Web Sitesi) Eksiklikleri
 
-### 7.1 Ödeme Entegrasyonu Yok
+### *7.1 Ödeme Entegrasyonu Yok
 
 - `odeme` klasörü var ama gerçek payment gateway (iyzico, PayTR, Stripe) entegrasyonu yok
 - Backend `PaymentModule` mevcut ancak gerçek ödeme işleme yok
 
-### 7.2 Müşteri Authentication Eksik
+### **7.2 Müşteri Authentication Eksik
 
 - `giris` ve `kayit` sayfaları var ama storefront için ayrı auth akışı yok
 - Backend'de müşteri vs admin auth ayrımı yok
 
-### 7.3 SEO Meta Tags Eksik
+### *7.3 SEO Meta Tags Eksik
 
 - `layout.tsx` basit — Open Graph, Twitter Card, yapılandırılmış veri (JSON-LD) yok
 
-### 7.4 Sipariş Takip Sayfası
+### *7.4 Sipariş Takip Sayfası
 
 - `siparis-takip` klasörü var ancak backend'de müşteri bazlı sipariş sorgulama endpointi eksik
 
-### 7.5 `via.placeholder.com` Kullanımı
+### *7.5 `via.placeholder.com` Kullanımı
 
 - Storefront `page.tsx` satır 50: `'https://via.placeholder.com/400'` fallback olarak kullanılıyor — production'da uygun değil
 

@@ -149,3 +149,54 @@ export class StoreProductQueryDto {
     @IsOptional()
     colors?: string;
 }
+
+// ========== CUSTOMER AUTH ==========
+
+export class CustomerLoginDto {
+    @ApiProperty({ example: 'musteri@example.com' })
+    @IsEmail()
+    email: string;
+
+    @ApiProperty({ example: 'Sifre123!' })
+    @IsString()
+    password: string;
+}
+
+export class CustomerRegisterDto {
+    @ApiProperty({ example: 'Ahmet' })
+    @IsString()
+    firstName: string;
+
+    @ApiProperty({ example: 'Yılmaz' })
+    @IsString()
+    lastName: string;
+
+    @ApiProperty({ example: 'ahmet@example.com' })
+    @IsEmail()
+    email: string;
+
+    @ApiPropertyOptional({ example: '05551234567' })
+    @IsString()
+    @IsOptional()
+    phone?: string;
+
+    @ApiProperty({ example: 'Sifre123!' })
+    @IsString()
+    password: string;
+}
+
+export class GoogleLoginDto {
+    @ApiProperty({ example: 'eyJhbGciOi...' })
+    @IsString()
+    idToken: string;
+}
+
+export class TrackOrderDto {
+    @ApiProperty({ example: 'ORD-2026-XYZ' })
+    @IsString()
+    orderNumber: string;
+
+    @ApiProperty({ example: '05551234567' })
+    @IsString()
+    phone: string;
+}

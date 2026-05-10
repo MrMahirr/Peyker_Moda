@@ -72,6 +72,7 @@ export default function FavoritesContent() {
     const handleAddToCart = (item: FavoriteItem) => {
         addItem({
             id: item.id,
+            productId: item.id,
             name: item.name,
             price: item.price,
             image: item.image

@@ -151,7 +151,14 @@ export const storeApi = {
     }): Promise<{ products: Product[]; total: number; page: number; totalPages: number }> {
         try {
             const searchParams = new URLSearchParams();
-            if (params?.categorySlug) searchParams.append('categoryId', params.categorySlug);
+            if (params?.categorySlug) {
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.categorySlug);
+                if (isUuid) {
+                    searchParams.append('categoryId', params.categorySlug);
+                } else {
+                    searchParams.append('categorySlug', params.categorySlug);
+                }
+            }
             if (params?.search) searchParams.append('search', params.search);
             if (params?.page) searchParams.append('page', String(params.page));
             if (params?.limit) searchParams.append('limit', String(params.limit));

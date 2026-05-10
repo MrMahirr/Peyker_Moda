@@ -117,6 +117,11 @@ export class StoreProductQueryDto {
     @IsOptional()
     categoryId?: string;
 
+    @ApiPropertyOptional({ example: 'aksesuar' })
+    @IsString()
+    @IsOptional()
+    categorySlug?: string;
+
     @ApiPropertyOptional({ example: 'elbise' })
     @IsString()
     @IsOptional()

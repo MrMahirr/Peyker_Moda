@@ -302,6 +302,20 @@ export class StorefrontService {
             where.categoryId = query.categoryId;
         }
 
+        if (query.categorySlug) {
+            if (query.categorySlug === 'giyim') {
+                where.category = {
+                    slug: {
+                        in: ['elbise', 'ust-giyim', 'dis-giyim', 'alt-giyim'],
+                    },
+                };
+            } else {
+                where.category = {
+                    slug: query.categorySlug,
+                };
+            }
+        }
+
         if (query.search) {
             where.OR = [
                 { name: { contains: query.search, mode: 'insensitive' } },

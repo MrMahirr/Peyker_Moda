@@ -81,7 +81,7 @@ export const CampaignList = () => {
             cell: ({ row }) => {
                 const type = row.original.type;
                 let variant: 'neutral' | 'info' | 'success' | 'warning' | 'error' = 'neutral';
-                let label = type;
+                let label: string = type;
                 
                 if (type === 'PERCENTAGE') { label = 'Yüzdelik'; variant = 'info'; }
                 if (type === 'FIXED_AMOUNT') { label = 'Sabit Tutar'; variant = 'warning'; }

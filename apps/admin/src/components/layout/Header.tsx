@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Settings } from 'lucide-react';
-import { NotificationDropdown } from '../features/notifications/components/NotificationDropdown';
+import { NotificationDropdown } from '../../features/notifications/components/NotificationDropdown';
 
 export const Header = () => {
     return (

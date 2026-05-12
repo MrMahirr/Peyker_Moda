@@ -5,9 +5,11 @@ interface CardProps {
   children: React.ReactNode;
   className?: string;
   padding?: boolean;
+  title?: string;
+  description?: string;
 }
 
-export const Card = ({ children, className, padding = true }: CardProps) => {
+export const Card = ({ children, className, padding = true, title, description }: CardProps) => {
   return (
     <div
       className={cn(
@@ -16,6 +18,9 @@ export const Card = ({ children, className, padding = true }: CardProps) => {
         className
       )}
     >
+      {(title || description) && (
+        <CardHeader title={title || ''} description={description} />
+      )}
       {children}
     </div>
   );

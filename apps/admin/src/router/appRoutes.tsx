@@ -31,7 +31,7 @@ import { CmsPage } from '@/features/cms/CmsPage';
 import { useAuth } from '@/context/AuthContext';
 import { RequireRole } from '@/components/layout/RequireRole';
 
-const RequireAuth = ({ children }: { children: JSX.Element }) => {
+const RequireAuth = ({ children }: { children: React.ReactElement }) => {
     const { isAuthenticated, isLoading } = useAuth();
     const location = useLocation();
 

@@ -10,6 +10,7 @@ export interface Invoice {
         lastName: string;
         phone: string;
     };
+    customerName?: string;
     orderId?: string;
     subtotal: number;
     tax: number;

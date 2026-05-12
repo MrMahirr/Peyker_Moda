@@ -1,6 +1,6 @@
 import { cn } from '../../lib/utils';
 
-type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral';
+type BadgeVariant = 'success' | 'warning' | 'error' | 'danger' | 'info' | 'neutral';
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -13,6 +13,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   success: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
   warning: 'bg-amber-50 text-amber-700 border-amber-200/60',
   error: 'bg-red-50 text-red-700 border-red-200/60',
+  danger: 'bg-red-50 text-red-700 border-red-200/60',
   info: 'bg-blue-50 text-blue-700 border-blue-200/60',
   neutral: 'bg-zinc-50 text-zinc-600 border-zinc-200/60',
 };
@@ -21,6 +22,7 @@ const dotStyles: Record<BadgeVariant, string> = {
   success: 'bg-emerald-500',
   warning: 'bg-amber-500',
   error: 'bg-red-500',
+  danger: 'bg-red-500',
   info: 'bg-blue-500',
   neutral: 'bg-zinc-400',
 };

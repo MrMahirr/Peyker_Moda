@@ -17,8 +17,8 @@ const productSchema = z.object({
     description: z.string().optional(),
     category: z.string().min(1, 'Kategori seçilmelidir'),
     sku: z.string().min(3, 'SKU en az 3 karakter olmalıdır'),
-    price: z.preprocess((val) => Number(val), z.number().min(0.01, 'Fiyat 0 dan büyük olmalıdır')),
-    costPrice: z.preprocess((val) => Number(val), z.number().min(0, 'Maliyet 0 veya büyük olmalıdır')).optional(),
+    price: z.coerce.number().min(0.01, 'Fiyat 0 dan büyük olmalıdır'),
+    costPrice: z.coerce.number().min(0, 'Maliyet 0 veya büyük olmalıdır').optional(),
     manageStock: z.boolean().default(true),
     hasVariants: z.boolean().default(false),
     options: z.array(z.object({
@@ -28,14 +28,15 @@ const productSchema = z.object({
     variants: z.array(z.object({
         name: z.string(),
         sku: z.string(),
-        price: z.preprocess((val) => Number(val), z.number()),
-        stock: z.preprocess((val) => Number(val), z.number()),
+        price: z.coerce.number(),
+        stock: z.coerce.number(),
         options: z.array(z.string())
     })).optional(),
     images: z.array(z.string()).optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
+type ProductFormInput = z.input<typeof productSchema>;
 
 const STEPS = [
     { id: 1, title: 'Temel Bilgiler' },
@@ -58,7 +59,7 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
-    const form = useForm<ProductFormData>({
+    const form = useForm<ProductFormInput, unknown, ProductFormData>({
         resolver: zodResolver(productSchema),
         defaultValues: {
             name: '',

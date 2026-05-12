@@ -7,7 +7,7 @@ import { usePos } from '@/context/PosContext';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Receipt } from './Receipt';
-import { posService } from '../services/pos.service';
+import { PaymentMethod as ApiPaymentMethod, posService } from '../services/pos.service';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/Modal';
 import { settingsService, StoreSettings } from '@/features/settings/services/settings.service';
@@ -80,7 +80,7 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
                     ? 'CASH'
                     : paymentMethod === 'credit_card'
                         ? 'CREDIT_CARD'
-                        : 'BANK_TRANSFER';
+                        : 'BANK_TRANSFER' as ApiPaymentMethod;
 
             // Map cart items to API format
             const saleData = {

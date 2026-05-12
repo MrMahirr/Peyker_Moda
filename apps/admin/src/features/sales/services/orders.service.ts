@@ -3,7 +3,7 @@ import api from '../../../lib/axios';
 export interface Order {
     id: string;
     orderNumber: string;
-    status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+    status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
     paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
     subtotal: number;
     discount: number;
@@ -18,6 +18,8 @@ export interface Order {
     };
     items?: OrderItem[];
     shippingAddress?: string;
+    cargoTrackingCode?: string;
+    cargoProvider?: string;
     notes?: string;
     createdAt: string;
     updatedAt: string;

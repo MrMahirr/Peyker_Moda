@@ -46,3 +46,4 @@ apps/api/logs
 # Backups
 /backups
 *.sql.gz
+/.aiassistant/

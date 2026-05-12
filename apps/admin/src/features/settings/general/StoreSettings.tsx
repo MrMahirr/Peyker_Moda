@@ -114,7 +114,7 @@ export const StoreSettings = () => {
                     <div className="space-y-3">
                         <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-wide">Magaza Logosu</label>
                         <div className="w-full max-w-sm">
-                            <ImageUpload onChange={() => { }} value="" />
+                            <ImageUpload onChange={() => { }} value={[]} />
                         </div>
                     </div>
 

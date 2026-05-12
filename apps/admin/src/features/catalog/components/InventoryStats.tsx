@@ -20,7 +20,7 @@ export const InventoryStats = () => {
                 setStats({ 
                     low: lowStock, 
                     out: outOfStock, 
-                    value: summary.totalRevenue || 0 // Şimdilik revenue olarak bırakıyoruz
+                    value: summary.monthSales?.amount || 0
                 });
             } catch (err) {
                 console.error('Failed to fetch inventory stats', err);

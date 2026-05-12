@@ -1,115 +1,146 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
+import { ForbiddenException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcryptjs';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AuthService, AuthenticatedUser } from './auth.service';
 
-// Mock bcrypt
 jest.mock('bcryptjs', () => ({
-    compare: jest.fn(),
+  compare: jest.fn(),
+  hash: jest.fn(),
 }));
 
-/*
-// Tests skipped due to UserRole enum removal and relation restructures.
-describe.skip('AuthService', () => {
-    let service: AuthService;
-    let usersService: UsersService;
-    let jwtService: JwtService;
+describe('AuthService', () => {
+  let service: AuthService;
 
-    const mockUser = {
-        id: 'user-id-1',
-        email: 'test@example.com',
-        password: 'hashedPassword',
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'ADMIN',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    };
+  const mockUser = {
+    id: 'user-id-1',
+    email: 'test@example.com',
+    password: 'hashed-password',
+    firstName: 'Test',
+    lastName: 'User',
+    roleId: 'role-id-1',
+    role: { id: 'role-id-1', name: 'admin' },
+    isActive: true,
+    failedLogins: 0,
+    lockedUntil: null,
+  };
 
-    const mockUsersService = {
-        findByEmail: jest.fn(),
-        findById: jest.fn(),
-    };
+  const mockPrismaService = {
+    user: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    refreshToken: {
+      deleteMany: jest.fn(),
+      create: jest.fn(),
+    },
+  };
 
-    const mockJwtService = {
-        signAsync: jest.fn(),
-        verifyAsync: jest.fn(),
-    };
+  const mockJwtService = {
+    sign: jest.fn(),
+  };
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                AuthService,
-                { provide: UsersService, useValue: mockUsersService },
-                { provide: JwtService, useValue: mockJwtService },
-            ],
-        }).compile();
+  const mockConfigService = {
+    get: jest.fn(),
+  };
 
-        service = module.get<AuthService>(AuthService);
-        usersService = module.get<UsersService>(UsersService);
-        jwtService = module.get<JwtService>(JwtService);
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: JwtService, useValue: mockJwtService },
+        { provide: ConfigService, useValue: mockConfigService },
+      ],
+    }).compile();
 
-        // Reset mocks
-        jest.clearAllMocks();
+    service = module.get<AuthService>(AuthService);
+    jest.clearAllMocks();
+    mockConfigService.get.mockReturnValue('test-refresh-secret');
+  });
+
+  describe('validateUser', () => {
+    it('returns authenticated user data when credentials are valid', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaService.user.update.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      const result = await service.validateUser('test@example.com', 'password123');
+
+      expect(result).toEqual({
+        id: mockUser.id,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        roleId: mockUser.roleId,
+        roleName: mockUser.role.name,
+      });
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+        where: { id: mockUser.id },
+        data: expect.objectContaining({
+          failedLogins: 0,
+          lockedUntil: null,
+        }),
+      });
     });
 
-    describe('validateUser', () => {
-        it('should return user data when credentials are valid', async () => {
-            mockUsersService.findByEmail.mockResolvedValue(mockUser);
-            (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    it('returns null and increments failed login count when password is invalid', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaService.user.update.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-            const result = await service.validateUser('test@example.com', 'password123');
+      const result = await service.validateUser('test@example.com', 'wrong-password');
 
-            expect(result).toBeDefined();
-            expect(result.email).toBe('test@example.com');
-            expect(result.password).toBeUndefined();
-        });
-
-        it('should throw UnauthorizedException when user not found', async () => {
-            mockUsersService.findByEmail.mockResolvedValue(null);
-
-            await expect(
-                service.validateUser('notfound@example.com', 'password'),
-            ).rejects.toThrow(UnauthorizedException);
-        });
-
-        it('should throw UnauthorizedException when password is invalid', async () => {
-            mockUsersService.findByEmail.mockResolvedValue(mockUser);
-            (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-
-            await expect(
-                service.validateUser('test@example.com', 'wrongpassword'),
-            ).rejects.toThrow(UnauthorizedException);
-        });
-
-        it('should throw UnauthorizedException when user is inactive', async () => {
-            mockUsersService.findByEmail.mockResolvedValue({ ...mockUser, isActive: false });
-            (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-
-            await expect(
-                service.validateUser('test@example.com', 'password123'),
-            ).rejects.toThrow(UnauthorizedException);
-        });
+      expect(result).toBeNull();
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+        where: { id: mockUser.id },
+        data: { failedLogins: 1 },
+      });
     });
 
-    describe('login', () => {
-        it('should return access token on successful login', async () => {
-            const expectedToken = 'jwt-token-123';
-            mockJwtService.signAsync.mockResolvedValue(expectedToken);
+    it('throws when account is locked', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        ...mockUser,
+        lockedUntil: new Date(Date.now() + 60_000),
+      });
 
-            const result = await service.login(mockUser);
-
-            expect(result).toBeDefined();
-            expect(result.accessToken).toBe(expectedToken);
-            expect(mockJwtService.signAsync).toHaveBeenCalledWith({
-                sub: mockUser.id,
-                email: mockUser.email,
-                role: mockUser.role,
-            });
-        });
+      await expect(service.validateUser('test@example.com', 'password123')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
+  });
+
+  describe('login', () => {
+    it('returns access and refresh tokens', async () => {
+      const user: AuthenticatedUser = {
+        id: mockUser.id,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        roleId: mockUser.roleId,
+        roleName: mockUser.role.name,
+      };
+      mockJwtService.sign
+        .mockReturnValueOnce('access-token')
+        .mockReturnValueOnce('refresh-token');
+      mockPrismaService.refreshToken.deleteMany.mockResolvedValue({ count: 0 });
+      mockPrismaService.refreshToken.create.mockResolvedValue({});
+
+      const result = await service.login(user);
+
+      expect(result).toEqual({
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+        expiresIn: 900,
+      });
+      expect(mockPrismaService.refreshToken.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          token: 'refresh-token',
+          userId: user.id,
+        }),
+      });
+    });
+  });
 });
-*/

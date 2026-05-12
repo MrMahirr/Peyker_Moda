@@ -119,7 +119,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
                         {!loading && searched && results.length === 0 && (
                             <div className="text-center py-12">
-                                <p className="text-stone-500">"{query}" için sonuç bulunamadı</p>
+                                <p className="text-stone-500">&quot;{query}&quot; için sonuç bulunamadı</p>
                             </div>
                         )}
 
@@ -204,3 +204,4 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </AnimatePresence>
     );
 }
+

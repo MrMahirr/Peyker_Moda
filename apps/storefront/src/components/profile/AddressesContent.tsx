@@ -51,6 +51,7 @@ const mockAddresses: Address[] = [
 export default function AddressesContent() {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
+    const [nextAddressId, setNextAddressId] = useState(1);
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<Address>>({
@@ -86,10 +87,11 @@ export default function AddressesContent() {
             // Add new
             const newAddress: Address = {
                 ...formData,
-                id: Date.now().toString(),
+                id: `local-${nextAddressId}`,
                 isDefault: addresses.length === 0
             } as Address;
             setAddresses(prev => [...prev, newAddress]);
+            setNextAddressId(prev => prev + 1);
         }
 
         resetForm();
@@ -379,3 +381,5 @@ export default function AddressesContent() {
         </motion.div>
     );
 }
+
+

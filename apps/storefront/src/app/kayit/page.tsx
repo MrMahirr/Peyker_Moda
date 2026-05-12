@@ -12,6 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { storeApi } from "@/lib/api";
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+    return error instanceof Error ? error.message : fallback;
+};
+
 export default function RegisterPage() {
     const router = useRouter();
     const [formData, setFormData] = useState({
@@ -59,8 +63,8 @@ export default function RegisterPage() {
             if (result.success) {
                 router.push("/giris?registered=true");
             }
-        } catch (err: any) {
-            setError(err.message || "Kayıt başarısız. Lütfen tekrar deneyin.");
+        } catch (err: unknown) {
+            setError(getErrorMessage(err, "Kayıt başarısız. Lütfen tekrar deneyin."));
         } finally {
             setLoading(false);
         }
@@ -209,7 +213,7 @@ export default function RegisterPage() {
                                 </button>
                                 <p className="text-sm text-stone-600">
                                     <Link href="/kullanim-kosullari" className="text-amber-600 hover:underline">Kullanım Koşulları</Link> ve{" "}
-                                    <Link href="/gizlilik-politikasi" className="text-amber-600 hover:underline">Gizlilik Politikası</Link>'nı
+                                    <Link href="/gizlilik-politikasi" className="text-amber-600 hover:underline">Gizlilik Politikası</Link>&apos;nı
                                     okudum ve kabul ediyorum.
                                 </p>
                             </div>

@@ -13,6 +13,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { storeApi } from "@/lib/api";
 
+interface GoogleCredentialResponse {
+    credential: string;
+}
+
+interface GoogleAccounts {
+    accounts: {
+        id: {
+            initialize: (options: { client_id: string; callback: (response: GoogleCredentialResponse) => void }) => void;
+            renderButton: (parent: HTMLElement | null, options: Record<string, string | number>) => void;
+        };
+    };
+}
+
+type GoogleWindow = Window & { google?: GoogleAccounts };
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+    return error instanceof Error ? error.message : fallback;
+};
+
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState("");
@@ -23,13 +42,14 @@ export default function LoginPage() {
 
     const initializeGoogle = () => {
         const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "336940869300-g5itv0o638k40fptbe3hctp6f5d7fdfd.apps.googleusercontent.com"; // dummy/placeholder default
-        if (typeof window !== "undefined" && (window as any).google) {
+        const google = (window as GoogleWindow).google;
+        if (typeof window !== "undefined" && google) {
             try {
-                (window as any).google.accounts.id.initialize({
+                google.accounts.id.initialize({
                     client_id: clientId,
                     callback: handleGoogleCallback,
                 });
-                (window as any).google.accounts.id.renderButton(
+                google.accounts.id.renderButton(
                     document.getElementById("google-signin-btn"),
                     {
                         theme: "outline",
@@ -47,12 +67,12 @@ export default function LoginPage() {
     };
 
     useEffect(() => {
-        if (typeof window !== "undefined" && (window as any).google) {
+        if (typeof window !== "undefined" && (window as GoogleWindow).google) {
             initializeGoogle();
         }
     }, []);
 
-    const handleGoogleCallback = async (response: any) => {
+    const handleGoogleCallback = async (response: GoogleCredentialResponse) => {
         setError("");
         setLoading(true);
         try {
@@ -62,8 +82,8 @@ export default function LoginPage() {
                 localStorage.setItem("user", JSON.stringify(result.user));
                 router.push("/profil");
             }
-        } catch (err: any) {
-            setError(err.message || "Google ile giriş başarısız. Lütfen tekrar deneyin.");
+        } catch (err: unknown) {
+            setError(getErrorMessage(err, "Google ile giriş başarısız. Lütfen tekrar deneyin."));
         } finally {
             setLoading(false);
         }
@@ -81,8 +101,8 @@ export default function LoginPage() {
                 localStorage.setItem("user", JSON.stringify(result.user));
                 router.push("/profil");
             }
-        } catch (err: any) {
-            setError(err.message || "Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");
+        } catch (err: unknown) {
+            setError(getErrorMessage(err, "Giriş başarısız. Lütfen bilgilerinizi kontrol edin."));
         } finally {
             setLoading(false);
         }

@@ -436,7 +436,27 @@ export const bestSellers = [
 // --- KOLEKSİYON VERİTABANI SİMÜLASYONU ---
 // Gerçekte burası veritabanından gelecek.
 // Anahtar (Key) = URL'deki isim (slug)
-export const collectionsDB: Record<string, any> = {
+type CollectionDbProduct = {
+  id: number;
+  name: string;
+  price: number;
+  oldPrice: number | null;
+  image: string;
+  description: string;
+  category: string;
+};
+
+type CollectionDbEntry = {
+  meta: {
+    title: string;
+    subtitle: string;
+    description: string;
+    coverImage: string;
+    accentColor: string;
+  };
+  products: CollectionDbProduct[];
+};
+export const collectionsDB: Record<string, CollectionDbEntry> = {
   "kis-2025": {
     meta: {
       title: "2025 Kış Koleksiyonu",

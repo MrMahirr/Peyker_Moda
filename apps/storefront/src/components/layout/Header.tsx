@@ -8,18 +8,21 @@ import { ShoppingBag, Search, Menu, User, ChevronDown, LogOut } from 'lucide-rea
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import SearchModal from "@/components/shared/SearchModal";
 import { useCart } from "@/lib/CartContext";
-import { storeApi } from "@/lib/api";
+import { storeApi, StoreUser } from "@/lib/api";
 
-
+type CollectionLink = {
+  slug: string;
+  title: string;
+};
 
 export default function Header() {
   const router = useRouter();
-  const { items, itemCount } = useCart();
+  const { itemCount } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => storeApi.isLoggedIn());
+  const [user, setUser] = useState<StoreUser | null>(() => storeApi.getUser());
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [collections, setCollections] = useState<any[]>([]);
+  const [collections, setCollections] = useState<CollectionLink[]>([]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -43,9 +46,6 @@ export default function Header() {
     };
     fetchCollections();
 
-    // Check auth status
-    setIsLoggedIn(storeApi.isLoggedIn());
-    setUser(storeApi.getUser());
 
     // Keyboard shortcut for search
     const handleKeyDown = (e: KeyboardEvent) => {

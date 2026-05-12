@@ -2,19 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { storeApi } from "@/lib/api";
 
+type Filters = {
+  sizes: string[];
+  colors: string[];
+  priceRange: [number, number];
+};
+
 interface FilterSidebarProps {
-  onFilterChange?: (filters: {
-    sizes: string[];
-    colors: string[];
-    priceRange: [number, number];
-  }) => void;
+  onFilterChange?: (filters: Filters) => void;
 }
+
+type FilterOverrides = Partial<Filters>;
 
 export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
   const [attributes, setAttributes] = useState<{ sizes: string[], colors: Array<{ name: string, value: string }> }>({
@@ -58,7 +60,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
     triggerChange({ priceRange });
   };
 
-  const triggerChange = (overrides: any = {}) => {
+  const triggerChange = (overrides: FilterOverrides = {}) => {
     if (onFilterChange) {
       onFilterChange({
         sizes: overrides.sizes ?? selectedSizes,

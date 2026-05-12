@@ -10,6 +10,7 @@ describe('LoggerModule', () => {
     module = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
+          isGlobal: true,
           load: [() => ({ app: { nodeEnv: 'development', logLevel: 'info', logDir: './logs' } })],
         }),
         LoggerModule,

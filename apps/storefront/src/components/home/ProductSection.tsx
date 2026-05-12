@@ -4,10 +4,20 @@ import Link from 'next/link';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import ProductCard from "@/components/shared/ProductCard";
 
+interface ProductSectionProduct {
+  id: number | string;
+  name: string;
+  price: number;
+  oldPrice?: number | null;
+  image: string;
+  tag?: string;
+  slug?: string;
+}
+
 interface ProductSectionProps {
   title: string;
   subtitle?: string;
-  products: any[];
+  products: ProductSectionProduct[];
   bgColor?: string;
   isSale?: boolean;
   loading?: boolean;
@@ -62,3 +72,6 @@ export default function ProductSection({
     </section>
   );
 }
+
+
+

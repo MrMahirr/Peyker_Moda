@@ -66,7 +66,7 @@ export default function SalePage() {
             Sezon İndirimleri
           </h1>
           <p className="text-white/90 text-lg md:text-xl font-light max-w-xl mx-auto">
-            %50'ye varan indirimlerle favori parçalarınızı yakalayın!
+            %50&apos;ye varan indirimlerle favori parçalarınızı yakalayın!
           </p>
         </motion.div>
       </div>

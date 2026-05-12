@@ -111,6 +111,44 @@ export interface Order {
     updatedAt: string;
 }
 
+export interface StoreUser {
+    id?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+}
+
+export interface TrackedOrder {
+    id: string;
+    orderNumber: string;
+    status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+    total: number;
+    createdAt: string;
+    items?: Array<{ name: string; quantity: number; price: number }>;
+    shippingAddress?: string;
+    trackingNumber?: string;
+}
+
+export interface CollectionData {
+    id: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    coverImage: string;
+    accentColor: string;
+    categorySlug?: string;
+    products?: Product[];
+}
+
+export interface CardInfo {
+    cardHolderName: string;
+    cardNumber: string;
+    expireMonth: string;
+    expireYear: string;
+    cvc: string;
+}
+
 // API Service
 export const storeApi = {
     // Categories
@@ -250,9 +288,9 @@ export const storeApi = {
     },
 
     // Payment Initialization
-    async initializePayment(data: { orderId: string; cardInfo: any }): Promise<{ status: string; threeDSecureUrl?: string }> {
+    async initializePayment(data: { orderId: string; cardInfo: CardInfo }): Promise<{ status: string; threeDSecureUrl?: string }> {
         const token = localStorage.getItem('accessToken');
-        const headers: any = { 'Content-Type': 'application/json' };
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         const response = await fetch(`${API_BASE_URL}/payments/initialize`, {
@@ -266,7 +304,7 @@ export const storeApi = {
     },
 
     // Order Tracking
-    async trackOrder(orderNumber: string, phone: string): Promise<any | null> {
+    async trackOrder(orderNumber: string, phone: string): Promise<TrackedOrder | null> {
         try {
             const response = await fetch(`${API_BASE_URL}/store/orders/track`, {
                 method: 'POST',
@@ -298,7 +336,7 @@ export const storeApi = {
     },
 
     // Auth
-    async login(email: string, password: string): Promise<{ accessToken: string; user: any }> {
+    async login(email: string, password: string): Promise<{ accessToken: string; user: StoreUser }> {
         const response = await fetch(`${API_BASE_URL}/store/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -309,7 +347,7 @@ export const storeApi = {
         return data;
     },
 
-    async loginGoogle(idToken: string): Promise<{ accessToken: string; user: any }> {
+    async loginGoogle(idToken: string): Promise<{ accessToken: string; user: StoreUser }> {
         const response = await fetch(`${API_BASE_URL}/store/auth/google`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -347,10 +385,34 @@ export const storeApi = {
         return !!localStorage.getItem('accessToken');
     },
 
-    getUser(): any | null {
+    getUser(): StoreUser | null {
         if (typeof window === 'undefined') return null;
         const user = localStorage.getItem('user');
         return user ? JSON.parse(user) : null;
+    },
+
+    async getCurrentUser(): Promise<StoreUser | null> {
+        if (typeof window === 'undefined') return null;
+        const token = localStorage.getItem('accessToken');
+        if (!token) return null;
+
+        const response = await fetch(`${API_BASE_URL}/store/auth/me`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.status === 401) {
+            await this.logout();
+            return null;
+        }
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Profil bilgileri alinamadi');
+
+        const user = data.data || data.user || data;
+        localStorage.setItem('user', JSON.stringify(user));
+        return user;
     },
 
     // Coupon validation
@@ -413,7 +475,7 @@ export const storeApi = {
         }
     },
 
-    async getCollectionBySlug(slug: string): Promise<any> {
+    async getCollectionBySlug(slug: string): Promise<CollectionData | null> {
         try {
             const response = await fetch(`${API_BASE_URL}/store/collections/${slug}`);
             const data = await response.json();
@@ -435,3 +497,4 @@ export const storeApi = {
         }
     },
 };
+

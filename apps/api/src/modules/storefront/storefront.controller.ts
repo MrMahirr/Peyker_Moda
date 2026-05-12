@@ -14,9 +14,14 @@ import {
     ApiResponse,
     ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { StorefrontService } from './storefront.service';
 import { StoreProductQueryDto, UpdateCartDto, CheckoutDto, CustomerLoginDto, CustomerRegisterDto, GoogleLoginDto, TrackOrderDto } from './dto';
 import { CustomerJwtAuthGuard } from '../../common/guards';
+
+const PublicStoreReadThrottle = Throttle({
+    default: { limit: 500, ttl: 60000 },
+});
 
 @ApiTags('Storefront')
 @Controller('store')
@@ -58,12 +63,14 @@ export class StorefrontController {
     // ========== HOME / SETTINGS ==========
 
     @Get('banners')
+    @PublicStoreReadThrottle
     @ApiOperation({ summary: 'Banner/Hero listesi' })
     async getBanners(@Query('position') position?: string) {
         return this.storefrontService.getBanners(position);
     }
 
     @Get('attributes')
+    @PublicStoreReadThrottle
     @ApiOperation({ summary: 'Filtreleme özellikleri (beden, renk vb.)' })
     async getAttributes() {
         return this.storefrontService.getAttributes();
@@ -72,18 +79,21 @@ export class StorefrontController {
     // ========== CATEGORIES ==========
 
     @Get('categories')
+    @PublicStoreReadThrottle
     @ApiOperation({ summary: 'Kategori listesi (tree yapısı)' })
     async getCategories() {
         return this.storefrontService.getCategories();
     }
 
     @Get('categories/:slug')
+    @PublicStoreReadThrottle
     @ApiOperation({ summary: 'Kategori detayı' })
     async getCategoryBySlug(@Param('slug') slug: string) {
         return this.storefrontService.getCategoryBySlug(slug);
     }
 
     @Get('collections/:slug')
+    @PublicStoreReadThrottle
     @ApiOperation({ summary: 'Koleksiyon/Kampanya detayı' })
     async getCollectionBySlug(@Param('slug') slug: string) {
         return this.storefrontService.getCollectionBySlug(slug);
@@ -92,12 +102,14 @@ export class StorefrontController {
     // ========== PRODUCTS ==========
 
     @Get('products')
+    @PublicStoreReadThrottle
     @ApiOperation({ summary: 'Ürün listesi (filtreleme, sayfalama)' })
     async getProducts(@Query() query: StoreProductQueryDto) {
         return this.storefrontService.getProducts(query);
     }
 
     @Get('products/:slug')
+    @PublicStoreReadThrottle
     @ApiOperation({ summary: 'Ürün detayı' })
     async getProductBySlug(@Param('slug') slug: string) {
         return this.storefrontService.getProductBySlug(slug);
@@ -131,3 +143,4 @@ export class StorefrontController {
         return this.storefrontService.trackOrder(trackOrderDto.orderNumber, trackOrderDto.phone);
     }
 }
+

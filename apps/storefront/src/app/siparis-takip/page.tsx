@@ -58,7 +58,7 @@ export default function OrderTrackingPage() {
         }
     };
 
-    const getStepIndex = (status: string) => STEPS.indexOf(status as any);
+    const getStepIndex = (status: OrderStatus["status"]) => status === "CANCELLED" ? -1 : STEPS.indexOf(status);
 
     return (
         <div className="min-h-screen bg-stone-50 font-sans text-stone-900">
@@ -225,3 +225,4 @@ export default function OrderTrackingPage() {
         </div>
     );
 }
+

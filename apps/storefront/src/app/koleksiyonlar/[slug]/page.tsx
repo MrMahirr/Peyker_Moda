@@ -139,7 +139,7 @@ export default function DynamicCollectionPage() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-4xl font-serif italic text-stone-800 mb-6">
-              " {collection.description} "
+              &quot; {collection.description} &quot;
             </h2>
             <div className={`w-24 h-1 ${collection.accentColor} mx-auto rounded-full`} />
           </motion.div>

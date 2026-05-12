@@ -26,20 +26,19 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-    const [items, setItems] = useState<CartItem[]>([]);
-
-    // LocalStorage'dan yükle
-    useEffect(() => {
+    const [items, setItems] = useState<CartItem[]>(() => {
+        if (typeof window === 'undefined') return [];
         const saved = localStorage.getItem('peyker-cart');
-        if (saved) {
-            try {
-                setItems(JSON.parse(saved));
-            } catch (e) {
-                console.error('Cart parse error:', e);
-            }
-        }
-    }, []);
+        if (!saved) return [];
 
+        try {
+            const parsed = JSON.parse(saved);
+            return Array.isArray(parsed) ? parsed as CartItem[] : [];
+        } catch (e) {
+            console.error('Cart parse error:', e);
+            return [];
+        }
+    });
     // LocalStorage'a kaydet
     useEffect(() => {
         localStorage.setItem('peyker-cart', JSON.stringify(items));
@@ -85,3 +84,5 @@ export const useCart = () => {
     if (!context) throw new Error('useCart must be used within CartProvider');
     return context;
 };
+
+

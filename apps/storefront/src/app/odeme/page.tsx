@@ -101,7 +101,7 @@ export default function CheckoutPage() {
                 setStep('success');
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Checkout error:', error);
             setError('Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
         } finally {

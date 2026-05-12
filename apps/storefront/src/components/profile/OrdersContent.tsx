@@ -97,7 +97,7 @@ const transformOrder = (apiOrder: ApiOrder): Order => {
     paymentMethod: apiOrder.paymentMethod || 'Belirtilmedi',
     cargoTrackingCode: apiOrder.cargoTrackingCode,
     cargoProvider: apiOrder.cargoProvider,
-    items: apiOrder.items?.map((item: any, idx: number) => ({
+    items: apiOrder.items?.map((item: NonNullable<ApiOrder["items"]>[number], idx: number) => ({
       id: idx,
       name: item.productName || item.variant?.product?.name || 'Ürün',
       image: item.variant?.product?.images?.[0] || '/placeholder.svg',

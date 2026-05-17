@@ -1,171 +1,193 @@
-# Peyker Moda - E-Ticaret & POS Sistemi
+# Peyker Moda
 
-Modern ve kapsamlı bir e-ticaret ve POS (Point of Sale) yönetim sistemi.
+Peyker Moda, e-ticaret vitrini, yonetim paneli ve POS/API katmanlarini tek monorepo icinde toplayan bir moda satis platformudur.
 
-## 🚀 Özellikler
+## Proje Yapisi
 
-### Backend API
-- **Kimlik Doğrulama**: JWT tabanlı güvenli auth sistemi
-- **Ürün Yönetimi**: Kategoriler, varyantlar, stok takibi
-- **Sipariş Yönetimi**: Sipariş oluşturma, takip, durum güncelleme
-- **POS Modülü**: Satış noktası işlemleri, barkod okuma, hızlı satış
-- **CRM**: Müşteri yönetimi, müşteri grupları
-- **Muhasebe**: Fatura oluşturma, PDF export, gelir-gider takibi
-- **Kampanyalar**: İndirim kampanyaları, kupon kodları
-- **Dashboard**: Gerçek zamanlı istatistikler, raporlar
-- **WebSocket**: Canlı bildirimler
-
-### Admin Panel
-- Modern React + TypeScript arayüzü
-- DataGrid ile gelişmiş tablolar
-- Gerçek zamanlı dashboard
-- POS arayüzü
-
-### Storefront
-- Next.js 15 ile SSR
-- Modern ve responsive tasarım
-- Sepet yönetimi
-- Ödeme akışı
-
-## 🛠 Teknolojiler
-
-| Katman | Teknoloji |
-|--------|-----------|
-| Backend | NestJS, Prisma, PostgreSQL |
-| Admin Panel | React, Vite, TypeScript, TailwindCSS |
-| Storefront | Next.js 15, React 19 |
-| Veritabanı | PostgreSQL |
-| Auth | JWT, Passport.js |
-| Docs | Swagger/OpenAPI |
-
-## 📁 Proje Yapısı
-
-```
+```text
 peyker-moda/
-├── apps/
-│   ├── api/             # NestJS Backend API
-│   ├── admin/           # React Admin Panel
-│   └── storefront/      # Next.js Mağaza
-├── packages/
-│   └── types/           # Paylaşılan TypeScript tipleri
-└── README.md
+|-- apps/
+|   |-- api/          # NestJS API, Prisma, PostgreSQL, Redis, MinIO
+|   |-- admin/        # React + Vite yonetim paneli
+|   `-- storefront/   # Next.js musteri vitrini
+|-- packages/
+|   |-- types/        # Paylasilan TypeScript tipleri
+|   |-- ui/           # Paylasilan UI paketleri
+|   |-- eslint-config/
+|   `-- typescript-config/
+|-- docker/           # Docker/Nginx yardimci dosyalari
+|-- scripts/          # Yardimci scriptler
+|-- docker-compose.yml
+|-- docker-compose.prod.yml
+|-- pnpm-workspace.yaml
+`-- turbo.json
 ```
 
-## 🚀 Kurulum
+## Teknolojiler
 
-### Gereksinimler
-- Node.js 18+
-- PostgreSQL 14+
-- pnpm
+| Katman | Teknolojiler |
+| --- | --- |
+| API | NestJS 11, Prisma 5, PostgreSQL, Redis, MinIO/S3, Socket.IO, Swagger |
+| Admin | React 19, Vite 7, TypeScript, Tailwind CSS, React Router, TanStack Table |
+| Storefront | Next.js 16, React 19, Tailwind CSS, Radix UI |
+| Monorepo | pnpm workspace, Turborepo |
 
-### Adımlar
+## Gereksinimler
 
-1. **Repoyu klonlayın**
-```bash
-git clone <repo-url>
-cd peyker-moda
-```
+- Node.js 18 veya uzeri
+- pnpm 9
+- Docker ve Docker Compose
+- PostgreSQL, Redis ve MinIO icin yerel servisler veya `docker-compose.yml`
 
-2. **Bağımlılıkları yükleyin**
+## Kurulum
+
+Bagimliliklari kok dizinde yukleyin:
+
 ```bash
 pnpm install
 ```
 
-3. **Ortam değişkenlerini ayarlayın**
+Gelistirme servislerini baslatin:
+
 ```bash
-# apps/api/.env
-DATABASE_URL="postgresql://user:password@localhost:5432/peyker_moda"
-JWT_SECRET="your-super-secret-key"
-APP_PORT=3001
-CORS_ORIGIN="http://localhost:5173,http://localhost:3000"
+docker compose up -d
 ```
 
-4. **Veritabanı migrasyonlarını çalıştırın**
+API ortam dosyasini olusturun:
+
 ```bash
-cd apps/api
-npx prisma migrate dev
-npx prisma db seed  # Örnek veriler
+cp apps/api/.env.example apps/api/.env
 ```
 
-5. **Geliştirme sunucularını başlatın**
+Windows PowerShell kullanirken:
+
+```powershell
+Copy-Item apps/api/.env.example apps/api/.env
+```
+
+Yerel Docker servisleri icin temel `DATABASE_URL` degeri:
+
+```env
+DATABASE_URL="postgresql://peyker_user:peyker_password@localhost:2345/peyker_db?schema=public"
+```
+
+Varsayilan frontend API adresleri:
+
+```env
+# apps/admin/.env
+VITE_API_URL=http://localhost:3000/api
+
+# apps/storefront/.env.local
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+```
+
+## Veritabani
+
+Migration ve seed islemleri kok dizinden calistirilabilir:
+
 ```bash
-# Kök dizinde
+pnpm run db:migrate:dev
+pnpm run db:seed
+```
+
+Alternatif olarak API paketi icinden:
+
+```bash
+pnpm --filter api run migrate:dev
+pnpm --filter api run db:seed
+```
+
+## Gelistirme
+
+Tum uygulamalari birlikte baslatmak icin:
+
+```bash
 pnpm run dev
 ```
 
-## 📚 API Dokümantasyonu
-
-API çalışırken Swagger UI'a erişin:
-```
-http://localhost:3001/docs
-```
-
-### Ana Endpoint'ler
-
-| Endpoint | Açıklama |
-|----------|----------|
-| `POST /api/auth/login` | Giriş yap |
-| `GET /api/products` | Ürün listesi |
-| `GET /api/orders` | Sipariş listesi |
-| `GET /api/dashboard/stats` | Dashboard istatistikleri |
-| `POST /api/pos/sales` | POS satış oluştur |
-| `GET /api/store/products` | Mağaza ürünleri |
-
-## 🔒 Güvenlik
-
-- **Helmet**: HTTP güvenlik başlıkları
-- **Rate Limiting**: Brute-force koruması (10/s, 50/10s, 100/dk)
-- **ValidationPipe**: Input doğrulama ve sanitizasyon
-- **Prisma ORM**: SQL Injection koruması
-- **JWT**: Güvenli token tabanlı kimlik doğrulama
-
-## 🧪 Test
+Tek uygulama calistirma:
 
 ```bash
-# Unit testler
-cd apps/api
-npm run test
-
-# Coverage raporu
-npm run test:cov
-
-# E2E testler
-npm run test:e2e
+pnpm --filter api run start:dev
+pnpm --filter admin run dev
+pnpm --filter storefront run dev
 ```
 
-## 📦 Production Build
+Varsayilan adresler:
+
+| Uygulama | Adres |
+| --- | --- |
+| API | http://localhost:3000/api |
+| Swagger | http://localhost:3000/docs |
+| Admin | http://localhost:5173 |
+| Storefront | http://localhost:3500 |
+| MinIO Console | http://localhost:9001 |
+
+## Komutlar
+
+Kok dizin komutlari:
 
 ```bash
-# API
-cd apps/api
-npm run build
-npm run start:prod
-
-# Admin Panel
-cd apps/admin
-npm run build
-
-# Storefront
-cd apps/storefront
-npm run build
-npm run start
+pnpm run dev
+pnpm run build
+pnpm run lint
+pnpm run format
+pnpm run db:migrate:dev
+pnpm run db:migrate:deploy
+pnpm run db:seed
+pnpm run db:backup
 ```
 
-## 📊 Proje İlerlemesi
+API testleri:
 
-| Faz | Durum | Açıklama |
-|-----|-------|----------|
-| Faz 0-9 | ✅ | Backend API (70+ endpoint) |
-| Faz 10 | ✅ | Admin Panel Entegrasyonu |
-| Faz 11 | ✅ | Storefront Geliştirme |
-| Faz 12 | ✅ | Güvenlik & Performans |
-| Faz 13 | ✅ | Test & Dokümantasyon |
-| Faz 14 | ⏳ | Deployment |
+```bash
+pnpm --filter api run test
+pnpm --filter api run test:cov
+pnpm --filter api run test:e2e
+```
 
-## 📄 Lisans
+## Ana Moduller
 
-UNLICENSED - Özel Proje
+API tarafinda urun, kategori, varyant, siparis, POS, musteri, musteri gruplari, kampanya, fatura, muhasebe, rapor, dashboard, bildirim, mesajlasma, kargo, odeme, CMS, banner, ayar, kullanici, rol ve audit log modulleri bulunur.
 
-## 👥 Katkıda Bulunanlar
+Admin panel; katalog, siparis, musteri, POS, rapor ve sistem yonetimi ekranlari icin kullanilir. Storefront ise musteriye acik vitrin ve alisveris deneyimini saglar.
 
-- Peyker Moda Ekibi
+## Docker
+
+Gelistirme altyapisi:
+
+```bash
+docker compose up -d
+docker compose down
+```
+
+Production compose dosyasi ve Makefile komutlari:
+
+```bash
+make build
+make up
+make logs
+make down
+```
+
+Windows'ta `make` yoksa ayni islemler `docker compose -f docker-compose.prod.yml --env-file .env.docker ...` komutlariyla calistirilabilir.
+
+## Build
+
+Tum paketler:
+
+```bash
+pnpm run build
+```
+
+Tek tek:
+
+```bash
+pnpm --filter api run build
+pnpm --filter admin run build
+pnpm --filter storefront run build
+```
+
+## Lisans
+
+Bu proje ozel kullanim icindir ve `UNLICENSED` olarak isaretlenmistir.

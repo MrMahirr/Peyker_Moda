@@ -20,6 +20,21 @@ class PendingIntegrationProvider implements MessagingProvider {
   }
 }
 
+class DisabledIntegrationProvider implements MessagingProvider {
+  constructor(
+    private readonly channel: MessagingChannel,
+    private readonly reason: string,
+  ) {}
+
+  getCapability(): MessagingProviderCapability {
+    return {
+      channel: this.channel,
+      available: false,
+      reason: this.reason,
+    };
+  }
+}
+
 @Injectable()
 export class MessagingProviderRegistryService {
   private readonly providers: MessagingProvider[] = [
@@ -27,9 +42,9 @@ export class MessagingProviderRegistryService {
       MessagingChannel.EMAIL,
       'Toplu e-posta provider entegrasyonu bekleniyor',
     ),
-    new PendingIntegrationProvider(
+    new DisabledIntegrationProvider(
       MessagingChannel.SMS,
-      'Toplu SMS provider entegrasyonu bekleniyor',
+      'Toplu SMS özelliği geçici olarak deaktif bırakıldı',
     ),
   ];
 

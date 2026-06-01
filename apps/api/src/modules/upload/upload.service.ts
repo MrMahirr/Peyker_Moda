@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class UploadService {
@@ -44,16 +45,23 @@ export class UploadService {
         const key = `${folder}/${uniqueFilename}`;
 
         try {
+            const fileStream = fs.createReadStream(file.path);
+
             await this.s3Client.send(
                 new PutObjectCommand({
                     Bucket: this.bucketName,
                     Key: key,
-                    Body: file.buffer,
+                    Body: fileStream,
                     ContentType: file.mimetype,
                     // Eğer MinIO ACL desteklemiyorsa bu satırı silebilirsiniz, default public bucket yapısı
                     // ACL: 'public-read', 
                 })
             );
+
+            // Geçici dosyayı diskten sil (OOM ve disk şişmesini engelle)
+            fs.unlink(file.path, (err) => {
+                if (err) this.logger.error(`Geçici dosya silinemedi: ${file.path}`);
+            });
 
             const fileUrl = `${this.baseUrl}/${key}`;
 

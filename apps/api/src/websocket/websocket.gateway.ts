@@ -23,7 +23,9 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
     cors: {
-        origin: '*',
+        origin: process.env.NODE_ENV === 'production'
+            ? (process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : false)
+            : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
         credentials: true,
     },
     namespace: '/ws',
@@ -71,13 +73,13 @@ export class WebsocketGateway
                 this.connectedClients.set(client.id, client);
                 this.logger.log(`Bağlandı: ${client.user.email} (${client.id})`);
             } else {
-                // Anonim bağlantı
+                // Token yoksa anonim bağlantı (Sadece public eventler için)
                 client.join('public');
                 this.logger.log(`Anonim bağlantı: ${client.id}`);
             }
         } catch (error) {
-            this.logger.warn(`Geçersiz token: ${client.id}`);
-            client.join('public');
+            this.logger.warn(`Geçersiz token tespit edildi, bağlantı reddedildi: ${client.id}`);
+            client.disconnect(true);
         }
     }
 

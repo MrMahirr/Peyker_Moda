@@ -1,8 +1,7 @@
-
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaymentProvider, PaymentInitializeParams, PaymentInitializeResult } from './providers/payment.provider.interface';
-import { MockPaymentProvider } from './providers/mock.payment.provider';
+import { IyzicoPaymentProvider } from './providers/iyzico.payment.provider';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
 
 @Injectable()
@@ -11,8 +10,8 @@ export class PaymentService {
     private provider: PaymentProvider;
 
     constructor(private readonly prisma: PrismaService) {
-        // Adapter Pattern: In the future, we can switch providers based on config or DB settings
-        this.provider = new MockPaymentProvider();
+        // Iyzico Payment Provider'a geçildi
+        this.provider = new IyzicoPaymentProvider();
     }
 
     async initializePayment(orderId: string, cardInfo: any, ip: string, user: any): Promise<PaymentInitializeResult> {

@@ -40,27 +40,63 @@ export class EmailService {
 
     async sendEmail(options: EmailOptions): Promise<boolean> {
         const fromEmail = this.configService.get<string>('SMTP_FROM') || 'noreply@peykermoda.com';
+        const emailJsServiceId = this.configService.get<string>('EMAILJS_SERVICE_ID');
+        const emailJsTemplateId = this.configService.get<string>('EMAILJS_TEMPLATE_ID');
+        const emailJsPublicKey = this.configService.get<string>('EMAILJS_PUBLIC_KEY');
 
-        if (!this.transporter) {
-            this.logger.log(`[MOCK EMAIL] To: ${options.to}, Subject: ${options.subject}`);
-            this.logger.debug(`[MOCK EMAIL] Body: ${options.html.substring(0, 200)}...`);
-            return true; // Mock success
+        // 1. Eğer EmailJS tanımlıysa onu kullan
+        if (emailJsServiceId && emailJsTemplateId && emailJsPublicKey) {
+            try {
+                const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        service_id: emailJsServiceId,
+                        template_id: emailJsTemplateId,
+                        user_id: emailJsPublicKey,
+                        template_params: {
+                            to_email: options.to,
+                            subject: options.subject,
+                            message: options.html // EmailJS panelinde {{{message}}} kullanılması gerekir
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    this.logger.log(`EmailJS ile gönderildi: ${options.to}`);
+                    return true;
+                } else {
+                    const errText = await response.text();
+                    this.logger.error(`EmailJS Hatası: ${errText}`);
+                }
+            } catch (error) {
+                this.logger.error(`EmailJS Fetch Hatası: ${error.message}`);
+            }
+            // Hata olursa (fallback) SMTP denemesi yapması için aşağıya devam eder.
         }
 
-        try {
-            await this.transporter.sendMail({
-                from: `"Peyker Moda" <${fromEmail}>`,
-                to: options.to,
-                subject: options.subject,
-                html: options.html,
-                text: options.text,
-            });
-            this.logger.log(`Email sent to ${options.to}`);
-            return true;
-        } catch (error) {
-            this.logger.error(`Failed to send email: ${error.message}`);
-            return false;
+        // 2. SMTP Transporter varsa onu kullan
+        if (this.transporter) {
+            try {
+                await this.transporter.sendMail({
+                    from: `"Peyker Moda" <${fromEmail}>`,
+                    to: options.to,
+                    subject: options.subject,
+                    html: options.html,
+                    text: options.text,
+                });
+                this.logger.log(`SMTP ile gönderildi: ${options.to}`);
+                return true;
+            } catch (error) {
+                this.logger.error(`SMTP Hatası: ${error.message}`);
+                return false;
+            }
         }
+
+        // 3. İkisi de yoksa Mock (Fake) gönderim yap
+        this.logger.log(`[MOCK EMAIL] To: ${options.to}, Subject: ${options.subject}`);
+        this.logger.debug(`[MOCK EMAIL] Body: ${options.html.substring(0, 200)}...`);
+        return true;
     }
 
     // ========== EMAIL TEMPLATES ==========

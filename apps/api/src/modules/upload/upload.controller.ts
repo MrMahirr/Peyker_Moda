@@ -1,4 +1,4 @@
-﻿import {
+import {
   Controller,
   Get,
   Post,
@@ -11,7 +11,9 @@
   Query,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
+import { diskStorage } from 'multer';
+import * as os from 'os';
+import * as path from 'path';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { UploadService } from './upload.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -20,7 +22,13 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { FileValidationPipe } from '../../common/pipes/file-validation.pipe';
 
 const multerOptions = {
-  storage: memoryStorage(),
+  storage: diskStorage({
+    destination: os.tmpdir(),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      cb(null, `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`);
+    }
+  }),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 };
 

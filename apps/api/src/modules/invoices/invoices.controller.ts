@@ -21,6 +21,16 @@ export class InvoicesController {
         return this.invoicesService.createFromOrder(createInvoiceDto);
     }
 
+    @Post('return')
+    @Roles('admin', 'manager')
+    @ApiOperation({ summary: 'İade faturası oluştur' })
+    async createReturnInvoice(@Body() body: { orderNumber: string; reason: string }) {
+        if (!body.orderNumber || !body.reason) {
+            throw new BadRequestException('orderNumber and reason are required');
+        }
+        return this.invoicesService.createReturnInvoice(body.orderNumber, body.reason);
+    }
+
     @Get()
     @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Fatura listesi' })

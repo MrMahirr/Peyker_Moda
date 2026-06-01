@@ -9,6 +9,11 @@ export interface SalesStats {
         startDate: string;
         endDate: string;
     };
+    chartData?: {
+        date: string;
+        revenue: number;
+        profit: number;
+    }[];
 }
 
 export interface ProductPerformance {

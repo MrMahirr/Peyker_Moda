@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { RotateCcw, Save, Search } from 'lucide-react';
+import { RotateCcw, Save, Search, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { api } from '@/lib/api';
+import { showSuccess, showError } from '@/utils/swal';
 
 export const ReturnInvoice = () => {
     const [orderNumber, setOrderNumber] = useState('');
     const [reason, setReason] = useState('');
+    const [loading, setLoading] = useState(false);
 
     return (
         <div className="space-y-6 p-6">
@@ -47,7 +51,33 @@ export const ReturnInvoice = () => {
                     />
                 </div>
 
-                <div className="flex justify-end"><Button icon={<Save className="w-4 h-4" />} className="font-semibold shadow-md" disabled>İade Faturası Oluştur</Button></div>
+                <div className="flex justify-end">
+                    <Button 
+                        icon={loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} 
+                        className="font-semibold shadow-md" 
+                        disabled={!orderNumber || !reason || loading}
+                        onClick={async () => {
+                            setLoading(true);
+                            try {
+                                const response = await api.post('/invoices/return', { orderNumber, reason });
+                                showSuccess('İade Faturası Oluşturuldu', 'Fatura başarıyla oluşturuldu ve iade işlemi kaydedildi.');
+                                setOrderNumber('');
+                                setReason('');
+                                
+                                // PDF'i indir/aç
+                                if (response.data?.pdfUrl) {
+                                    window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${response.data.pdfUrl}`, '_blank');
+                                }
+                            } catch (error: any) {
+                                showError('Hata', error.response?.data?.message || 'İade faturası oluşturulurken bir hata oluştu.');
+                            } finally {
+                                setLoading(false);
+                            }
+                        }}
+                    >
+                        İade Faturası Oluştur
+                    </Button>
+                </div>
             </div>
         </div>
     );

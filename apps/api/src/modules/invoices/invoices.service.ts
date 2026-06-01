@@ -212,11 +212,147 @@ export class InvoicesService {
         if (!invoice.pdfUrl) {
             // Eğer PDF yoksa oluştur
             await this.generatePdf(id);
+
+    async generatePdf(invoiceId: string) {
+        const invoice = await this.prisma.invoice.findUnique({
+            where: { id: invoiceId },
+            include: {
+                order: {
+                    include: { items: { include: { variant: { include: { product: true } } } } }
+                }
+            }
+        });
+
+        if (!invoice) return;
+
+        const doc = new PDFDocument({ margin: 50 });
+        const fileName = `invoice-${invoice.invoiceNo}.pdf`;
+        const uploadDir = path.join(process.cwd(), 'uploads', 'invoices');
+
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const filePath = path.join(uploadDir, fileName);
+        const stream = fs.createWriteStream(filePath);
+
+        doc.pipe(stream);
+
+        // Header
+        doc.fontSize(20).text('Peyker Moda', { align: 'center' });
+        doc.fontSize(12).text('Fatura', { align: 'center' });
+        doc.moveDown();
+
+        // Info
+        doc.fontSize(10).text(`Fatura No: ${invoice.invoiceNo}`);
+        doc.text(`Tarih: ${invoice.createdAt.toLocaleDateString('tr-TR')}`);
+        doc.text(`Müşteri: ${invoice.customerName}`);
+        if (invoice.taxId) doc.text(`Vergi No: ${invoice.taxId}`);
+        doc.moveDown();
+
+        // Items
+        doc.text('Ürünler:', { underline: true });
+        invoice.order?.items.forEach((item, index) => {
+            const productName = item.variant?.product?.name || 'Ürün';
+            doc.text(`${index + 1}. ${productName} x ${item.quantity} = ${item.total} TL`);
+        });
+        doc.moveDown();
+
+        // Totals
+        doc.text(`Ara Toplam (KDV Hariç): ${(Number(invoice.amount) - Number(invoice.taxAmount)).toFixed(2)} TL`, { align: 'right' });
+        doc.text(`KDV (%${invoice.taxRate}): ${Number(invoice.taxAmount).toFixed(2)} TL`, { align: 'right' });
+        doc.font('Helvetica-Bold').fontSize(12).text(`Genel Toplam: ${Number(invoice.amount).toFixed(2)} TL`, { align: 'right' });
+
+        doc.end();
+
+        // Update Invoice with PDF URL (Local path for now, usually would be S3 url)
+        await this.prisma.invoice.update({
+            where: { id: invoiceId },
+            data: {
+                pdfUrl: `/uploads/invoices/${fileName}`,
+                status: 'ISSUED'
+            }
+        });
+
+        this.logger.log(`Fatura PDF oluşturuldu: ${fileName}`);
+    }
+
+    async getPdfPath(id: string) {
+        const invoice = await this.findOne(id);
+        if (!invoice.pdfUrl) {
+            // Eğer PDF yoksa oluştur
+            await this.generatePdf(id);
             // Tekrar çek
             const updated = await this.findOne(id);
             if (!updated.pdfUrl) throw new NotFoundException('PDF oluşturulamadı');
             return path.join(process.cwd(), updated.pdfUrl); // Absolute path for streaming
         }
         return path.join(process.cwd(), invoice.pdfUrl);
+    }
+
+    async createReturnInvoice(orderNumber: string, reason: string) {
+        const order = await this.prisma.order.findUnique({
+            where: { orderNumber },
+            include: {
+                items: { include: { variant: { include: { product: true } } } },
+                customer: true,
+            }
+        });
+
+        if (!order) {
+            throw new NotFoundException('Belirtilen sipariş numarasına ait sipariş bulunamadı.');
+        }
+
+        // Create a Return record
+        const returnRecord = await this.prisma.return.create({
+            data: {
+                orderId: order.id,
+                reason,
+                refundAmount: order.totalAmount,
+                status: 'APPROVED',
+            }
+        });
+
+        // Generate a PDF for the Return Invoice
+        const doc = new PDFDocument({ margin: 50 });
+        const fileName = `return-invoice-${orderNumber}-${Date.now()}.pdf`;
+        const uploadDir = path.join(process.cwd(), 'uploads', 'invoices');
+
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const filePath = path.join(uploadDir, fileName);
+        const stream = fs.createWriteStream(filePath);
+
+        doc.pipe(stream);
+
+        doc.fontSize(20).text('Peyker Moda', { align: 'center' });
+        doc.fontSize(12).text('İade Faturası', { align: 'center' });
+        doc.moveDown();
+
+        doc.fontSize(10).text(`İade Fatura No: IADE-${orderNumber}`);
+        doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`);
+        doc.text(`Müşteri: ${order.customer ? `${order.customer.firstName} ${order.customer.lastName}` : 'Bilinmeyen Müşteri'}`);
+        doc.text(`İade Nedeni: ${reason}`);
+        doc.moveDown();
+
+        doc.text('İade Edilen Ürünler:', { underline: true });
+        order.items.forEach((item, index) => {
+            const productName = item.variant?.product?.name || 'Ürün';
+            doc.text(`${index + 1}. ${productName} x ${item.quantity} = ${item.total} TL`);
+        });
+        doc.moveDown();
+
+        doc.font('Helvetica-Bold').fontSize(12).text(`İade Edilecek Toplam Tutar: ${Number(order.totalAmount).toFixed(2)} TL`, { align: 'right' });
+
+        doc.end();
+
+        return {
+            success: true,
+            message: 'İade faturası başarıyla oluşturuldu.',
+            returnId: returnRecord.id,
+            pdfUrl: `/uploads/invoices/${fileName}`
+        };
     }
 }

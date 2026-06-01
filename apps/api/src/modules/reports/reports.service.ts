@@ -69,16 +69,26 @@ export class ReportsService {
         let totalCost = 0;
         let returnCount = 0;
 
+        // Group by date (YYYY-MM-DD)
+        const dailyStats: Record<string, { revenue: number, cost: number }> = {};
+
         for (const order of orders) {
+            const dateStr = order.createdAt.toISOString().split('T')[0];
+            if (!dailyStats[dateStr]) dailyStats[dateStr] = { revenue: 0, cost: 0 };
             // Sadece ödemesi tamamlanmış olanları ciroya katabiliriz, ama basitlik adına 
             // CANCELLED olmayan her şey ciro olarak sayılabilir. (TotalAmount kullanarak)
             if (order.paymentStatus === 'COMPLETED' || order.paymentStatus === 'PARTIAL') {
-                totalRevenue += Number(order.totalAmount);
+                const revenue = Number(order.totalAmount);
+                totalRevenue += revenue;
+                dailyStats[dateStr].revenue += revenue;
 
+                let orderCost = 0;
                 for (const item of order.items) {
                     const cost = Number(item.variant?.product?.cost || 0);
-                    totalCost += cost * item.quantity;
+                    orderCost += cost * item.quantity;
                 }
+                totalCost += orderCost;
+                dailyStats[dateStr].cost += orderCost;
             }
 
             if (order.returns && order.returns.length > 0) {
@@ -90,12 +100,19 @@ export class ReportsService {
         const salesCount = orders.length;
         const returnRate = salesCount > 0 ? (returnCount / salesCount) * 100 : 0;
 
+        const chartData = Object.keys(dailyStats).sort().map(date => ({
+            date,
+            revenue: dailyStats[date].revenue,
+            profit: dailyStats[date].revenue - dailyStats[date].cost
+        }));
+
         return {
             totalRevenue,
             netProfit,
             salesCount,
             returnRate,
             period: { startDate, endDate },
+            chartData
         };
     }
 

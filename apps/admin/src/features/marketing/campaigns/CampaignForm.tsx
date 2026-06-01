@@ -2,24 +2,43 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Save } from 'lucide-react';
+import { ChevronLeft, Save, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { campaignsService, CreateCampaignDto } from '../services/campaigns.service';
+import { toast } from 'sonner';
 
 export const CampaignForm = () => {
     const navigate = useNavigate();
+    const [isSaving, setIsSaving] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
+        code: '',
         startDate: '',
         endDate: '',
         discountRate: '',
         isActive: true
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Save campaign logic
-        alert("Kampanya taslak olarak kaydedildi.");
-        navigate(-1);
+        setIsSaving(true);
+        try {
+            const dto: any = {
+                name: formData.name,
+                code: formData.code || undefined,
+                startDate: new Date(formData.startDate).toISOString(),
+                endDate: new Date(formData.endDate).toISOString(),
+                discountType: 'PERCENTAGE',
+                discountValue: parseFloat(formData.discountRate)
+            };
+            await campaignsService.createCampaign(dto);
+            toast.success("Kampanya başarıyla kaydedildi.");
+            navigate(-1);
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Kampanya kaydedilirken bir hata oluştu.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -43,6 +62,13 @@ export const CampaignForm = () => {
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
+                    />
+
+                    <Input 
+                        label="İndirim Kodu (İsteğe Bağlı)" 
+                        placeholder="Örn: YAZ20" 
+                        value={formData.code}
+                        onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                     />
                     
                     <div className="grid grid-cols-2 gap-4">
@@ -88,12 +114,12 @@ export const CampaignForm = () => {
                 </div>
 
                 <div className="pt-4 border-t border-zinc-100 flex justify-end gap-3">
-                    <Button variant="secondary" type="button" onClick={() => navigate(-1)}>
+                    <Button variant="secondary" type="button" onClick={() => navigate(-1)} disabled={isSaving}>
                         İptal
                     </Button>
-                    <Button variant="primary" type="submit">
-                        <Save className="w-4 h-4 mr-2" />
-                        Kaydet
+                    <Button variant="primary" type="submit" disabled={isSaving}>
+                        {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                        {isSaving ? "Kaydediliyor..." : "Kaydet"}
                     </Button>
                 </div>
             </form>

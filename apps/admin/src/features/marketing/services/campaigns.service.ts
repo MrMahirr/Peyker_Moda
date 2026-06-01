@@ -58,23 +58,24 @@ export interface CreateCouponDto {
 export const campaignsService = {
     // Campaigns
     async getAllCampaigns(): Promise<Campaign[]> {
-        const response = await api.get('/campaigns');
-        return response.data.data;
+        const response = await api.get('/campaigns?includeInactive=true');
+        // Backend returns the array directly, so response.data is the array
+        return response.data.data || response.data;
     },
 
     async getCampaignById(id: string): Promise<Campaign> {
         const response = await api.get(`/campaigns/${id}`);
-        return response.data.data;
+        return response.data.data || response.data;
     },
 
     async createCampaign(data: CreateCampaignDto): Promise<Campaign> {
         const response = await api.post('/campaigns', data);
-        return response.data.data;
+        return response.data.data || response.data;
     },
 
     async updateCampaign(id: string, data: Partial<CreateCampaignDto>): Promise<Campaign> {
         const response = await api.patch(`/campaigns/${id}`, data);
-        return response.data.data;
+        return response.data.data || response.data;
     },
 
     async deleteCampaign(id: string): Promise<void> {
@@ -84,22 +85,22 @@ export const campaignsService = {
     // Coupons
     async getAllCoupons(): Promise<Coupon[]> {
         const response = await api.get('/coupons');
-        return response.data.data;
+        return response.data.data || response.data;
     },
 
     async getCouponById(id: string): Promise<Coupon> {
         const response = await api.get(`/coupons/${id}`);
-        return response.data.data;
+        return response.data.data || response.data;
     },
 
     async createCoupon(data: CreateCouponDto): Promise<Coupon> {
         const response = await api.post('/coupons', data);
-        return response.data.data;
+        return response.data.data || response.data;
     },
 
     async updateCoupon(id: string, data: Partial<CreateCouponDto>): Promise<Coupon> {
         const response = await api.patch(`/coupons/${id}`, data);
-        return response.data.data;
+        return response.data.data || response.data;
     },
 
     async deleteCoupon(id: string): Promise<void> {
@@ -108,6 +109,6 @@ export const campaignsService = {
 
     async validateCoupon(code: string): Promise<Coupon> {
         const response = await api.post('/coupons/validate', { code });
-        return response.data.data;
+        return response.data.data || response.data;
     }
 };

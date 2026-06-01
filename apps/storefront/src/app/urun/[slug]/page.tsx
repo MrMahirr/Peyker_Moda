@@ -81,6 +81,16 @@ export default function ProductDetailPage() {
         setTimeout(() => setAdded(false), 2000);
     };
 
+    const handleAddFavorite = async () => {
+        if (!product) return;
+        const success = await storeApi.addFavorite(product.id);
+        if (success) {
+            alert('Favorilere eklendi!');
+        } else {
+            alert('Favorilere eklemek için giriş yapmalısınız.');
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-stone-50">
@@ -281,7 +291,7 @@ export default function ProductDetailPage() {
                                 <ShoppingBag className="w-5 h-5 mr-2" />
                                 {added ? 'Sepete Eklendi!' : 'Sepete Ekle'}
                             </Button>
-                            <Button variant="outline" size="lg" className="h-14 px-4 border-stone-300">
+                            <Button variant="outline" size="lg" className="h-14 px-4 border-stone-300" onClick={handleAddFavorite}>
                                 <Heart className="w-5 h-5" />
                             </Button>
                         </div>

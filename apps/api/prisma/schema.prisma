@@ -130,6 +130,7 @@ model Product {
   updatedAt   DateTime  @updatedAt
   category    Category  @relation(fields: [categoryId], references: [id])
   variants    Variant[]
+  favorites   Favorite[]
 
   @@index([categoryId])
   @@index([barcode])
@@ -195,15 +196,53 @@ model Customer {
   loyaltyPoints Int            @default(0)
   loyaltyTierId String?
   customerNotes CustomerNote[]
+  addresses     CustomerAddress[]
   group         CustomerGroup? @relation(fields: [groupId], references: [id])
   loyaltyTier   LoyaltyTier?   @relation(fields: [loyaltyTierId], references: [id])
   heldSales     HeldSale[]
   orders        Order[]
+  favorites     Favorite[]
 
   @@index([groupId])
   @@index([email])
   @@index([phone])
   @@map("customers")
+}
+
+model CustomerAddress {
+  id         String   @id @default(uuid())
+  customerId String
+  title      String
+  fullName   String
+  phone      String
+  address    String
+  city       String
+  district   String
+  postalCode String?
+  isDefault  Boolean  @default(false)
+  type       String   @default("home") // home or work
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@map("customer_addresses")
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  customerId String
+  productId  String
+  createdAt  DateTime @default(now())
+
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([customerId])
+  @@index([productId])
+  @@map("favorites")
 }
 
 model Order {
@@ -448,6 +487,7 @@ model Campaign {
   startDate     DateTime
   endDate       DateTime
   isActive      Boolean      @default(true)
+  code          String?      @unique
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 

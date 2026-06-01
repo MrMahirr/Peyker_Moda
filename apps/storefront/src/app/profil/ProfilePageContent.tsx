@@ -13,7 +13,9 @@ import { Separator } from "@/components/ui/separator";
 import OrdersContent from "@/components/profile/OrdersContent";
 import FavoritesContent from "@/components/profile/FavoritesContent";
 import AddressesContent from "@/components/profile/AddressesContent";
+import { Button } from "@/components/ui/button";
 import { storeApi, StoreUser } from "@/lib/api";
+import { toast } from "sonner";
 
 const menuItems = [
   { id: "profile", label: "Profil Bilgilerim", icon: User },
@@ -38,6 +40,14 @@ export default function ProfilePageContent() {
   const [user, setUser] = useState<StoreUser | null>(() => storeApi.getUser());
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    phone: ""
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -53,6 +63,11 @@ export default function ProfilePageContent() {
         }
 
         setUser(currentUser);
+        setFormData({
+          firstName: currentUser.firstName || "",
+          lastName: currentUser.lastName || "",
+          phone: currentUser.phone || ""
+        });
         setProfileError(null);
       } catch (error) {
         if (!isMounted) return;
@@ -85,6 +100,22 @@ export default function ProfilePageContent() {
   const selectTab = (tab: ProfileTab) => {
     setActiveTab(tab);
     router.push(`/profil?tab=${tab}`);
+  };
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setProfileError(null);
+    setProfileSuccess(null);
+    try {
+      const updatedUser = await storeApi.updateProfile(formData);
+      setUser(updatedUser);
+      toast.success("Profil bilgileriniz başarıyla güncellendi.");
+    } catch (error: any) {
+      toast.error(error.message || "Profil güncellenirken bir hata oluştu.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -163,24 +194,60 @@ export default function ProfilePageContent() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">Ad</Label>
-                      <Input id="firstName" value={user?.firstName || ""} readOnly className="border-stone-200 bg-stone-50" />
+                  <form onSubmit={handleProfileUpdate}>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">Ad</Label>
+                        <Input 
+                          id="firstName" 
+                          value={formData.firstName} 
+                          onChange={(e) => setFormData({...formData, firstName: e.target.value})} 
+                          className="border-stone-200" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Soyad</Label>
+                        <Input 
+                          id="lastName" 
+                          value={formData.lastName} 
+                          onChange={(e) => setFormData({...formData, lastName: e.target.value})} 
+                          className="border-stone-200" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">E-posta Adresi</Label>
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          value={user?.email || ""} 
+                          readOnly 
+                          className="border-stone-200 bg-stone-50 cursor-not-allowed" 
+                          title="E-posta adresi değiştirilemez"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Telefon Numarasi</Label>
+                        <Input 
+                          id="phone" 
+                          type="tel" 
+                          value={formData.phone} 
+                          onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                          className="border-stone-200" 
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Soyad</Label>
-                      <Input id="lastName" value={user?.lastName || ""} readOnly className="border-stone-200 bg-stone-50" />
+                    <div className="mt-8 flex justify-end">
+                      <Button type="submit" disabled={isSaving} className="bg-stone-900 hover:bg-amber-600 text-white min-w-[120px]">
+                        {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                        {isSaving ? "Kaydediliyor" : "Değişiklikleri Kaydet"}
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">E-posta Adresi</Label>
-                      <Input id="email" type="email" value={user?.email || ""} readOnly className="border-stone-200 bg-stone-50" />
+                  </form>
+                  {profileSuccess && (
+                    <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-600">
+                      {profileSuccess}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Telefon Numarasi</Label>
-                      <Input id="phone" type="tel" value={user?.phone || ""} readOnly className="border-stone-200 bg-stone-50" />
-                    </div>
-                  </div>
+                  )}
                 </motion.div>
               )}
 

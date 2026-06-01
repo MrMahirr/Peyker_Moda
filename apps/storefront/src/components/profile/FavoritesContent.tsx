@@ -8,6 +8,7 @@ import { Heart, ShoppingBag, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/lib/CartContext";
+import { storeApi } from "@/lib/api";
 
 interface FavoriteItem {
     id: string;
@@ -20,53 +21,34 @@ interface FavoriteItem {
     inStock: boolean;
 }
 
-// Mock favorites - in production, this would come from API/localStorage
-const mockFavorites: FavoriteItem[] = [
-    {
-        id: "1",
-        name: "Kaşmir Karışımlı Palto",
-        slug: "kasmir-karisimli-palto",
-        price: 5200,
-        compareAtPrice: 6500,
-        image: "https://images.unsplash.com/photo-1544266395-58022731885b?q=80&w=800",
-        category: "Giyim",
-        inStock: true
-    },
-    {
-        id: "2",
-        name: "Deri Omuz Çantası",
-        slug: "deri-omuz-cantasi",
-        price: 3200,
-        image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800",
-        category: "Aksesuar",
-        inStock: true
-    },
-    {
-        id: "3",
-        name: "Minimal Gold Kolye",
-        slug: "minimal-gold-kolye",
-        price: 890,
-        image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800",
-        category: "Aksesuar",
-        inStock: false
-    }
-];
+// Removed mock favorites
 
 export default function FavoritesContent() {
     const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
     const [loading, setLoading] = useState(true);
     const { addItem } = useCart();
 
-    useEffect(() => {
-        // Simulate API call
-        setTimeout(() => {
-            setFavorites(mockFavorites);
+    const fetchFavorites = async () => {
+        try {
+            setLoading(true);
+            const data = await storeApi.getFavorites();
+            setFavorites(data);
+        } catch (error) {
+            console.error("Failed to fetch favorites:", error);
+        } finally {
             setLoading(false);
-        }, 500);
+        }
+    };
+
+    useEffect(() => {
+        fetchFavorites();
     }, []);
 
-    const removeFromFavorites = (id: string) => {
-        setFavorites(prev => prev.filter(item => item.id !== id));
+    const removeFromFavorites = async (id: string) => {
+        const success = await storeApi.removeFavorite(id);
+        if (success) {
+            setFavorites(prev => prev.filter(item => item.id !== id));
+        }
     };
 
     const handleAddToCart = (item: FavoriteItem) => {

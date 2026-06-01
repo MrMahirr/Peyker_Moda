@@ -415,6 +415,27 @@ export const storeApi = {
         return user;
     },
 
+    async updateProfile(profileData: { firstName?: string; lastName?: string; phone?: string; email?: string }): Promise<StoreUser> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) throw new Error('Oturum bulunamadı');
+
+        const response = await fetch(`${API_BASE_URL}/store/auth/profile`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(profileData)
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Profil güncellenemedi');
+
+        const user = data.data || data.user || data;
+        localStorage.setItem('user', JSON.stringify(user));
+        return user;
+    },
+
     // Coupon validation
     async validateCoupon(code: string): Promise<{ valid: boolean; discount: number; discountType: 'percentage' | 'fixed'; message: string }> {
         try {
@@ -436,6 +457,146 @@ export const storeApi = {
         } catch (error) {
             return { valid: false, discount: 0, discountType: 'percentage', message: 'Kupon doğrulanamadı' };
         }
+    },
+
+    // Favorites
+    async getFavorites(): Promise<any[]> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return [];
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/favorites`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await response.json();
+            return data.data || [];
+        } catch (error) {
+            console.error('Failed to fetch favorites:', error);
+            return [];
+        }
+    },
+
+    async addFavorite(productId: string): Promise<boolean> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return false;
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/favorites/${productId}`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Failed to add favorite:', error);
+            return false;
+        }
+    },
+
+    async removeFavorite(productId: string): Promise<boolean> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return false;
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/favorites/${productId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Failed to remove favorite:', error);
+            return false;
+        }
+    },
+
+    // Addresses
+    async getAddresses(): Promise<any[]> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return [];
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/addresses`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await response.json();
+            return data.data || [];
+        } catch (error) {
+            console.error('Failed to fetch addresses:', error);
+            return [];
+        }
+    },
+
+    async createReturn(orderId: string, reason: string): Promise<any> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) throw new Error('Not authenticated');
+        
+        const response = await fetch(`${API_BASE_URL}/store/orders/${orderId}/return`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify({ reason })
+        });
+        return response.json();
+    },
+
+    async getInvoice(orderId: string): Promise<any> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) throw new Error('Not authenticated');
+        
+        const response = await fetch(`${API_BASE_URL}/store/orders/${orderId}/invoice`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.json();
+    },
+
+    async addAddress(addressData: any): Promise<any> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) throw new Error('Not authenticated');
+        
+        const response = await fetch(`${API_BASE_URL}/store/addresses`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify(addressData)
+        });
+        return response.json();
+    },
+
+    async updateAddress(id: string, addressData: any): Promise<any> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) throw new Error('Not authenticated');
+        
+        const response = await fetch(`${API_BASE_URL}/store/addresses/${id}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify(addressData)
+        });
+        return response.json();
+    },
+
+    async deleteAddress(id: string): Promise<boolean> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return false;
+        
+        const response = await fetch(`${API_BASE_URL}/store/addresses/${id}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.ok;
+    },
+
+    async setDefaultAddress(id: string): Promise<boolean> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return false;
+        
+        const response = await fetch(`${API_BASE_URL}/store/addresses/${id}/default`, {
+            method: 'PATCH',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.ok;
     },
 
     // Banners / Hero Slides

@@ -90,7 +90,7 @@ export function DataGrid<TData, TValue>({
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
                                     className={cn(
-                                        "border-b border-zinc-100 transition-colors hover:bg-zinc-50/50 data-[state=selected]:bg-zinc-50",
+                                        "group border-b border-zinc-100 transition-colors hover:bg-zinc-50/50 data-[state=selected]:bg-zinc-50",
                                         onRowClick && "cursor-pointer"
                                     )}
                                     onClick={() => onRowClick && onRowClick(row.original)}

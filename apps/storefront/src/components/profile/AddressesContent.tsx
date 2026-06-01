@@ -6,6 +6,7 @@ import { MapPin, Plus, Pencil, Trash2, Home, Building2, Check, Loader2 } from "l
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { storeApi } from "@/lib/api";
 
 interface Address {
     id: string;
@@ -20,33 +21,7 @@ interface Address {
     type: "home" | "work";
 }
 
-// Mock addresses
-const mockAddresses: Address[] = [
-    {
-        id: "1",
-        title: "Ev Adresim",
-        fullName: "Peyker Yılmaz",
-        phone: "+90 555 123 4567",
-        address: "Atatürk Mah. Cumhuriyet Cad. No: 123 D: 5",
-        city: "İstanbul",
-        district: "Kadıköy",
-        postalCode: "34710",
-        isDefault: true,
-        type: "home"
-    },
-    {
-        id: "2",
-        title: "İş Adresim",
-        fullName: "Peyker Yılmaz",
-        phone: "+90 555 987 6543",
-        address: "İş Merkezi, Merkez Mah. Şehit Yolu Sok. No: 45 Kat: 3",
-        city: "İstanbul",
-        district: "Şişli",
-        postalCode: "34381",
-        isDefault: false,
-        type: "work"
-    }
-];
+// Removed mock addresses
 
 export default function AddressesContent() {
     const [addresses, setAddresses] = useState<Address[]>([]);
@@ -65,35 +40,37 @@ export default function AddressesContent() {
         type: "home"
     });
 
-    useEffect(() => {
-        // Simulate API call
-        setTimeout(() => {
-            setAddresses(mockAddresses);
+    const fetchAddresses = async () => {
+        try {
+            setLoading(true);
+            const data = await storeApi.getAddresses();
+            setAddresses(data);
+        } catch (error) {
+            console.error('Failed to load addresses:', error);
+        } finally {
             setLoading(false);
-        }, 500);
+        }
+    };
+
+    useEffect(() => {
+        fetchAddresses();
     }, []);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (editingId) {
             // Update existing
-            setAddresses(prev =>
-                prev.map(addr =>
-                    addr.id === editingId ? { ...addr, ...formData } as Address : addr
-                )
-            );
+            await storeApi.updateAddress(editingId, formData);
         } else {
             // Add new
-            const newAddress: Address = {
+            await storeApi.addAddress({
                 ...formData,
-                id: `local-${nextAddressId}`,
                 isDefault: addresses.length === 0
-            } as Address;
-            setAddresses(prev => [...prev, newAddress]);
-            setNextAddressId(prev => prev + 1);
+            });
         }
-
+        
+        await fetchAddresses();
         resetForm();
     };
 
@@ -118,17 +95,18 @@ export default function AddressesContent() {
         setShowForm(true);
     };
 
-    const handleDelete = (id: string) => {
-        setAddresses(prev => prev.filter(addr => addr.id !== id));
+    const handleDelete = async (id: string) => {
+        const success = await storeApi.deleteAddress(id);
+        if (success) {
+            setAddresses(prev => prev.filter(addr => addr.id !== id));
+        }
     };
 
-    const setAsDefault = (id: string) => {
-        setAddresses(prev =>
-            prev.map(addr => ({
-                ...addr,
-                isDefault: addr.id === id
-            }))
-        );
+    const setAsDefault = async (id: string) => {
+        const success = await storeApi.setDefaultAddress(id);
+        if (success) {
+            await fetchAddresses();
+        }
     };
 
     if (loading) {

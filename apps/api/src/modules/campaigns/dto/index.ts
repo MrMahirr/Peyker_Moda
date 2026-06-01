@@ -26,6 +26,11 @@ export class CreateCampaignDto {
     @IsOptional()
     description?: string;
 
+    @ApiPropertyOptional({ example: 'YAZ20', description: 'Kampanya kodu' })
+    @IsString()
+    @IsOptional()
+    code?: string;
+
     @ApiProperty({ enum: DiscountType, example: 'PERCENTAGE', description: 'İndirim tipi' })
     @IsEnum(DiscountType)
     discountType: DiscountType;
@@ -78,6 +83,11 @@ export class UpdateCampaignDto {
     @IsString()
     @IsOptional()
     description?: string;
+
+    @ApiPropertyOptional({ example: 'YAZ20' })
+    @IsString()
+    @IsOptional()
+    code?: string;
 
     @ApiPropertyOptional({ enum: DiscountType })
     @IsEnum(DiscountType)

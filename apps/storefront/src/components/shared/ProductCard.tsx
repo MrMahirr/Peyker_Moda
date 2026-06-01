@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, fadeInUp } from "@/lib/utils";
 import { useCart } from "@/lib/CartContext";
+import { storeApi } from "@/lib/api";
 
 interface ProductCardProps {
   product: {
@@ -38,6 +39,17 @@ export default function ProductCard({ product }: ProductCardProps) {
     });
   };
 
+  const handleAddFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const success = await storeApi.addFavorite(String(product.id));
+    if (success) {
+      alert('Favorilere eklendi!');
+    } else {
+      alert('Favorilere eklemek için giriş yapmalısınız.');
+    }
+  };
+
   return (
     <motion.div
       initial="hidden"
@@ -57,7 +69,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
           <button
             className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20 hover:text-rose-500"
-            onClick={(e) => e.preventDefault()}
+            onClick={handleAddFavorite}
           >
             <Heart className="w-5 h-5" />
           </button>

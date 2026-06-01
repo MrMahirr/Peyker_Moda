@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, Truck, CheckCircle, ChevronRight,
-  MapPin, CreditCard, Search, Box, Loader2
+  MapPin, CreditCard, Search, Box, Loader2, Download, RefreshCcw
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { formatPrice } from "@/lib/utils";
 import { storeApi, Order as ApiOrder } from "@/lib/api";
+import { toast } from "sonner";
+import { swal } from "@/utils/swal";
 
 // --- TİPLER ---
 
@@ -146,7 +148,49 @@ const StatusStepper = ({ currentStep, status }: { currentStep: number, status: O
 };
 
 const OrderCard = ({ order }: { order: Order }) => {
-  const handleNotImplemented = () => alert("Bu özellik yakında eklenecektir.");
+  const handleNotImplemented = () => toast.info("Bu özellik yakında eklenecektir.");
+
+  const handleReturn = async () => {
+    const { value: reason } = await swal.fire({
+      title: 'İade Nedeni',
+      input: 'textarea',
+      inputLabel: 'Lütfen iade nedeninizi kısaca belirtiniz',
+      inputPlaceholder: 'Ürün bedeni uymadı, beklediğim gibi değil vb...',
+      showCancelButton: true,
+      confirmButtonText: 'Talebi Gönder',
+      cancelButtonText: 'İptal',
+      inputValidator: (value) => {
+        if (!value) return 'İade nedeni girmelisiniz!';
+        return null;
+      }
+    });
+
+    if (reason) {
+      try {
+        const res = await storeApi.createReturn(order.id, reason);
+        if (res.error) {
+          toast.error(res.message || "İade talebi oluşturulurken hata oluştu.");
+        } else {
+          toast.success("İade talebiniz başarıyla oluşturuldu.");
+        }
+      } catch (err) {
+        toast.error("İade işlemi sırasında bir hata oluştu.");
+      }
+    }
+  };
+
+  const handleDownloadInvoice = async () => {
+    try {
+      const res = await storeApi.getInvoice(order.id);
+      if (res.success && res.url) {
+        window.open(res.url, "_blank");
+      } else {
+        toast.error(res.message || "Fatura bulunamadı.");
+      }
+    } catch (err) {
+      toast.error("Fatura yüklenirken hata oluştu.");
+    }
+  };
 
   return (
     <motion.div
@@ -168,7 +212,7 @@ const OrderCard = ({ order }: { order: Order }) => {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-stone-400 tracking-wider">#{order.id}</span>
-          <Button variant="outline" size="sm" className="h-8 border-stone-200 text-stone-600" onClick={handleNotImplemented}>Fatura</Button>
+          <Button variant="outline" size="sm" className="h-8 border-stone-200 text-stone-600" onClick={handleDownloadInvoice}>Fatura</Button>
         </div>
       </div>
 
@@ -223,7 +267,7 @@ const OrderCard = ({ order }: { order: Order }) => {
             )}
             {order.statusCode === 'delivered' ? (
               <>
-                <Button variant="outline" className="flex-1 md:flex-none border-stone-200" onClick={handleNotImplemented}>İade Talebi</Button>
+                <Button variant="outline" className="flex-1 md:flex-none border-rose-200 text-rose-600" onClick={handleReturn}>İade Talebi</Button>
                 <Button className="flex-1 md:flex-none bg-stone-900 text-white" onClick={handleNotImplemented}>Tekrar Satın Al</Button>
               </>
             ) : (

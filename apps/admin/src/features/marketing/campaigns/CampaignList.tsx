@@ -134,11 +134,11 @@ export const CampaignList = () => {
         {
             id: 'actions',
             cell: ({ row }) => (
-                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex justify-end gap-1">
                     <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-8 w-8 p-0 ${row.original.isActive ? 'text-emerald-600 hover:bg-emerald-50' : 'text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50'}`}
+                        className={`h-8 w-8 p-0 transition-transform hover:scale-110 active:scale-95 ${row.original.isActive ? 'text-emerald-600 hover:bg-emerald-50' : 'text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50'}`}
                         onClick={() => handleToggleStatus(row.original)}
                         title={row.original.isActive ? "Durdur" : "Başlat"}
                     >
@@ -147,7 +147,7 @@ export const CampaignList = () => {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
+                        className="h-8 w-8 p-0 text-zinc-400 transition-transform hover:scale-110 active:scale-95 hover:text-red-600 hover:bg-red-50"
                         onClick={() => handleDelete(row.original.id)}
                     >
                         <Trash className="h-4 w-4" />

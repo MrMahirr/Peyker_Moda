@@ -70,9 +70,22 @@ export class CampaignsService {
      * Yeni kampanya oluştur
      */
     async createCampaign(createCampaignDto: CreateCampaignDto) {
+        if (createCampaignDto.code) {
+            const existing = await this.prisma.campaign.findUnique({
+                where: { code: createCampaignDto.code.toUpperCase() }
+            });
+            if (existing) throw new ConflictException('Bu kampanya kodu zaten kullanılıyor');
+            
+            const existingCoupon = await this.prisma.coupon.findUnique({
+                where: { code: createCampaignDto.code.toUpperCase() }
+            });
+            if (existingCoupon) throw new ConflictException('Bu kod bir kupon olarak zaten kullanılıyor');
+        }
+
         const campaign = await this.prisma.campaign.create({
             data: {
                 ...createCampaignDto,
+                code: createCampaignDto.code ? createCampaignDto.code.toUpperCase() : null,
                 startDate: new Date(createCampaignDto.startDate),
                 endDate: new Date(createCampaignDto.endDate),
                 categoryIds: createCampaignDto.categoryIds || [],
@@ -235,7 +248,22 @@ export class CampaignsService {
      * Kupon doğrula
      */
     async validateCoupon(validateDto: ValidateCouponDto) {
-        const coupon = await this.findCouponByCode(validateDto.code);
+        let isCampaign = false;
+        let coupon: any = await this.prisma.coupon.findUnique({
+            where: { code: validateDto.code.toUpperCase() },
+        });
+
+        if (!coupon) {
+            coupon = await this.prisma.campaign.findUnique({
+                where: { code: validateDto.code.toUpperCase() }
+            });
+            if (coupon) isCampaign = true;
+        }
+
+        if (!coupon) {
+            throw new NotFoundException('İndirim kodu bulunamadı');
+        }
+
         const now = new Date();
 
         // Aktif mi kontrol et
@@ -261,7 +289,7 @@ export class CampaignsService {
         }
 
         // Müşteri bazlı kullanım kontrolü
-        if (validateDto.customerId && coupon.usageLimitPerCustomer) {
+        if (!isCampaign && validateDto.customerId && coupon.usageLimitPerCustomer) {
             const customerUsage = await this.prisma.order.count({
                 where: {
                     customerId: validateDto.customerId,
@@ -303,12 +331,28 @@ export class CampaignsService {
      * Kupon kullan
      */
     async useCoupon(code: string) {
-        const coupon = await this.findCouponByCode(code);
-
-        await this.prisma.coupon.update({
-            where: { id: coupon.id },
-            data: { usageCount: { increment: 1 } },
+        let isCampaign = false;
+        let coupon: any = await this.prisma.coupon.findUnique({
+            where: { code: code.toUpperCase() },
         });
+
+        if (!coupon) {
+            coupon = await this.prisma.campaign.findUnique({
+                where: { code: code.toUpperCase() }
+            });
+            if (coupon) isCampaign = true;
+        }
+
+        if (!coupon) {
+            throw new NotFoundException('İndirim kodu bulunamadı');
+        }
+
+        if (!isCampaign) {
+            await this.prisma.coupon.update({
+                where: { id: coupon.id },
+                data: { usageCount: { increment: 1 } },
+            });
+        }
 
         this.logger.log(`Kupon kullanıldı: ${code}`);
 

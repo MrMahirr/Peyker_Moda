@@ -3,10 +3,13 @@ import {
     Get,
     Post,
     Body,
+    Put,
+    Patch,
     Param,
     Query,
     UseGuards,
     Req,
+    Delete,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -58,6 +61,14 @@ export class StorefrontController {
     @ApiResponse({ status: 200, description: 'Müşteri bilgileri' })
     async getProfile(@Req() req: any) {
         return req.user;
+    }
+
+    @Put('auth/profile')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Müşteri Profil Bilgilerini Güncelle' })
+    async updateProfile(@Req() req: any, @Body() body: any) {
+        return this.storefrontService.updateCustomerProfile(req.user.id, body);
     }
 
     // ========== HOME / SETTINGS ==========
@@ -115,6 +126,74 @@ export class StorefrontController {
         return this.storefrontService.getProductBySlug(slug);
     }
 
+    // ========== FAVORITES ==========
+
+    @Get('favorites')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Müşterinin Favorileri' })
+    async getFavorites(@Req() req: any) {
+        return this.storefrontService.getFavorites(req.user.id);
+    }
+
+    @Post('favorites/:productId')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Favorilere Ekle' })
+    async addFavorite(@Req() req: any, @Param('productId') productId: string) {
+        return this.storefrontService.addFavorite(req.user.id, productId);
+    }
+
+    @Delete('favorites/:productId')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Favorilerden Çıkar' })
+    async removeFavorite(@Req() req: any, @Param('productId') productId: string) {
+        return this.storefrontService.removeFavorite(req.user.id, productId);
+    }
+
+    // ========== ADDRESSES ==========
+
+    @Get('addresses')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Müşterinin Adresleri' })
+    async getAddresses(@Req() req: any) {
+        return this.storefrontService.getAddresses(req.user.id);
+    }
+
+    @Post('addresses')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Yeni Adres Ekle' })
+    async addAddress(@Req() req: any, @Body() body: any) {
+        return this.storefrontService.addAddress(req.user.id, body);
+    }
+
+    @Put('addresses/:id')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Adres Güncelle' })
+    async updateAddress(@Req() req: any, @Param('id') id: string, @Body() body: any) {
+        return this.storefrontService.updateAddress(req.user.id, id, body);
+    }
+
+    @Delete('addresses/:id')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Adres Sil' })
+    async deleteAddress(@Req() req: any, @Param('id') id: string) {
+        return this.storefrontService.deleteAddress(req.user.id, id);
+    }
+
+    @Patch('addresses/:id/default')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Varsayılan Adres Yap' })
+    async setDefaultAddress(@Req() req: any, @Param('id') id: string) {
+        return this.storefrontService.setDefaultAddress(req.user.id, id);
+    }
+
     // ========== CART ==========
 
     @Post('cart/calculate')
@@ -149,6 +228,22 @@ export class StorefrontController {
     @ApiOperation({ summary: 'Sipariş takibi' })
     async trackOrder(@Body() trackOrderDto: TrackOrderDto) {
         return this.storefrontService.trackOrder(trackOrderDto.orderNumber, trackOrderDto.phone);
+    }
+
+    @Post('orders/:id/return')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'İade Talebi Oluştur' })
+    async createReturn(@Req() req: any, @Param('id') orderId: string, @Body() body: { reason: string; items?: { variantId: string; quantity: number; reason?: string }[] }) {
+        return this.storefrontService.createReturn(req.user.id, orderId, body);
+    }
+
+    @Get('orders/:id/invoice')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Sipariş Faturası Al' })
+    async getOrderInvoice(@Req() req: any, @Param('id') orderId: string) {
+        return this.storefrontService.getOrderInvoice(req.user.id, orderId);
     }
 }
 

@@ -467,6 +467,207 @@ export class StorefrontService {
         };
     }
 
+    // ========== FAVORITES ==========
+
+    async updateCustomerProfile(customerId: string, data: { firstName?: string; lastName?: string; phone?: string }) {
+        const customer = await this.prisma.customer.findUnique({ where: { id: customerId } });
+        if (!customer) throw new NotFoundException('Müşteri bulunamadı');
+
+        if (data.phone && data.phone !== customer.phone) {
+            const phoneExists = await this.prisma.customer.findFirst({ where: { phone: data.phone } });
+            if (phoneExists) {
+                throw new BadRequestException('Bu telefon numarası başka bir hesaba aittir.');
+            }
+        }
+
+        const updated = await this.prisma.customer.update({
+            where: { id: customerId },
+            data: {
+                firstName: data.firstName !== undefined ? data.firstName : customer.firstName,
+                lastName: data.lastName !== undefined ? data.lastName : customer.lastName,
+                phone: data.phone !== undefined ? data.phone : customer.phone,
+            }
+        });
+
+        const { password, ...result } = updated;
+        return result;
+    }
+
+    // ========== HOME / SETTINGS ==========
+
+    async getFavorites(customerId: string) {
+        const favorites = await this.prisma.favorite.findMany({
+            where: { customerId },
+            include: {
+                product: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                        basePrice: true,
+                        salePrice: true,
+                        images: true,
+                        category: { select: { name: true } },
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return favorites.map(fav => {
+            const product = fav.product;
+            const images = product.images as string[];
+            const price = Number(product.salePrice || product.basePrice);
+            const compareAtPrice = product.salePrice ? Number(product.basePrice) : undefined;
+            return {
+                id: product.id,
+                name: product.name,
+                slug: product.slug,
+                price,
+                compareAtPrice,
+                image: images?.[0] || 'https://via.placeholder.com/300',
+                category: product.category?.name || 'Giyim',
+                inStock: true
+            };
+        });
+    }
+
+    async addFavorite(customerId: string, productId: string) {
+        const existing = await this.prisma.favorite.findUnique({
+            where: {
+                customerId_productId: {
+                    customerId,
+                    productId
+                }
+            }
+        });
+
+        if (existing) {
+            return existing;
+        }
+
+        return this.prisma.favorite.create({
+            data: {
+                customerId,
+                productId
+            }
+        });
+    }
+
+    async removeFavorite(customerId: string, productId: string) {
+        try {
+            await this.prisma.favorite.delete({
+                where: {
+                    customerId_productId: {
+                        customerId,
+                        productId
+                    }
+                }
+            });
+            return { success: true };
+        } catch (error) {
+            return { success: true };
+        }
+    }
+
+    // ========== ADDRESSES ==========
+
+    async getAddresses(customerId: string) {
+        return this.prisma.customerAddress.findMany({
+            where: { customerId },
+            orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }]
+        });
+    }
+
+    async addAddress(customerId: string, data: any) {
+        // If it's the first address or marked as default, unset other defaults
+        if (data.isDefault) {
+            await this.prisma.customerAddress.updateMany({
+                where: { customerId },
+                data: { isDefault: false }
+            });
+        } else {
+            // Check if user has any addresses, if not, make this default
+            const count = await this.prisma.customerAddress.count({ where: { customerId } });
+            if (count === 0) data.isDefault = true;
+        }
+
+        return this.prisma.customerAddress.create({
+            data: {
+                ...data,
+                customerId
+            }
+        });
+    }
+
+    async updateAddress(customerId: string, addressId: string, data: any) {
+        // Verify ownership
+        const address = await this.prisma.customerAddress.findFirst({
+            where: { id: addressId, customerId }
+        });
+
+        if (!address) throw new NotFoundException('Adres bulunamadı');
+
+        if (data.isDefault) {
+            await this.prisma.customerAddress.updateMany({
+                where: { customerId, id: { not: addressId } },
+                data: { isDefault: false }
+            });
+        }
+
+        return this.prisma.customerAddress.update({
+            where: { id: addressId },
+            data
+        });
+    }
+
+    async deleteAddress(customerId: string, addressId: string) {
+        const address = await this.prisma.customerAddress.findFirst({
+            where: { id: addressId, customerId }
+        });
+
+        if (!address) throw new NotFoundException('Adres bulunamadı');
+
+        await this.prisma.customerAddress.delete({
+            where: { id: addressId }
+        });
+
+        // If we deleted the default address, make the most recently created one default
+        if (address.isDefault) {
+            const nextAddress = await this.prisma.customerAddress.findFirst({
+                where: { customerId },
+                orderBy: { createdAt: 'desc' }
+            });
+            
+            if (nextAddress) {
+                await this.prisma.customerAddress.update({
+                    where: { id: nextAddress.id },
+                    data: { isDefault: true }
+                });
+            }
+        }
+
+        return { success: true };
+    }
+
+    async setDefaultAddress(customerId: string, addressId: string) {
+        const address = await this.prisma.customerAddress.findFirst({
+            where: { id: addressId, customerId }
+        });
+
+        if (!address) throw new NotFoundException('Adres bulunamadı');
+
+        await this.prisma.customerAddress.updateMany({
+            where: { customerId },
+            data: { isDefault: false }
+        });
+
+        return this.prisma.customerAddress.update({
+            where: { id: addressId },
+            data: { isDefault: true }
+        });
+    }
+
     // ========== CART & CHECKOUT ==========
 
     /**
@@ -719,6 +920,61 @@ export class StorefrontService {
                 quantity: item.quantity,
                 price: item.total,
             })),
+        };
+    }
+
+    async createReturn(customerId: string, orderId: string, body: any) {
+        const order = await this.prisma.order.findFirst({
+            where: { id: orderId, customerId },
+            include: { items: true }
+        });
+
+        if (!order) throw new NotFoundException('Sipariş bulunamadı');
+
+        const existingReturn = await this.prisma.return.findFirst({
+            where: { orderId }
+        });
+
+        if (existingReturn) {
+            throw new BadRequestException('Bu sipariş için zaten bir iade talebi oluşturulmuş.');
+        }
+
+        return this.prisma.return.create({
+            data: {
+                orderId,
+                reason: body.reason || 'Müşteri iade talebi',
+                refundAmount: order.totalAmount,
+                status: 'PENDING',
+                items: {
+                    create: order.items.map(item => ({
+                        variantId: item.variantId,
+                        quantity: item.quantity,
+                        reason: body.reason || 'Müşteri iade talebi',
+                    }))
+                }
+            }
+        });
+    }
+
+    async getOrderInvoice(customerId: string, orderId: string) {
+        const order = await this.prisma.order.findFirst({
+            where: { id: orderId, customerId },
+            include: { invoice: true }
+        });
+
+        if (!order) throw new NotFoundException('Sipariş bulunamadı');
+
+        if (!order.invoice?.pdfUrl) {
+            return {
+                success: false,
+                url: null,
+                message: 'Faturanız henüz sistemde PDF olarak oluşturulmamış. Lütfen daha sonra tekrar deneyin.'
+            };
+        }
+
+        return {
+            success: true,
+            url: order.invoice.pdfUrl,
         };
     }
 

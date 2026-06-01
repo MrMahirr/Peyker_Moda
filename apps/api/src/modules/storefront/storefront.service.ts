@@ -187,6 +187,7 @@ export class StorefrontService {
         const campaigns = await this.campaignsService.getActiveCampaigns();
         return campaigns.map(c => ({
             id: c.id,
+            slug: (c as any).slug || c.id,
             title: c.name,
             subtitle: c.description,
             image: (c as any).imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
@@ -655,6 +656,27 @@ export class StorefrontService {
             },
             message: 'Siparişiniz başarıyla oluşturuldu',
         };
+    }
+
+    /**
+     * Müşteri siparişlerini getir
+     */
+    async getCustomerOrders(customerId: string) {
+        return this.prisma.order.findMany({
+            where: { customerId },
+            include: {
+                items: {
+                    include: {
+                        variant: {
+                            include: {
+                                product: { select: { name: true, images: true } },
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
     }
 
     /**

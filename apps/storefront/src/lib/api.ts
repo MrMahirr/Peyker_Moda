@@ -418,7 +418,7 @@ export const storeApi = {
     // Coupon validation
     async validateCoupon(code: string): Promise<{ valid: boolean; discount: number; discountType: 'percentage' | 'fixed'; message: string }> {
         try {
-            const response = await fetch(`${API_BASE_URL}/store/coupons/validate`, {
+            const response = await fetch(`${API_BASE_URL}/coupons/validate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code })

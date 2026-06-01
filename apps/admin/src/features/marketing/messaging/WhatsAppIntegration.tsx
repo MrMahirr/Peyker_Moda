@@ -9,6 +9,22 @@ export const WhatsAppIntegration = () => {
     const [message, setMessage] = useState('');
     const [sending, setSending] = useState(false);
 
+    const handleSend = async () => {
+        if (!phone || !message) {
+            toast.error('Lütfen telefon numarası ve mesaj giriniz.');
+            return;
+        }
+        
+        setSending(true);
+        // Simulate API call
+        setTimeout(() => {
+            setSending(false);
+            toast.success('Mesaj başarıyla gönderildi (Simülasyon)');
+            setPhone('');
+            setMessage('');
+        }, 1000);
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
@@ -20,7 +36,14 @@ export const WhatsAppIntegration = () => {
                 <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/50 text-[13px] text-amber-700 font-medium">⚠️ WhatsApp Business API entegrasyonu yapılandırılması gerekiyor. Ayarlar bölümünden API anahtarınızı giriniz.</div>
                 <Input placeholder="Telefon numarası (+90...)" value={phone} onChange={e => setPhone(e.target.value)} className="h-10 bg-white border border-zinc-200/80 rounded-lg text-[13px] font-medium px-4" />
                 <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="Mesajınız..." className="w-full h-32 bg-white border border-zinc-200/80 rounded-lg text-[13px] font-medium p-3 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none" />
-                <Button icon={<Send className="w-4 h-4" />} className="font-semibold shadow-md" disabled>Gönder</Button>
+                <Button 
+                    onClick={handleSend} 
+                    loading={sending} 
+                    icon={!sending && <Send className="w-4 h-4" />} 
+                    className="font-semibold shadow-md"
+                >
+                    Gönder
+                </Button>
             </div>
         </div>
     );

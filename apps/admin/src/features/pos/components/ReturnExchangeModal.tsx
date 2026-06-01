@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Search, RotateCcw, Loader2 } from 'lucide-react';
@@ -156,7 +156,7 @@ export const ReturnExchangeModal = ({ isOpen, onClose }: ReturnExchangeModalProp
                                     </div>
                                     <Button
                                         size="sm"
-                                        variant="outline"
+                                        variant="secondary"
                                         className="text-amber-600 border-amber-200 bg-amber-50/50 hover:bg-amber-100 font-bold px-4"
                                         onClick={() => handleAddToReturn(item)}
                                     >

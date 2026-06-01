@@ -112,8 +112,8 @@ export function ImageUpload({
                                 <Button
                                     type="button"
                                     variant="destructive"
-                                    size="icon"
-                                    className="h-6 w-6"
+                                    size="sm"
+                                    className="h-6 w-6 p-0"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         removeImage(index);

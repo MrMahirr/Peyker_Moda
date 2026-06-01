@@ -74,7 +74,7 @@ export const OrderDetail = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate('/sales/orders')}>
+                    <Button variant="ghost" size="sm" className="w-9 h-9 p-0" onClick={() => navigate('/sales/orders')}>
                         <ChevronLeft className="h-5 w-5" />
                     </Button>
                     <div>
@@ -93,7 +93,7 @@ export const OrderDetail = () => {
                     )}
                     {(order.status === 'PROCESSING' || order.status === 'CONFIRMED') && (
                         <Button
-                            variant="default"
+                            variant="primary"
                             className="bg-orange-600 hover:bg-orange-700 text-white"
                             onClick={async () => {
                                 if (!confirm('Sipariş kargoya verilecek ve müşteriye bildirim gidecek. Onaylıyor musunuz?')) return;

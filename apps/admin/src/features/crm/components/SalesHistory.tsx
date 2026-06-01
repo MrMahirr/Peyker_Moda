@@ -91,10 +91,10 @@ export const SalesHistory = ({ customerId }: SalesHistoryProps) => {
             id: 'actions',
             cell: () => (
                 <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-indigo-600">
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-500 hover:text-indigo-600">
                         <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-900" title="Fiş Görüntüle">
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-500 hover:text-zinc-900" title="Fiş Görüntüle">
                         <FileText className="h-4 w-4" />
                     </Button>
                 </div>

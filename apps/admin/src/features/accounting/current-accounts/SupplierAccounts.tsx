@@ -46,7 +46,7 @@ export const SupplierAccounts = () => {
             header: 'Bakiye', accessorKey: 'balance',
             cell: (info: CellContext<CurrentAccount, unknown>) => {
                 const b = info.row.original.balance;
-                return <Badge variant={b >= 0 ? 'success' : 'danger'}>{formatCurrency(b)}</Badge>;
+                return <Badge variant={b >= 0 ? 'success' : 'error'}>{formatCurrency(b)}</Badge>;
             },
         },
     ];

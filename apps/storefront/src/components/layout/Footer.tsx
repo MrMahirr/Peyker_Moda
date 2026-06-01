@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SOCIAL_LINKS } from '@/lib/constants';
 
 export default function Footer() {
   return (
@@ -11,8 +12,11 @@ export default function Footer() {
           Zarafet ve modernliği buluşturan tasarımlarla kendi stil hikayeni yaz.
         </p>
         <div className="flex justify-center gap-6 text-stone-400 mb-8">
-          <Link href="#" className="hover:text-amber-400 transition-colors">Instagram</Link>
-          <Link href="#" className="hover:text-amber-400 transition-colors">Pinterest</Link>
+          {SOCIAL_LINKS.map((link) => (
+            <Link key={link.platform} href={link.url} target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">
+              {link.label}
+            </Link>
+          ))}
         </div>
         <p className="text-stone-500 text-sm">&copy; 2025 Peyker Moda. Tüm hakları saklıdır.</p>
       </div>

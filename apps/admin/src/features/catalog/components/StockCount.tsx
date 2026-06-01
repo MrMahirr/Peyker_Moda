@@ -15,11 +15,11 @@ const statusLabels: Record<string, string> = {
     CANCELLED: 'İptal Edildi',
 };
 
-const statusVariants: Record<string, 'neutral' | 'warning' | 'success' | 'danger'> = {
+const statusVariants: Record<string, 'neutral' | 'warning' | 'success' | 'error'> = {
     DRAFT: 'neutral',
     IN_PROGRESS: 'warning',
     COMPLETED: 'success',
-    CANCELLED: 'danger',
+    CANCELLED: 'error',
 };
 
 export const StockCount = () => {

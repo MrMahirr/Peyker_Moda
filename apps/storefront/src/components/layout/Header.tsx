@@ -36,7 +36,7 @@ export default function Header() {
         // For now, let's treat top-level categories as "collections" or fetch real campaigns
         const banners = await storeApi.getBanners();
         if (banners.length > 0) {
-           setCollections(banners.map(b => ({ slug: b.id, title: b.title })));
+           setCollections(banners.map((b: any) => ({ slug: b.slug || b.id, title: b.title })));
         } else {
            setCollections(categories.map(c => ({ slug: c.slug, title: c.name })));
         }

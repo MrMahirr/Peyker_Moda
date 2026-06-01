@@ -3,8 +3,8 @@ import { cn } from '../../lib/utils';
 import { Loader2 } from 'lucide-react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'default' | 'destructive';
-  size?: 'sm' | 'md' | 'lg' | 'icon';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive';
+  size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   icon?: React.ReactNode;
 }
@@ -17,9 +17,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       primary: 'bg-primary text-white hover:bg-primary-dark shadow-sm shadow-primary/20',
       secondary: 'border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300',
       ghost: 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-800',
-      danger: 'bg-red-500 text-white hover:bg-red-600 shadow-sm shadow-red-500/20',
-      outline: 'border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300',
-      default: 'bg-primary text-white hover:bg-primary-dark shadow-sm shadow-primary/20',
       destructive: 'bg-red-500 text-white hover:bg-red-600 shadow-sm shadow-red-500/20',
     };
 
@@ -27,7 +24,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       sm: 'h-8 px-3 text-xs',
       md: 'h-9 px-4 text-sm',
       lg: 'h-11 px-6 text-sm',
-      icon: 'h-9 w-9 p-0 text-sm',
     };
 
     return (

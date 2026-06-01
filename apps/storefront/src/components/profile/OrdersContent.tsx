@@ -146,6 +146,8 @@ const StatusStepper = ({ currentStep, status }: { currentStep: number, status: O
 };
 
 const OrderCard = ({ order }: { order: Order }) => {
+  const handleNotImplemented = () => alert("Bu özellik yakında eklenecektir.");
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -166,7 +168,7 @@ const OrderCard = ({ order }: { order: Order }) => {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-stone-400 tracking-wider">#{order.id}</span>
-          <Button variant="outline" size="sm" className="h-8 border-stone-200 text-stone-600">Fatura</Button>
+          <Button variant="outline" size="sm" className="h-8 border-stone-200 text-stone-600" onClick={handleNotImplemented}>Fatura</Button>
         </div>
       </div>
 
@@ -191,7 +193,7 @@ const OrderCard = ({ order }: { order: Order }) => {
                 <p className="text-sm font-medium text-amber-600 mt-1">{formatPrice(item.price)}</p>
               </div>
               {order.statusCode === 'delivered' && (
-                <Button variant="ghost" size="sm" className="text-stone-400 hover:text-stone-900 hidden sm:flex">
+                <Button variant="ghost" size="sm" className="text-stone-400 hover:text-stone-900 hidden sm:flex" onClick={handleNotImplemented}>
                   Ürünü Değerlendir
                 </Button>
               )}
@@ -215,17 +217,17 @@ const OrderCard = ({ order }: { order: Order }) => {
 
           <div className="flex gap-3 w-full md:w-auto">
             {order.statusCode === 'shipped' && (
-              <Button className="flex-1 md:flex-none bg-stone-900 hover:bg-amber-600 text-white gap-2">
+              <Button className="flex-1 md:flex-none bg-stone-900 hover:bg-amber-600 text-white gap-2" onClick={handleNotImplemented}>
                 <Truck className="w-4 h-4" /> Kargo Takip
               </Button>
             )}
             {order.statusCode === 'delivered' ? (
               <>
-                <Button variant="outline" className="flex-1 md:flex-none border-stone-200">İade Talebi</Button>
-                <Button className="flex-1 md:flex-none bg-stone-900 text-white">Tekrar Satın Al</Button>
+                <Button variant="outline" className="flex-1 md:flex-none border-stone-200" onClick={handleNotImplemented}>İade Talebi</Button>
+                <Button className="flex-1 md:flex-none bg-stone-900 text-white" onClick={handleNotImplemented}>Tekrar Satın Al</Button>
               </>
             ) : (
-              <Button variant="outline" className="flex-1 md:flex-none border-stone-200">Sipariş Detayı</Button>
+              <Button variant="outline" className="flex-1 md:flex-none border-stone-200" onClick={handleNotImplemented}>Sipariş Detayı</Button>
             )}
           </div>
         </div>

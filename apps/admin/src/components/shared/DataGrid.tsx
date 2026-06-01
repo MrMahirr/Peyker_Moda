@@ -119,7 +119,7 @@ export function DataGrid<TData, TValue>({
                 </div>
                 <div className="space-x-2 flex items-center">
                     <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
@@ -127,7 +127,7 @@ export function DataGrid<TData, TValue>({
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}

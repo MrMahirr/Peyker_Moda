@@ -91,16 +91,16 @@ export const CategoryList = () => {
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
                         onClick={() => handleEdit(category)}
                     >
                         <Edit className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-zinc-400 hover:text-red-600 hover:bg-red-50"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
                         onClick={() => handleDelete(category.id)}
                     >
                         <Trash className="h-3.5 w-3.5" />

@@ -117,7 +117,7 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-medium">Varyant Seçenekleri</h3>
                     <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={() => appendOption({ name: '', values: [] })}
                         type="button"
@@ -137,10 +137,10 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                     {optionFields.map((field, index) => (
                         <div key={field.id} className="bg-zinc-50 p-4 rounded-md border border-zinc-200 relative">
                             <Button
-                                variant="ghost"
-                                size="icon"
+                                variant="secondary"
+                                size="sm"
                                 type="button"
-                                className="absolute top-2 right-2 text-zinc-400 hover:text-red-500"
+                                className="absolute top-2 right-2 w-9 h-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                                 onClick={() => removeOption(index)}
                             >
                                 <Trash className="h-4 w-4" />

@@ -89,7 +89,7 @@ export const ProductDetailPage = () => {
         <div className="space-y-6">
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
-                    <Button variant="ghost" size="icon" onClick={() => navigate('/catalog')}>
+                    <Button variant="ghost" size="sm" className="w-9 h-9 p-0" onClick={() => navigate('/catalog')}>
                         <ChevronLeft className="h-5 w-5" />
                     </Button>
                     <div>

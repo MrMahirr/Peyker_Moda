@@ -6,7 +6,7 @@ import api from '../../../lib/axios';
 import type { CustomerAnalysis } from '../types';
 
 const fmt = (v: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(v);
-const riskV: Record<string, 'success' | 'warning' | 'danger'> = { LOW: 'success', MEDIUM: 'warning', HIGH: 'danger' };
+const riskV: Record<string, 'success' | 'warning' | 'error'> = { LOW: 'success', MEDIUM: 'warning', HIGH: 'error' };
 const riskL: Record<string, string> = { LOW: 'Düşük', MEDIUM: 'Orta', HIGH: 'Yüksek' };
 
 interface Props { customerId: string; }

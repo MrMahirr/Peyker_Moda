@@ -20,9 +20,9 @@ const movementTypeLabels: Record<StockMovementType, string> = {
     RETURN: 'İade',
 };
 
-const movementTypeBadge: Record<StockMovementType, 'success' | 'danger' | 'info' | 'warning' | 'neutral'> = {
+const movementTypeBadge: Record<StockMovementType, 'success' | 'error' | 'info' | 'warning' | 'neutral'> = {
     IN: 'success',
-    OUT: 'danger',
+    OUT: 'error',
     TRANSFER: 'info',
     ADJUSTMENT: 'warning',
     RETURN: 'neutral',

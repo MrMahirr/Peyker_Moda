@@ -64,7 +64,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ initialData 
             </div>
             <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/5 transition-colors cursor-pointer" />
           </div>
-          <Button type="button" variant="outline" size="sm" className="font-semibold">Fotoğraf Değiştir</Button>
+          <Button type="button" variant="secondary" size="sm" className="font-semibold">Fotoğraf Değiştir</Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

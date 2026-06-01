@@ -7,7 +7,7 @@ import { shippingService } from '../services/shipping.service';
 import type { Shipment, ShipmentStatus } from '../types';
 
 const statusL: Record<ShipmentStatus, string> = { PREPARING: 'Hazırlanıyor', PICKED_UP: 'Alındı', IN_TRANSIT: 'Yolda', OUT_FOR_DELIVERY: 'Dağıtımda', DELIVERED: 'Teslim Edildi', RETURNED: 'İade', FAILED: 'Başarısız' };
-const statusV: Record<ShipmentStatus, 'neutral' | 'info' | 'warning' | 'success' | 'danger'> = { PREPARING: 'neutral', PICKED_UP: 'info', IN_TRANSIT: 'info', OUT_FOR_DELIVERY: 'warning', DELIVERED: 'success', RETURNED: 'danger', FAILED: 'danger' };
+const statusV: Record<ShipmentStatus, 'neutral' | 'info' | 'warning' | 'success' | 'error'> = { PREPARING: 'neutral', PICKED_UP: 'info', IN_TRANSIT: 'info', OUT_FOR_DELIVERY: 'warning', DELIVERED: 'success', RETURNED: 'error', FAILED: 'error' };
 
 export const ShipmentTracking = () => {
     const [shipments, setShipments] = useState<Shipment[]>([]);

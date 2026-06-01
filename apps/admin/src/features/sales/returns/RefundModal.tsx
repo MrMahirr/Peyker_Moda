@@ -67,7 +67,7 @@ export const RefundModal = ({ isOpen, onClose, data }: RefundModalProps) => {
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                        <Button variant="outline" className="flex-1" onClick={onClose}>
+                        <Button variant="secondary" className="flex-1" onClick={onClose}>
                             Vazgeç
                         </Button>
                         <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleConfirm}>

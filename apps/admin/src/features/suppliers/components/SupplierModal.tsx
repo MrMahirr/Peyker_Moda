@@ -168,7 +168,7 @@ export const SupplierModal = ({ isOpen, onClose, onSave, supplier }: SupplierMod
                 </div>
                 
                 <div className="p-6 border-t border-zinc-100 bg-zinc-50 flex justify-end gap-3">
-                    <Button variant="outline" onClick={onClose} disabled={loading}>İptal</Button>
+                    <Button variant="secondary" onClick={onClose} disabled={loading}>İptal</Button>
                     <Button type="submit" form="supplier-form" loading={loading} className="px-8">
                         {supplier ? 'Güncelle' : 'Kaydet'}
                     </Button>

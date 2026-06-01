@@ -10,7 +10,7 @@ import type { Check } from '../types';
 const formatCurrency = (v: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(v);
 
 const statusLabels: Record<string, string> = { PENDING: 'Beklemede', DEPOSITED: 'Bankaya Verildi', CASHED: 'Tahsil Edildi', BOUNCED: 'Karşılıksız', CANCELLED: 'İptal' };
-const statusVariants: Record<string, 'neutral' | 'warning' | 'success' | 'danger' | 'info'> = { PENDING: 'warning', DEPOSITED: 'info', CASHED: 'success', BOUNCED: 'danger', CANCELLED: 'neutral' };
+const statusVariants: Record<string, 'neutral' | 'warning' | 'success' | 'error' | 'info'> = { PENDING: 'warning', DEPOSITED: 'info', CASHED: 'success', BOUNCED: 'error', CANCELLED: 'neutral' };
 
 export const CheckTracking = () => {
     const [checks, setChecks] = useState<Check[]>([]);
@@ -27,7 +27,7 @@ export const CheckTracking = () => {
 
     const columns = [
         { header: 'Çek No', accessorKey: 'checkNumber', cell: (info: any) => <span className="font-mono font-semibold text-[13px]">{info.row.original.checkNumber}</span> },
-        { header: 'Tür', accessorKey: 'type', cell: (info: any) => <Badge variant={info.row.original.type === 'RECEIVED' ? 'success' : 'danger'}>{info.row.original.type === 'RECEIVED' ? 'Alınan' : 'Verilen'}</Badge> },
+        { header: 'Tür', accessorKey: 'type', cell: (info: any) => <Badge variant={info.row.original.type === 'RECEIVED' ? 'success' : 'error'}>{info.row.original.type === 'RECEIVED' ? 'Alınan' : 'Verilen'}</Badge> },
         { header: 'Banka', accessorKey: 'bankName' },
         { header: 'Tutar', accessorKey: 'amount', cell: (info: any) => <span className="font-bold font-mono text-[15px]">{formatCurrency(info.row.original.amount)}</span> },
         { header: 'Vade', accessorKey: 'dueDate', cell: (info: any) => <span className="text-[13px] text-zinc-600">{new Date(info.row.original.dueDate).toLocaleDateString('tr-TR')}</span> },

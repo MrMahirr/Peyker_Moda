@@ -8,7 +8,7 @@ import type { Installment } from '../types';
 
 const formatCurrency = (v: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(v);
 const statusLabels: Record<string, string> = { ACTIVE: 'Aktif', COMPLETED: 'Tamamlandı', OVERDUE: 'Gecikmiş', CANCELLED: 'İptal' };
-const statusV: Record<string, 'warning' | 'success' | 'danger' | 'neutral'> = { ACTIVE: 'warning', COMPLETED: 'success', OVERDUE: 'danger', CANCELLED: 'neutral' };
+const statusV: Record<string, 'warning' | 'success' | 'error' | 'neutral'> = { ACTIVE: 'warning', COMPLETED: 'success', OVERDUE: 'error', CANCELLED: 'neutral' };
 
 export const InstallmentTracking = () => {
     const [installments, setInstallments] = useState<Installment[]>([]);

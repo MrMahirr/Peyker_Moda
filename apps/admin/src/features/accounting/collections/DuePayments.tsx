@@ -8,7 +8,7 @@ import type { DuePayment } from '../types';
 
 const formatCurrency = (v: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(v);
 const statusLabels: Record<string, string> = { UPCOMING: 'Yaklaşan', DUE_TODAY: 'Bugün Vadeli', OVERDUE: 'Gecikmiş' };
-const statusV: Record<string, 'info' | 'warning' | 'danger'> = { UPCOMING: 'info', DUE_TODAY: 'warning', OVERDUE: 'danger' };
+const statusV: Record<string, 'info' | 'warning' | 'error'> = { UPCOMING: 'info', DUE_TODAY: 'warning', OVERDUE: 'error' };
 
 export const DuePayments = () => {
     const [payments, setPayments] = useState<DuePayment[]>([]);
@@ -24,7 +24,7 @@ export const DuePayments = () => {
     }, [filter]);
 
     const columns = [
-        { header: 'Tür', accessorKey: 'type', cell: (info: any) => <Badge variant={info.row.original.type === 'RECEIVABLE' ? 'success' : 'danger'}>{info.row.original.type === 'RECEIVABLE' ? 'Alacak' : 'Borç'}</Badge> },
+        { header: 'Tür', accessorKey: 'type', cell: (info: any) => <Badge variant={info.row.original.type === 'RECEIVABLE' ? 'success' : 'error'}>{info.row.original.type === 'RECEIVABLE' ? 'Alacak' : 'Borç'}</Badge> },
         { header: 'Firma/Kişi', accessorKey: 'entityName', cell: (info: any) => <span className="font-semibold text-[14px]">{info.row.original.entityName}</span> },
         { header: 'Tutar', accessorKey: 'amount', cell: (info: any) => <span className="font-bold font-mono text-[15px]">{formatCurrency(info.row.original.amount)}</span> },
         { header: 'Vade Tarihi', accessorKey: 'dueDate', cell: (info: any) => <span className="text-[13px]">{new Date(info.row.original.dueDate).toLocaleDateString('tr-TR')}</span> },

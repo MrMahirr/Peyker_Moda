@@ -137,6 +137,14 @@ export class StorefrontController {
 
     // ========== ORDER TRACKING ==========
 
+    @Get('orders')
+    @UseGuards(CustomerJwtAuthGuard)
+    @ApiBearerAuth('JWT-customer')
+    @ApiOperation({ summary: 'Müşterinin Siparişleri' })
+    async getOrders(@Req() req: any) {
+        return this.storefrontService.getCustomerOrders(req.user.id);
+    }
+
     @Post('orders/track')
     @ApiOperation({ summary: 'Sipariş takibi' })
     async trackOrder(@Body() trackOrderDto: TrackOrderDto) {

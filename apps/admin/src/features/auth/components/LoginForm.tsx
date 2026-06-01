@@ -64,9 +64,9 @@ export const LoginForm = () => {
                         {...register('password')}
                     />
                     <div className="flex justify-end pt-1">
-                        <a href="#" className="text-xs text-zinc-500 hover:text-zinc-800 font-medium transition-colors">
+                        <span className="text-xs text-zinc-400 font-medium cursor-not-allowed" title="Şu an devre dışı">
                             Şifremi unuttum
-                        </a>
+                        </span>
                     </div>
                 </div>
 

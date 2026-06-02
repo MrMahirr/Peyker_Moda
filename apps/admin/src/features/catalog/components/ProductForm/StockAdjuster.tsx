@@ -4,14 +4,16 @@ import { Plus, Minus, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StockAdjusterProps {
-    currentStock: number;
     value: number;
     onChange: (val: number) => void;
     className?: string;
     isVariant?: boolean;
 }
 
-export const StockAdjuster = ({ currentStock, value, onChange, className, isVariant = false }: StockAdjusterProps) => {
+export const StockAdjuster = ({ value, onChange, className, isVariant = false }: StockAdjusterProps) => {
+    // Form resetlendikten sonra (veritabanından veri geldiğinde) component mount olur, 
+    // bu yüzden ilk gelen value gerçek mevcut stoktur.
+    const [currentStock] = useState<number>(Number(value) || 0);
     const [adjustment, setAdjustment] = useState<string>('0');
 
     // Sadece component ilk yüklendiğinde veya mevcut stok değiştiğinde

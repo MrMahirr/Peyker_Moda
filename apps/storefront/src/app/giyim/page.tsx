@@ -8,6 +8,7 @@ import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/shared/ProductCard";
 import FilterSidebar from "@/components/shop/FilterSidebar";
 import { storeApi, Product } from "@/lib/api";
+import { resolveProductImages } from "@/lib/utils";
 
 // Shadcn Components
 import { Button } from "@/components/ui/button";
@@ -175,11 +176,11 @@ export default function ClothingPage() {
                       <ProductCard
                         key={product.id}
                         product={{
-                          id: parseInt(product.id) || 0,
+                          id: product.id,
                           name: product.name,
                           price: product.price,
                           oldPrice: product.compareAtPrice || null,
-                          image: product.images[0] || '/placeholder.svg',
+                          image: resolveProductImages(product.images)[0] || '/placeholder.svg',
                           tag: product.tags?.[0] || '',
                           slug: product.slug,
                         }}

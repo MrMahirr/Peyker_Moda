@@ -7,6 +7,7 @@ import HeroSection from "@/components/home/HeroSection";
 import CategoriesSection from "@/components/home/CategoriesSection";
 import ProductSection from "@/components/home/ProductSection";
 import { storeApi, Product } from "@/lib/api";
+import { resolveProductImages } from "@/lib/utils";
 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -42,15 +43,18 @@ export default function HomePage() {
 
   // Transform API products to ProductSection format
   const transformProducts = (products: Product[]) => {
-    return products.map(p => ({
-      id: parseInt(p.id) || 0,
-      name: p.name,
-      price: p.price,
-      oldPrice: p.compareAtPrice || null,
-      image: p.images[0] || '/placeholder.svg',
-      tag: p.tags?.[0] || '',
-      slug: p.slug,
-    }));
+    return products.map(p => {
+      const imgs = resolveProductImages(p.images);
+      return {
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        oldPrice: p.compareAtPrice || null,
+        image: imgs[0] || '/placeholder.svg',
+        tag: p.tags?.[0] || '',
+        slug: p.slug,
+      };
+    });
   };
 
   return (

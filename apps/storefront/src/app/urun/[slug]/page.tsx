@@ -11,7 +11,7 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { storeApi, Product } from "@/lib/api";
 import { useCart } from "@/lib/CartContext";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, resolveProductImages } from "@/lib/utils";
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -34,8 +34,8 @@ export default function ProductDetailPage() {
 
     useEffect(() => {
         if (product) {
-            const sizes = Array.from(new Set(product.variants?.map(v => v.attributes.size || v.attributes.beden || v.attributes.Beden || v.attributes.Size).filter(Boolean))) as string[];
-            const colors = Array.from(new Set(product.variants?.map(v => v.attributes.color || v.attributes.renk || v.attributes.Renk || v.attributes.Color).filter(Boolean))) as string[];
+            const sizes = Array.from(new Set(product.variants?.map(v => v.attributes?.size || v.attributes?.beden || v.attributes?.Beden || v.attributes?.Size || (v as any).size).filter(Boolean))) as string[];
+            const colors = Array.from(new Set(product.variants?.map(v => v.attributes?.color || v.attributes?.renk || v.attributes?.Renk || v.attributes?.Color || (v as any).color).filter(Boolean))) as string[];
             if (sizes.length > 0) setSelectedSize(sizes[0]);
             if (colors.length > 0) setSelectedColor(colors[0]);
         }
@@ -58,11 +58,12 @@ export default function ProductDetailPage() {
 
         // Find matching variant
         const selectedVariant = product.variants?.find(v => {
-            const sizeAttr = v.attributes.size || v.attributes.beden || v.attributes.Beden || v.attributes.Size;
-            const colorAttr = v.attributes.color || v.attributes.renk || v.attributes.Renk || v.attributes.Color;
+            const sizeAttr = v.attributes?.size || v.attributes?.beden || v.attributes?.Beden || v.attributes?.Size || (v as any).size;
+            const colorAttr = v.attributes?.color || v.attributes?.renk || v.attributes?.Renk || v.attributes?.Color || (v as any).color;
             return (sizeAttr === selectedSize || !sizeAttr) && (colorAttr === selectedColor || !colorAttr);
         });
 
+        const resolvedImages = resolveProductImages(product.images);
         const cartItemId = selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id;
         const variantDesc = [selectedSize, selectedColor].filter(Boolean).join(' / ');
 
@@ -72,7 +73,7 @@ export default function ProductDetailPage() {
             variantId: selectedVariant?.id,
             name: product.name,
             price: selectedVariant?.price || product.price,
-            image: product.images[0] || '',
+            image: resolvedImages[0] || '',
             variant: variantDesc || undefined,
             quantity: quantity,
         });
@@ -118,12 +119,14 @@ export default function ProductDetailPage() {
         );
     }
 
+    const resolvedImages = resolveProductImages(product.images);
+
     const discountPercent = product.compareAtPrice
         ? Math.round((1 - product.price / product.compareAtPrice) * 100)
         : 0;
 
-    const availableSizes = Array.from(new Set(product.variants?.map(v => v.attributes.size || v.attributes.beden || v.attributes.Beden || v.attributes.Size).filter(Boolean))) as string[];
-    const availableColors = Array.from(new Set(product.variants?.map(v => v.attributes.color || v.attributes.renk || v.attributes.Renk || v.attributes.Color).filter(Boolean))) as string[];
+    const availableSizes = Array.from(new Set(product.variants?.map(v => v.attributes?.size || v.attributes?.beden || v.attributes?.Beden || v.attributes?.Size || (v as any).size).filter(Boolean))) as string[];
+    const availableColors = Array.from(new Set(product.variants?.map(v => v.attributes?.color || v.attributes?.renk || v.attributes?.Renk || v.attributes?.Color || (v as any).color).filter(Boolean))) as string[];
 
     return (
         <div className="min-h-screen bg-stone-50 font-sans text-stone-900">
@@ -145,13 +148,17 @@ export default function ProductDetailPage() {
                             animate={{ opacity: 1 }}
                             className="relative aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden"
                         >
-                            <Image
-                                src={product.images[selectedImage] || '/placeholder.svg'}
-                                alt={product.name}
-                                fill
-                                className="object-cover"
-                                priority
-                            />
+                            {resolvedImages[selectedImage] ? (
+                                <Image
+                                    src={resolvedImages[selectedImage]}
+                                    alt={product.name}
+                                    fill
+                                    className="object-cover"
+                                    priority
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-stone-400">Görsel Yok</div>
+                            )}
                             {discountPercent > 0 && (
                                 <span className="absolute top-4 left-4 bg-rose-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                                     %{discountPercent} İndirim
@@ -160,9 +167,9 @@ export default function ProductDetailPage() {
                         </motion.div>
 
                         {/* Thumbnails */}
-                        {product.images.length > 1 && (
+                        {resolvedImages.length > 1 && (
                             <div className="flex gap-3">
-                                {product.images.map((img, idx) => (
+                                {resolvedImages.map((img, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => setSelectedImage(idx)}

@@ -13,7 +13,7 @@ interface BasicInfoProps {
 }
 
 export const BasicInfo = ({ form }: BasicInfoProps) => {
-    const { register, control, formState: { errors, defaultValues } } = form;
+    const { register, control, formState: { errors } } = form;
     const [categories, setCategories] = useState<{label: string, value: string}[]>([]);
 
     useEffect(() => {
@@ -130,7 +130,6 @@ export const BasicInfo = ({ form }: BasicInfoProps) => {
                                 control={control}
                                 render={({ field }) => (
                                     <StockAdjuster
-                                        currentStock={Number(defaultValues?.stock || 0)}
                                         value={field.value}
                                         onChange={field.onChange}
                                     />

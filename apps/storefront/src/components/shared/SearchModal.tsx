@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, Loader2, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { storeApi, Product } from "@/lib/api";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, resolveProductImages } from "@/lib/utils";
 
 interface SearchModalProps {
     isOpen: boolean;
@@ -135,7 +135,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                         >
                                             <div className="relative w-16 h-20 bg-stone-100 rounded-lg overflow-hidden flex-shrink-0">
                                                 <Image
-                                                    src={product.images[0] || "/placeholder.svg"}
+                                                    src={resolveProductImages(product.images)[0] || "/placeholder.svg"}
                                                     alt={product.name}
                                                     fill
                                                     className="object-cover"

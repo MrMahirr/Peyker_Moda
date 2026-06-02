@@ -11,7 +11,7 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { storeApi, Product } from "@/lib/api";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, resolveProductImages } from "@/lib/utils";
 import { useCart } from "@/lib/CartContext";
 
 export default function SearchPageContent() {
@@ -182,7 +182,7 @@ export default function SearchPageContent() {
                                         <Link href={`/urun/${product.slug}`}>
                                             <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-lg bg-stone-100">
                                                 <Image
-                                                    src={product.images[0] || "/placeholder.svg"}
+                                                    src={resolveProductImages(product.images)[0] || "/placeholder.svg"}
                                                     alt={product.name}
                                                     fill
                                                     className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -221,7 +221,7 @@ export default function SearchPageContent() {
                                                     productId: product.id,
                                                     name: product.name,
                                                     price: product.price,
-                                                    image: product.images[0] || "",
+                                                    image: resolveProductImages(product.images)[0] || "",
                                                 })}
                                             >
                                                 Sepete Ekle

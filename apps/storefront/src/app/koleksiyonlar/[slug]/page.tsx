@@ -10,7 +10,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { storeApi, Product } from "@/lib/api";
-import { fadeInUp, formatPrice } from "@/lib/utils";
+import { fadeInUp, formatPrice, resolveProductImages } from "@/lib/utils";
 
 interface CollectionData {
   id: string;
@@ -170,7 +170,7 @@ export default function DynamicCollectionPage() {
                   className="w-full md:w-1/2 relative h-[600px] md:h-[800px] group overflow-hidden shadow-xl"
                 >
                   <Image
-                    src={product.images[0] || '/placeholder.svg'}
+                    src={resolveProductImages(product.images)[0] || '/placeholder.svg'}
                     alt={product.name}
                     fill
                     className="object-cover transition-transform duration-[1.5s] group-hover:scale-110"

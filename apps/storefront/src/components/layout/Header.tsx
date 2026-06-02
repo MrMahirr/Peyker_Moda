@@ -20,12 +20,17 @@ export default function Header() {
   const pathname = usePathname();
   const { itemCount } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(() => storeApi.isLoggedIn());
-  const [user, setUser] = useState<StoreUser | null>(() => storeApi.getUser());
+  const [mounted, setMounted] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<StoreUser | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [collections, setCollections] = useState<CollectionLink[]>([]);
 
   useEffect(() => {
+    setMounted(true);
+    setIsLoggedIn(storeApi.isLoggedIn());
+    setUser(storeApi.getUser());
+
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
 
@@ -139,11 +144,11 @@ export default function Header() {
             <DropdownMenuTrigger className="hover:text-amber-500 transition-colors focus:outline-none flex items-center gap-2">
               <User className="w-5 h-5" />
               <span className="hidden lg:inline text-sm font-medium">
-                {isLoggedIn ? user?.firstName || 'Hesabım' : 'Giriş'}
+                {mounted ? (isLoggedIn ? user?.firstName || 'Hesabım' : 'Giriş') : 'Giriş'}
               </span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-md border-stone-850">
-              {isLoggedIn ? (
+              {mounted && isLoggedIn ? (
                 <>
                   <DropdownMenuLabel>Merhaba, {user?.firstName || 'Kullanıcı'}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -194,7 +199,7 @@ export default function Header() {
 
           <Link href="/sepet" className="relative cursor-pointer hover:text-amber-500 transition-colors">
             <ShoppingBag className="w-5 h-5" />
-            {itemCount > 0 && (
+            {mounted && itemCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
                 {itemCount}
               </span>

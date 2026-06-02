@@ -61,14 +61,23 @@ export const ProductList = () => {
 
     const columns: ColumnDef<Product>[] = [
         {
-            accessorKey: 'images',
+            id: 'coverImage',
             header: 'Görsel',
             cell: ({ row }) => {
-                const images = row.getValue('images') as string[] | undefined;
-                const imageUrl = images?.[0] || 'https://via.placeholder.com/100';
+                const product = row.original as any;
+                let imageUrl = product.primaryImage;
+                if (!imageUrl && product.images && product.images.length > 0) {
+                    const firstImage = product.images[0];
+                    imageUrl = typeof firstImage === 'string' ? firstImage : firstImage.url;
+                }
+                
                 return (
                     <div className="h-[52px] w-[42px] rounded-md overflow-hidden bg-zinc-50 border border-zinc-200/80">
-                        <img src={imageUrl} alt={row.original.name} className="h-full w-full object-cover" />
+                        {imageUrl ? (
+                            <img src={imageUrl} alt={row.original.name} className="h-full w-full object-cover" />
+                        ) : (
+                            <div className="h-full w-full flex items-center justify-center text-zinc-300 text-[10px] font-medium">Yok</div>
+                        )}
                     </div>
                 );
             }

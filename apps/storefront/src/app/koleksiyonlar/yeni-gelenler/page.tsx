@@ -9,6 +9,7 @@ import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/shared/ProductCard";
 import { newArrivals as fallbackArrivals } from "@/lib/data";
 import { storeApi, Product } from "@/lib/api";
+import { resolveProductImages } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 interface DisplayProduct {
@@ -51,7 +52,7 @@ export default function NewArrivalsPage() {
             name: p.name,
             price: p.price,
             oldPrice: p.compareAtPrice || null,
-            image: p.images?.[0] || '',
+            image: resolveProductImages(p.images)[0] || '',
             category: p.category?.name || '',
             tag: p.tags?.[0] || 'Yeni',
             slug: p.slug,

@@ -17,7 +17,7 @@ interface ColorGroup {
 }
 
 export const VariantMatrix = ({ form }: VariantMatrixProps) => {
-    const { register, watch, setValue, getValues, control, formState: { defaultValues } } = form;
+    const { register, watch, setValue, getValues, control } = form;
 
     const basePrice = watch("price");
     const baseSku = watch("sku");
@@ -281,7 +281,6 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                                                 control={control}
                                                 render={({ field }) => (
                                                     <StockAdjuster
-                                                        currentStock={Number(defaultValues?.variants?.[index]?.stock || 0)}
                                                         value={field.value}
                                                         onChange={field.onChange}
                                                         isVariant={true}

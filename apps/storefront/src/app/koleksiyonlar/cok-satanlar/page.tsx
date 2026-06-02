@@ -11,7 +11,7 @@ import ProductCard from "@/components/shared/ProductCard";
 import { bestSellers as fallbackBestSellers } from "@/lib/data";
 import { storeApi, Product } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, resolveProductImages } from "@/lib/utils";
 
 interface DisplayProduct {
   id: number | string;
@@ -40,7 +40,7 @@ export default function BestSellersPage() {
             name: p.name,
             price: p.price,
             oldPrice: p.compareAtPrice || null,
-            image: p.images?.[0] || '',
+            image: resolveProductImages(p.images)[0] || '',
             category: p.category?.name || '',
             tag: idx === 0 ? '#1 En Çok Satan' : idx < 3 ? `#${idx + 1} Popüler` : (p.tags?.[0] || ''),
             rating: 4.5 + Math.random() * 0.5,

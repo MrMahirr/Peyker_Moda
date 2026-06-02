@@ -7,6 +7,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/shared/ProductCard";
 import { storeApi, Product } from "@/lib/api";
+import { resolveProductImages } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -107,11 +108,11 @@ export default function SalePage() {
                 <ProductCard
                   key={product.id}
                   product={{
-                    id: parseInt(product.id) || 0,
+                    id: product.id,
                     name: product.name,
                     price: product.price,
                     oldPrice: product.compareAtPrice || null,
-                    image: product.images[0] || '/placeholder.svg',
+                    image: resolveProductImages(product.images)[0] || '/placeholder.svg',
                     tag: product.compareAtPrice
                       ? `%${Math.round((1 - product.price / product.compareAtPrice) * 100)} İndirim`
                       : '',

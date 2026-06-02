@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ChevronLeft, Loader2, Package, User, CreditCard, Truck } from 'lucide-react';
 import { ordersService, Order } from '../services/orders.service';
+import Swal from 'sweetalert2';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -96,14 +97,37 @@ export const OrderDetail = () => {
                             variant="primary"
                             className="bg-orange-600 hover:bg-orange-700 text-white"
                             onClick={async () => {
-                                if (!confirm('Sipariş kargoya verilecek ve müşteriye bildirim gidecek. Onaylıyor musunuz?')) return;
+                                const { value: formValues } = await Swal.fire({
+                                    title: 'Siparişi Kargoya Ver',
+                                    html:
+                                        '<input id="swal-input1" class="swal2-input" placeholder="Kargo Firması (Örn: Yurtiçi Kargo)">' +
+                                        '<input id="swal-input2" class="swal2-input" placeholder="Takip Numarası">',
+                                    focusConfirm: false,
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Kargoya Ver',
+                                    cancelButtonText: 'İptal',
+                                    preConfirm: () => {
+                                        const provider = (document.getElementById('swal-input1') as HTMLInputElement).value;
+                                        const tracking = (document.getElementById('swal-input2') as HTMLInputElement).value;
+                                        if (!provider || !tracking) {
+                                            Swal.showValidationMessage('Kargo firması ve takip numarası zorunludur');
+                                        }
+                                        return { provider, tracking };
+                                    }
+                                });
+
+                                if (!formValues) return;
+                                
                                 setUpdating(true);
                                 try {
-                                    const updated = await ordersService.shipOrder(order.id);
+                                    const updated = await ordersService.shipOrder(order.id, {
+                                        cargoProvider: formValues.provider,
+                                        cargoTrackingCode: formValues.tracking
+                                    });
                                     setOrder(updated);
-                                    alert('Sipariş başarıyla kargoya verildi!');
-                                } catch (err) {
-                                    alert('Kargo işlemi başarısız');
+                                    Swal.fire('Başarılı!', 'Sipariş kargoya verildi ve müşteriye bildirildi.', 'success');
+                                } catch (err: any) {
+                                    Swal.fire('Hata!', err.response?.data?.message || 'Kargo işlemi başarısız oldu.', 'error');
                                     console.error(err);
                                 } finally {
                                     setUpdating(false);

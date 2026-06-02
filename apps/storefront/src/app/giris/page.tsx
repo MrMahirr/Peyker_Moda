@@ -34,14 +34,18 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 
 export default function LoginPage() {
     const router = useRouter();
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
     const initializeGoogle = () => {
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "336940869300-g5itv0o638k40fptbe3hctp6f5d7fdfd.apps.googleusercontent.com"; // dummy/placeholder default
+        if (!clientId) return;
+
         const google = (window as GoogleWindow).google;
         if (typeof window !== "undefined" && google) {
             try {
@@ -67,10 +71,10 @@ export default function LoginPage() {
     };
 
     useEffect(() => {
-        if (typeof window !== "undefined" && (window as GoogleWindow).google) {
+        if (clientId && typeof window !== "undefined" && (window as GoogleWindow).google) {
             initializeGoogle();
         }
-    }, []);
+    }, [clientId]);
 
     const handleGoogleCallback = async (response: GoogleCredentialResponse) => {
         setError("");
@@ -192,18 +196,22 @@ export default function LoginPage() {
                             </Button>
                         </form>
 
-                        <div className="mt-6 relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-stone-200"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-4 bg-white text-stone-400">veya</span>
-                            </div>
-                        </div>
+                        {clientId && (
+                            <>
+                                <div className="mt-6 relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-stone-200"></div>
+                                    </div>
+                                    <div className="relative flex justify-center text-sm">
+                                        <span className="px-4 bg-white text-stone-400">veya</span>
+                                    </div>
+                                </div>
 
-                        <div className="mt-6 flex justify-center">
-                            <div id="google-signin-btn" className="w-full max-w-[382px]"></div>
-                        </div>
+                                <div className="mt-6 flex justify-center">
+                                    <div id="google-signin-btn" className="w-full max-w-[382px]"></div>
+                                </div>
+                            </>
+                        )}
 
                         <div className="mt-8 text-center">
                             <p className="text-stone-500">
@@ -220,11 +228,13 @@ export default function LoginPage() {
 
             <Footer />
             
-            <Script
-                src="https://accounts.google.com/gsi/client"
-                onLoad={initializeGoogle}
-                strategy="lazyOnload"
-            />
+            {clientId && (
+                <Script
+                    src="https://accounts.google.com/gsi/client"
+                    onLoad={initializeGoogle}
+                    strategy="lazyOnload"
+                />
+            )}
         </div>
     );
 }

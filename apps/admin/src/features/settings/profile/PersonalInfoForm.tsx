@@ -39,6 +39,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ initialData 
       await settingsService.updateProfile({
         firstName: data.firstName,
         lastName: data.lastName,
+        email: data.email,
       });
       toast.success('Profil bilgileri başarıyla güncellendi');
     } catch (error) {
@@ -85,8 +86,8 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ initialData 
         <Input
           label="E-posta"
           type="email"
-          disabled
-          className="bg-zinc-50 border-zinc-200 text-zinc-500 cursor-not-allowed"
+          placeholder="E-posta adresinizi giriniz"
+          error={errors.email?.message}
           {...register('email')}
         />
 

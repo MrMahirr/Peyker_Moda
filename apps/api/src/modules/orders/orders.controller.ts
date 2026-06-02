@@ -97,8 +97,11 @@ export class OrdersController {
     @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Siparisi kargoya ver' })
     @ApiResponse({ status: 200, description: 'Siparis kargoya verildi' })
-    async ship(@Param('id') id: string) {
-        return this.ordersService.shipOrder(id);
+    async ship(
+        @Param('id') id: string,
+        @Body() body: { cargoProvider: string; cargoTrackingCode: string }
+    ) {
+        return this.ordersService.shipOrder(id, body.cargoProvider, body.cargoTrackingCode);
     }
 
     @Post(':id/cancel')

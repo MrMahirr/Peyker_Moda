@@ -77,8 +77,8 @@ export const ordersService = {
         return response.data.data;
     },
 
-    async shipOrder(id: string): Promise<Order> {
-        const response = await api.post(`/orders/${id}/ship`, {});
+    async shipOrder(id: string, payload: { cargoProvider: string, cargoTrackingCode: string }): Promise<Order> {
+        const response = await api.post(`/orders/${id}/ship`, payload);
         return response.data.data;
     },
 

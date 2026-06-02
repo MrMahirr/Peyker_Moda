@@ -24,7 +24,11 @@ export class OrdersService {
     /**
      * Siparişi kargoya ver
      */
-    async shipOrder(id: string) {
+    async shipOrder(id: string, cargoProvider: string, cargoTrackingCode: string) {
+        if (!cargoProvider || !cargoTrackingCode) {
+            throw new BadRequestException('Kargo firması ve takip numarası zorunludur');
+        }
+
         const order = await this.prisma.order.findUnique({
             where: { id },
             include: {
@@ -41,27 +45,15 @@ export class OrdersService {
             throw new BadRequestException('Sipariş zaten kargoya verilmiş');
         }
 
-        // Create shipment via provider
-        const shipmentResult = await this.cargoService.createShipment({
-            orderId: order.orderNumber,
-            customerName: order.customer ? `${order.customer.firstName} ${order.customer.lastName}` : 'Misafir',
-            customerAddress: (order.shippingAddress as any)?.fullAddress || 'Adres belirtilmedi',
-            customerPhone: order.customer?.phone || '',
-            items: order.items.map(item => ({
-                name: item.variant.product.name,
-                quantity: item.quantity,
-            })),
-        });
-
         // Update order status
         const updatedOrder = await this.prisma.order.update({
             where: { id },
             data: {
                 status: OrderStatus.SHIPPED,
-                // @ts-ignore
-                cargoTrackingCode: shipmentResult.trackingCode,
-                // @ts-ignore
-                cargoProvider: shipmentResult.provider,
+                cargoProvider: cargoProvider,
+                cargoTrackingCode: cargoTrackingCode,
+                shippedAt: new Date(),
+                notes: order.notes ? `${order.notes}\n[${new Date().toLocaleString('tr-TR')}] Sipariş kargoya verildi: ${cargoProvider} - ${cargoTrackingCode}` : `[${new Date().toLocaleString('tr-TR')}] Sipariş kargoya verildi: ${cargoProvider} - ${cargoTrackingCode}`,
             },
         });
 
@@ -70,9 +62,9 @@ export class OrdersService {
             await this.emailService.sendShippingNotification(order.customer.email, {
                 customerName: order.customer.firstName,
                 orderNumber: order.orderNumber,
-                carrier: shipmentResult.provider,
-                trackingNumber: shipmentResult.trackingCode,
-                trackingUrl: shipmentResult.trackingUrl
+                carrier: cargoProvider,
+                trackingNumber: cargoTrackingCode,
+                trackingUrl: `https://www.google.com/search?q=${cargoProvider}+kargo+takip+${cargoTrackingCode}`
             });
         }
 

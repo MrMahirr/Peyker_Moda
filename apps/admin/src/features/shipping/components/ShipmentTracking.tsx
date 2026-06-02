@@ -3,7 +3,7 @@ import { DataGrid } from '@/components/shared/DataGrid';
 import { Badge } from '@/components/ui/Badge';
 import { Loader2, Package } from 'lucide-react';
 import { toast } from 'sonner';
-import { shippingService } from '../services/shipping.service';
+import { ordersService } from '../../sales/services/orders.service';
 import type { Shipment, ShipmentStatus } from '../types';
 
 const statusL: Record<ShipmentStatus, string> = { PREPARING: 'Hazırlanıyor', PICKED_UP: 'Alındı', IN_TRANSIT: 'Yolda', OUT_FOR_DELIVERY: 'Dağıtımda', DELIVERED: 'Teslim Edildi', RETURNED: 'İade', FAILED: 'Başarısız' };
@@ -13,7 +13,38 @@ export const ShipmentTracking = () => {
     const [shipments, setShipments] = useState<Shipment[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => { (async () => { try { setShipments(await shippingService.getShipments() || []); } catch { toast.error('Gönderiler yüklenemedi'); } finally { setLoading(false); } })(); }, []);
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const response = await ordersService.getAll();
+                // Sadece kargoya verilmiş (SHIPPED, DELIVERED) olan siparişleri filtrele
+                const validOrders = response.data.filter(o => o.status === 'SHIPPED' || o.status === 'DELIVERED');
+                
+                // Siparişleri Shipment tipine uydur
+                const mappedShipments: Shipment[] = validOrders.map(o => ({
+                    id: o.id,
+                    orderId: o.id,
+                    orderNumber: o.orderNumber,
+                    carrierId: 'manual', // or undefined
+                    carrierName: o.cargoProvider || 'Bilinmiyor',
+                    trackingNumber: o.cargoTrackingCode || 'Yok',
+                    status: o.status === 'DELIVERED' ? 'DELIVERED' : 'IN_TRANSIT',
+                    recipientName: o.customer ? `${o.customer.firstName} ${o.customer.lastName}` : 'Misafir',
+                    recipientPhone: o.customer?.phone || '',
+                    recipientAddress: typeof o.shippingAddress === 'string' ? o.shippingAddress : 'Adres Yok',
+                    shippingCost: 0,
+                    createdAt: o.createdAt || new Date().toISOString()
+                }));
+                
+                setShipments(mappedShipments);
+            } catch (error) {
+                toast.error('Gönderiler yüklenemedi');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrders();
+    }, []);
 
     const columns = [
         { header: 'Takip No', accessorKey: 'trackingNumber', cell: (info: any) => <span className="font-mono font-semibold text-[13px]">{info.row.original.trackingNumber}</span> },

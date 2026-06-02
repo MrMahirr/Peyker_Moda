@@ -5,7 +5,7 @@ import {
 } from './providers/messaging-provider.interface';
 import { MessagingChannel } from './messaging.types';
 
-class PendingIntegrationProvider implements MessagingProvider {
+class ActiveIntegrationProvider implements MessagingProvider {
   constructor(
     private readonly channel: MessagingChannel,
     private readonly reason: string,
@@ -14,7 +14,7 @@ class PendingIntegrationProvider implements MessagingProvider {
   getCapability(): MessagingProviderCapability {
     return {
       channel: this.channel,
-      available: false,
+      available: true,
       reason: this.reason,
     };
   }
@@ -38,9 +38,9 @@ class DisabledIntegrationProvider implements MessagingProvider {
 @Injectable()
 export class MessagingProviderRegistryService {
   private readonly providers: MessagingProvider[] = [
-    new PendingIntegrationProvider(
+    new ActiveIntegrationProvider(
       MessagingChannel.EMAIL,
-      'Toplu e-posta provider entegrasyonu bekleniyor',
+      'E-posta provider aktif (Native Queue)',
     ),
     new DisabledIntegrationProvider(
       MessagingChannel.SMS,

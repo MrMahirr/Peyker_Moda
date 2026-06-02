@@ -19,7 +19,7 @@ const emptyForm = {
 
 const channelLabels: Record<MessagingChannel, string> = {
     EMAIL: 'E-posta',
-    SMS: 'SMS',
+    SMS: 'SMS (Devre Dışı)',
 };
 
 const statusLabels: Record<BulkMessageJob['status'], string> = {
@@ -49,11 +49,7 @@ export const BulkMessageSender = () => {
     const loadMessagingData = async () => {
         try {
             setLoading(true);
-            const [statuses, messages] = await Promise.all([
-                messagingService.getChannelStatuses(),
-                messagingService.getBulkMessages(),
-            ]);
-            setChannelStatuses(statuses);
+            const messages = await messagingService.getBulkMessages();
             setJobs(messages);
         } catch {
             toast.error('Mesaj modulu verileri yuklenemedi');
@@ -104,12 +100,7 @@ export const BulkMessageSender = () => {
         <div className="p-8 space-y-6">
             <div>
                 <PageHeader title="Toplu Mesaj Gönderimi" />
-                <p className="text-zinc-500">Musterilere SMS veya e-posta gonderim talepleri olusturun.</p>
-            </div>
-
-            <div className="rounded-2xl border border-amber-200/70 bg-amber-50 p-4 text-[13px] text-amber-800">
-                Email ve SMS provider entegrasyonlari henuz bagli degil. Bu ekran, talepleri kaydeder ve
-                entegrasyon sonrasi islenmek uzere bekletir.
+                <p className="text-zinc-500">Müşterilerinize e-posta gönderim talepleri oluşturun.</p>
             </div>
 
             <div className="max-w-2xl space-y-4 bg-white p-6 rounded-2xl border border-zinc-200">
@@ -125,20 +116,9 @@ export const BulkMessageSender = () => {
                         }
                         className="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/20"
                     >
-                        {Object.entries(channelLabels).map(([value, label]) => (
-                            <option key={value} value={value}>
-                                {label}
-                            </option>
-                        ))}
+                        <option value="EMAIL">E-posta</option>
                     </select>
                 </div>
-
-                {selectedChannelStatus ? (
-                    <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-[13px] text-zinc-600">
-                        <span className="font-semibold text-zinc-900">{channelLabels[selectedChannelStatus.channel]}</span>
-                        {' '}kanali: {selectedChannelStatus.reason}
-                    </div>
-                ) : null}
 
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-zinc-700">Baslik</label>

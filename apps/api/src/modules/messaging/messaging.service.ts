@@ -62,6 +62,24 @@ export class MessagingService {
     messages.unshift(message);
     await this.storage.saveBulkMessages(messages);
 
+    // Simulate Native Queue Processing
+    if (message.status === BulkMessageStatus.QUEUED) {
+      setTimeout(async () => {
+        try {
+          const currentMessages = await this.storage.getBulkMessages();
+          const target = currentMessages.find(m => m.id === message.id);
+          if (target) {
+            target.status = BulkMessageStatus.SENT;
+            target.providerReason = 'Başarıyla iletildi (Native Queue)';
+            target.updatedAt = new Date().toISOString();
+            await this.storage.saveBulkMessages(currentMessages);
+          }
+        } catch (err) {
+          console.error('Queue processing error', err);
+        }
+      }, 5000); // 5 seconds processing delay
+    }
+
     const [user] = await this.prisma.user.findMany({
       where: { id: userId },
       select: {

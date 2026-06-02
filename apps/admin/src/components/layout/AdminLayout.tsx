@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 import { SidebarItem } from './SidebarItem';
 import { NotificationDropdown } from '../../features/notifications/components/NotificationDropdown';
+import { GlobalSearch } from '../shared/GlobalSearch';
 
 const IconMap: Record<string, React.ElementType> = {
   dashboard: LayoutDashboard,
@@ -142,14 +143,7 @@ export const AdminLayout = () => {
 
           <div className="flex items-center gap-3">
             {/* Search */}
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-              <input
-                type="text"
-                placeholder="Hızlı arama..."
-                className="h-10 w-64 pl-10 pr-4 rounded-xl border border-zinc-200 bg-zinc-50 text-[13px] font-semibold text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200 transition-all focus:bg-white shadow-sm"
-              />
-            </div>
+            <GlobalSearch />
 
             {/* Notifications */}
             <NotificationDropdown />

@@ -348,6 +348,48 @@ export class DashboardService {
         return customersWithSpending;
     }
 
+    /**
+     * Tüm projede arama (Global Search)
+     */
+    async globalSearch(q: string) {
+        const [products, orders, customers] = await Promise.all([
+            // Ürünler
+            this.prisma.product.findMany({
+                where: {
+                    OR: [
+                        { name: { contains: q, mode: 'insensitive' } },
+                        { sku: { contains: q, mode: 'insensitive' } }
+                    ]
+                },
+                take: 5,
+                select: { id: true, name: true, sku: true, basePrice: true }
+            }),
+            // Siparişler
+            this.prisma.order.findMany({
+                where: {
+                    orderNumber: { contains: q, mode: 'insensitive' }
+                },
+                take: 5,
+                select: { id: true, orderNumber: true, totalAmount: true, status: true, createdAt: true, customer: { select: { firstName: true, lastName: true } } }
+            }),
+            // Müşteriler
+            this.prisma.customer.findMany({
+                where: {
+                    OR: [
+                        { firstName: { contains: q, mode: 'insensitive' } },
+                        { lastName: { contains: q, mode: 'insensitive' } },
+                        { phone: { contains: q, mode: 'insensitive' } },
+                        { email: { contains: q, mode: 'insensitive' } }
+                    ]
+                },
+                take: 5,
+                select: { id: true, firstName: true, lastName: true, phone: true, email: true }
+            })
+        ]);
+
+        return { products, orders, customers };
+    }
+
     // Yardımcı fonksiyonlar
     private getDateFilter(query: DashboardQueryDto) {
         const filter: any = {};

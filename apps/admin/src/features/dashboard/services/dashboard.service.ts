@@ -96,5 +96,10 @@ export const dashboardService = {
     async getOrderStatusDistribution() {
         const response = await api.get('/dashboard/order-status');
         return response.data.data;
+    },
+
+    async globalSearch(q: string) {
+        const response = await api.get(`/dashboard/search?q=${encodeURIComponent(q)}`);
+        return response.data.data;
     }
 };

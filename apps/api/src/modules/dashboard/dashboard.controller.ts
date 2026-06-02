@@ -81,4 +81,14 @@ export class DashboardController {
     async getTopCustomers(@Query('limit') limit?: number) {
         return this.dashboardService.getTopCustomers(limit);
     }
+
+    @Get('search')
+    @Roles('admin', 'manager', 'staff')
+    @ApiOperation({ summary: 'Global arama (Ürünler, Siparişler, Müşteriler)' })
+    async globalSearch(@Query('q') q: string) {
+        if (!q || q.trim().length < 2) {
+            return { products: [], orders: [], customers: [] };
+        }
+        return this.dashboardService.globalSearch(q.trim());
+    }
 }

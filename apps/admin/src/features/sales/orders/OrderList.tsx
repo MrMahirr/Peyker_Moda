@@ -22,12 +22,15 @@ const STATUS_MAP: Record<string, { label: string; variant: 'neutral' | 'info' | 
     PROCESSING: { label: 'Hazırlanıyor', variant: 'info' },
     SHIPPED: { label: 'Kargoda', variant: 'neutral' }, // Ideally purple, but neutral is fine
     DELIVERED: { label: 'Teslim Edildi', variant: 'success' },
-    CANCELLED: { label: 'İptal', variant: 'error' },
+    COMPLETED: { label: 'Tamamlandı', variant: 'success' },
+    CANCELLED: { label: 'İptal Edildi', variant: 'error' },
+    RETURNED: { label: 'İade Edildi', variant: 'error' },
 };
 
 const PAYMENT_MAP: Record<string, { label: string; variant: 'neutral' | 'info' | 'success' | 'warning' | 'error' }> = {
     PENDING: { label: 'Bekliyor', variant: 'warning' },
-    PAID: { label: 'Ödendi', variant: 'success' },
+    PARTIAL: { label: 'Kısmi Ödeme', variant: 'info' },
+    COMPLETED: { label: 'Ödendi', variant: 'success' },
     FAILED: { label: 'Başarısız', variant: 'error' },
     REFUNDED: { label: 'İade', variant: 'neutral' },
 };
@@ -75,11 +78,24 @@ export const OrderList = () => {
             },
         },
         {
-            accessorKey: 'total',
+            accessorKey: 'totalAmount',
             header: 'Tutar',
             cell: ({ row }) => (
-                <span className="font-bold text-[15px] font-mono text-zinc-900">{formatCurrency(row.original.total)}</span>
+                <span className="font-bold text-[15px] font-mono text-zinc-900">{formatCurrency(Number(row.original.totalAmount || 0))}</span>
             ),
+        },
+        {
+            accessorKey: 'source',
+            header: 'Satış Kanalı',
+            cell: ({ row }) => {
+                const source = row.original.source;
+                const label = source === 'POS' ? 'Mağaza (POS)' : source === 'ONLINE' ? 'Web Sitesi' : source === 'PHONE' ? 'Telefon' : source || 'Bilinmiyor';
+                return (
+                    <Badge variant={source === 'ONLINE' ? 'info' : 'neutral'}>
+                        {label}
+                    </Badge>
+                );
+            },
         },
         {
             accessorKey: 'status',
@@ -99,10 +115,17 @@ export const OrderList = () => {
             header: 'Ödeme',
             cell: ({ row }) => {
                 const status = row.original.paymentStatus;
+                const source = row.original.source;
                 const statusInfo = PAYMENT_MAP[status] || { label: status, variant: 'neutral' };
+                
+                let label = statusInfo.label;
+                if (status === 'COMPLETED' && source === 'POS') {
+                    label = 'Tahsil Edildi';
+                }
+
                 return (
                     <Badge variant={statusInfo.variant}>
-                        {statusInfo.label}
+                        {label}
                     </Badge>
                 );
             },
@@ -117,11 +140,11 @@ export const OrderList = () => {
         {
             id: 'actions',
             cell: ({ row }) => (
-                <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex justify-end">
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-orange-600 hover:bg-orange-50 transition-all duration-300 hover:scale-110 hover:-translate-y-0.5 active:scale-95 shadow-sm hover:shadow-md rounded-full"
                         onClick={() => navigate(`/sales/orders/${row.original.id}`)}
                     >
                         <Eye className="h-4 w-4" />

@@ -121,11 +121,11 @@ export const CustomerList = () => {
             id: 'actions',
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             cell: (info: any) => (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex justify-end items-center gap-2">
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-300 hover:scale-110 hover:-translate-y-0.5 active:scale-95 shadow-sm hover:shadow-md rounded-full"
                         onClick={() => navigate(`/crm/${info.row.original.id}`)}
                     >
                         <Eye className="h-4 w-4" />
@@ -133,7 +133,7 @@ export const CustomerList = () => {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50 transition-all duration-300 hover:scale-110 hover:-translate-y-0.5 active:scale-95 shadow-sm hover:shadow-md rounded-full"
                         onClick={() => {
                             setEditingCustomer(info.row.original);
                             setIsModalOpen(true);
@@ -144,7 +144,7 @@ export const CustomerList = () => {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
+                        className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-all duration-300 hover:scale-110 hover:-translate-y-0.5 active:scale-95 shadow-sm hover:shadow-md rounded-full"
                         onClick={() => handleDelete(info.row.original.id)}
                     >
                         <Trash className="h-4 w-4" />

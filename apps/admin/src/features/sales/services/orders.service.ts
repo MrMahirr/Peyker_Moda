@@ -4,11 +4,13 @@ export interface Order {
     id: string;
     orderNumber: string;
     status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
-    paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+    paymentStatus: 'PENDING' | 'PARTIAL' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+    source: 'POS' | 'ONLINE' | 'PHONE';
     subtotal: number;
-    discount: number;
-    tax: number;
-    total: number;
+    discountAmount: number;
+    shippingCost: number;
+    totalAmount: number;
+    paidAmount: number;
     customer?: {
         id: string;
         firstName: string;
@@ -17,21 +19,23 @@ export interface Order {
         email?: string;
     };
     items?: OrderItem[];
-    shippingAddress?: string;
+    shippingAddress?: any;
     cargoTrackingCode?: string;
     cargoProvider?: string;
     notes?: string;
     createdAt: string;
     updatedAt: string;
+    payments?: any[];
 }
 
 export interface OrderItem {
     id: string;
-    productName: string;
-    variantInfo: string;
     quantity: number;
     unitPrice: number;
+    discount: number;
     total: number;
+    variantId: string;
+    variant?: any;
 }
 
 export interface OrderQueryParams {

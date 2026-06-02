@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { ChevronLeft, Loader2, Package, User, CreditCard, Truck } from 'lucide-react';
 import { ordersService, Order } from '../services/orders.service';
 import Swal from 'sweetalert2';
@@ -89,17 +90,23 @@ export const OrderDetail = () => {
                         <h1 className="text-2xl font-bold text-zinc-900">
                             Sipariş #{order.orderNumber}
                         </h1>
-                        <p className="text-sm text-zinc-500">{formatDate(order.createdAt)}</p>
+                        <p className="text-sm text-zinc-500 flex items-center gap-2">
+                            {formatDate(order.createdAt)}
+                            <span className="text-zinc-300">•</span>
+                            <Badge variant={order.source === 'ONLINE' ? 'info' : 'neutral'} className="text-[10px] px-1.5 py-0">
+                                {order.source === 'POS' ? 'Mağaza Satışı (POS)' : order.source === 'ONLINE' ? 'Web Sitesi Satışı' : order.source || 'Bilinmiyor'}
+                            </Badge>
+                        </p>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {order.status === 'SHIPPED' && order.cargoTrackingCode && (
+                    {order.status === 'SHIPPED' && order.cargoTrackingCode && order.source !== 'POS' && (
                         <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm border border-blue-100">
                             <Truck className="h-4 w-4" />
                             <span>{order.cargoProvider}: {order.cargoTrackingCode}</span>
                         </div>
                     )}
-                    {(order.status === 'PROCESSING' || order.status === 'CONFIRMED') && (
+                    {(order.status === 'PROCESSING' || order.status === 'CONFIRMED') && order.source !== 'POS' && (
                         <Button
                             variant="primary"
                             className="bg-orange-600 hover:bg-orange-700 text-white"
@@ -157,12 +164,25 @@ export const OrderDetail = () => {
                     <select
                         value={order.status}
                         onChange={(e) => handleStatusChange(e.target.value)}
-                        disabled={updating || order.status === 'CANCELLED' || order.status === 'SHIPPED'}
+                        disabled={updating || order.status === 'CANCELLED' || (order.source !== 'POS' && order.status === 'SHIPPED')}
                         className="px-3 py-2 border rounded-lg text-sm"
                     >
-                        {STATUS_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
+                        {order.source === 'POS' ? (
+                            <>
+                                <option value="COMPLETED">Tamamlandı</option>
+                                <option value="RETURNED">İade Edildi</option>
+                                <option value="CANCELLED">İptal Edildi</option>
+                            </>
+                        ) : (
+                            <>
+                                <option value="PENDING">Beklemede</option>
+                                <option value="PROCESSING">Hazırlanıyor</option>
+                                <option value="SHIPPED">Kargoda</option>
+                                <option value="DELIVERED">Teslim Edildi</option>
+                                <option value="CANCELLED">İptal Edildi</option>
+                                <option value="RETURNED">İade Edildi</option>
+                            </>
+                        )}
                     </select>
                 </div>
             </div>
@@ -176,23 +196,27 @@ export const OrderDetail = () => {
                             <h3 className="font-semibold">Ürünler</h3>
                         </div>
                         <div className="space-y-4">
-                            {order.items?.map((item, idx) => (
+                            {order.items?.map((item, idx) => {
+                                const productName = item.variant?.product?.name || 'Ürün';
+                                const variantInfo = [item.variant?.color, item.variant?.size].filter(Boolean).join(' - ') || 'Varyant belirtilmemiş';
+                                return (
                                 <div key={idx} className="flex justify-between items-center py-3 border-b last:border-0">
                                     <div>
-                                        <div className="font-medium">{item.productName}</div>
-                                        <div className="text-sm text-zinc-500">{item.variantInfo}</div>
+                                        <div className="font-medium">{productName}</div>
+                                        <div className="text-sm text-zinc-500">{variantInfo}</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-medium">{formatCurrency(item.total)}</div>
-                                        <div className="text-sm text-zinc-500">{item.quantity} x {formatCurrency(item.unitPrice)}</div>
+                                        <div className="font-medium">{formatCurrency(Number(item.total))}</div>
+                                        <div className="text-sm text-zinc-500">{item.quantity} x {formatCurrency(Number(item.unitPrice))}</div>
                                     </div>
                                 </div>
-                            )) || <p className="text-zinc-500">Ürün bilgisi yok</p>}
+                                );
+                            }) || <p className="text-zinc-500">Ürün bilgisi yok</p>}
                         </div>
                         <div className="mt-4 pt-4 border-t space-y-2">
-                            <div className="flex justify-between"><span>Ara Toplam</span><span>{formatCurrency(order.subtotal)}</span></div>
-                            {order.discount > 0 && <div className="flex justify-between text-emerald-600"><span>İndirim</span><span>-{formatCurrency(order.discount)}</span></div>}
-                            <div className="flex justify-between font-bold text-lg"><span>Toplam</span><span>{formatCurrency(order.total)}</span></div>
+                            <div className="flex justify-between"><span>Ara Toplam</span><span>{formatCurrency(Number(order.subtotal))}</span></div>
+                            {Number(order.discountAmount) > 0 && <div className="flex justify-between text-emerald-600"><span>İndirim</span><span>-{formatCurrency(Number(order.discountAmount))}</span></div>}
+                            <div className="flex justify-between font-bold text-lg"><span>Toplam</span><span>{formatCurrency(Number(order.totalAmount))}</span></div>
                         </div>
                     </Card>
                 </div>
@@ -214,14 +238,20 @@ export const OrderDetail = () => {
                         ) : <p className="text-zinc-500 text-sm">Müşteri bilgisi yok</p>}
                     </Card>
 
-                    {/* Shipping */}
-                    <Card className="p-6">
-                        <div className="flex items-center gap-2 mb-4">
-                            <Truck className="w-5 h-5 text-zinc-600" />
-                            <h3 className="font-semibold">Teslimat Adresi</h3>
-                        </div>
-                        <p className="text-sm text-zinc-600">{order.shippingAddress || 'Adres bilgisi yok'}</p>
-                    </Card>
+                    {/* Shipping - Sadece POS değilse göster */}
+                    {order.source !== 'POS' && (
+                        <Card className="p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Truck className="w-5 h-5 text-zinc-600" />
+                                <h3 className="font-semibold">Teslimat Adresi</h3>
+                            </div>
+                            <p className="text-sm text-zinc-600">
+                                {typeof order.shippingAddress === 'object' && order.shippingAddress !== null
+                                    ? `${(order.shippingAddress as any).address || ''} ${(order.shippingAddress as any).district || ''}/${(order.shippingAddress as any).city || ''}`.trim() || 'Adres bilgisi yok'
+                                    : order.shippingAddress || 'Adres bilgisi yok'}
+                            </p>
+                        </Card>
+                    )}
 
                     {/* Payment */}
                     <Card className="p-6">
@@ -229,11 +259,23 @@ export const OrderDetail = () => {
                             <CreditCard className="w-5 h-5 text-zinc-600" />
                             <h3 className="font-semibold">Ödeme</h3>
                         </div>
-                        <p className="text-sm">
-                            Durum: <span className={`font-medium ${order.paymentStatus === 'PAID' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                {order.paymentStatus === 'PAID' ? 'Ödendi' : 'Bekliyor'}
-                            </span>
-                        </p>
+                        <div className="space-y-2">
+                            <p className="text-sm">
+                                Durum: <span className={`font-medium ${order.paymentStatus === 'COMPLETED' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                    {order.paymentStatus === 'COMPLETED' ? (order.source === 'POS' ? 'Tahsil Edildi' : 'Ödendi') : order.paymentStatus === 'PARTIAL' ? 'Kısmi Ödeme' : 'Bekliyor'}
+                                </span>
+                            </p>
+                            {order.payments && order.payments.length > 0 && (
+                                <p className="text-sm">
+                                    Yöntem: <span className="font-medium text-zinc-700">
+                                        {order.payments[0].method === 'CASH' ? 'Nakit' :
+                                         order.payments[0].method === 'CREDIT_CARD' ? 'Kredi Kartı' :
+                                         order.payments[0].method === 'DEBIT_CARD' ? 'Banka Kartı' :
+                                         order.payments[0].method === 'BANK_TRANSFER' ? 'Havale/EFT' : 'Diğer'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
                     </Card>
                 </div>
             </div>

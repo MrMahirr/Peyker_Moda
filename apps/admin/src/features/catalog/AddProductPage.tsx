@@ -21,6 +21,7 @@ const productSchema = z.object({
     costPrice: z.coerce.number().min(0, 'Maliyet 0 veya büyük olmalıdır').optional(),
     manageStock: z.boolean().default(true),
     hasVariants: z.boolean().default(false),
+    stock: z.coerce.number().min(0).optional(),
     options: z.array(z.object({
         name: z.string(),
         values: z.array(z.string())
@@ -33,7 +34,7 @@ const productSchema = z.object({
         color: z.string().optional(),
         size: z.string().optional()
     })).optional(),
-    images: z.array(z.string()).optional(),
+    images: z.array(z.any()).optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -71,6 +72,7 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
             sku: '',
             price: 0,
             costPrice: 0,
+            stock: 0,
             manageStock: true,
             hasVariants: false,
             options: [],
@@ -94,6 +96,7 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
                     sku: product.sku,
                     price: product.basePrice,
                     costPrice: 0,
+                    stock: product.variants?.length === 1 ? product.variants[0].stock : (product.totalStock || 0),
                     manageStock: true,
                     hasVariants: (product.variants?.length || 0) > 1,
                     images: product.images || [],
@@ -154,7 +157,7 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
                 productData.variants = [{
                     sku: `${data.sku}-STD`,
                     price: data.price,
-                    stock: 100,
+                    stock: Number.isFinite(data.stock) ? Math.max(0, Math.round(Number(data.stock))) : 0,
                 }];
             }
 
@@ -303,6 +306,7 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
                         <ImageUpload
                             value={watch('images')}
                             onChange={(urls) => setValue('images', urls)}
+                            maxFiles={15}
                             className="w-full"
                         />
                     </div>

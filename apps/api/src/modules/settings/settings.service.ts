@@ -16,6 +16,8 @@ const SETTING_KEYS = [
   'receiptPhone',
   'receiptTaxRate',
   'receiptShowLogo',
+  'storeLogo',
+  'storeCoverPhoto',
 ] as const;
 
 const DEFAULT_SETTINGS = {
@@ -32,6 +34,8 @@ const DEFAULT_SETTINGS = {
   receiptPhone: '+90 555 123 4567',
   receiptTaxRate: 18,
   receiptShowLogo: true,
+  storeLogo: '',
+  storeCoverPhoto: '',
 };
 
 @Injectable()
@@ -86,6 +90,8 @@ export class SettingsService {
         map.get('receiptShowLogo')?.value,
         DEFAULT_SETTINGS.receiptShowLogo,
       ),
+      storeLogo: map.get('storeLogo')?.value ?? DEFAULT_SETTINGS.storeLogo,
+      storeCoverPhoto: map.get('storeCoverPhoto')?.value ?? DEFAULT_SETTINGS.storeCoverPhoto,
       createdAt,
       updatedAt,
     };
@@ -107,6 +113,8 @@ export class SettingsService {
     if (dto.receiptPhone !== undefined) entries.push(['receiptPhone', dto.receiptPhone]);
     if (dto.receiptTaxRate !== undefined) entries.push(['receiptTaxRate', String(dto.receiptTaxRate)]);
     if (dto.receiptShowLogo !== undefined) entries.push(['receiptShowLogo', String(dto.receiptShowLogo)]);
+    if (dto.storeLogo !== undefined) entries.push(['storeLogo', dto.storeLogo]);
+    if (dto.storeCoverPhoto !== undefined) entries.push(['storeCoverPhoto', dto.storeCoverPhoto]);
 
     await Promise.all(
       entries.map(([key, value]) =>

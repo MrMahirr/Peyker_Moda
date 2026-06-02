@@ -69,4 +69,14 @@ export class UpdateSettingsDto {
   @IsBoolean()
   @IsOptional()
   receiptShowLogo?: boolean;
+
+  @ApiPropertyOptional({ example: 'logo.png' })
+  @IsString()
+  @IsOptional()
+  storeLogo?: string;
+
+  @ApiPropertyOptional({ example: 'cover.png' })
+  @IsString()
+  @IsOptional()
+  storeCoverPhoto?: string;
 }

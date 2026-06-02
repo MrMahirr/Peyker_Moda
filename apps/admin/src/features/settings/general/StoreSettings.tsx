@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ImageUpload } from '@/components/shared/ImageUpload';
@@ -12,6 +12,8 @@ interface StoreSettingsForm {
     storeAddress: string;
     storePhone: string;
     storeEmail: string;
+    storeLogo: any[];
+    storeCoverPhoto: any[];
 }
 
 export const StoreSettings = () => {
@@ -20,6 +22,8 @@ export const StoreSettings = () => {
         storeAddress: '',
         storePhone: '',
         storeEmail: '',
+        storeLogo: [],
+        storeCoverPhoto: [],
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -36,6 +40,8 @@ export const StoreSettings = () => {
                         storeAddress: data.storeAddress || '',
                         storePhone: data.storePhone || '',
                         storeEmail: data.storeEmail || '',
+                        storeLogo: data.storeLogo ? [data.storeLogo] : [],
+                        storeCoverPhoto: data.storeCoverPhoto ? [data.storeCoverPhoto] : [],
                     });
                 }
             } catch (err) {
@@ -57,17 +63,27 @@ export const StoreSettings = () => {
     const handleSave = async () => {
         setSaving(true);
         try {
+            const extractUrl = (images: any[]) => {
+                if (!images || images.length === 0) return '';
+                const img = images[0];
+                return typeof img === 'string' ? img : img.url || '';
+            };
+
             const updated = await settingsService.updateSettings({
                 storeName: form.storeName,
                 storeAddress: form.storeAddress,
                 storePhone: form.storePhone,
                 storeEmail: form.storeEmail,
+                storeLogo: extractUrl(form.storeLogo),
+                storeCoverPhoto: extractUrl(form.storeCoverPhoto),
             });
             setForm({
                 storeName: updated.storeName || '',
                 storeAddress: updated.storeAddress || '',
                 storePhone: updated.storePhone || '',
                 storeEmail: updated.storeEmail || '',
+                storeLogo: updated.storeLogo ? [updated.storeLogo] : [],
+                storeCoverPhoto: updated.storeCoverPhoto ? [updated.storeCoverPhoto] : [],
             });
             toast.success('Ayarlar kaydedildi.', { className: 'font-medium' });
         } catch (err) {
@@ -111,10 +127,27 @@ export const StoreSettings = () => {
                         />
                     </div>
 
-                    <div className="space-y-3">
-                        <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-wide">Magaza Logosu</label>
-                        <div className="w-full max-w-sm">
-                            <ImageUpload onChange={() => { }} value={[]} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                            <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-wide">Magaza Logosu</label>
+                            <div className="w-full">
+                                <ImageUpload 
+                                    maxFiles={1} 
+                                    value={form.storeLogo} 
+                                    onChange={(val) => setForm(prev => ({ ...prev, storeLogo: val }))} 
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-wide">Magaza Kapak Fotografi</label>
+                            <div className="w-full">
+                                <ImageUpload 
+                                    maxFiles={1} 
+                                    value={form.storeCoverPhoto} 
+                                    onChange={(val) => setForm(prev => ({ ...prev, storeCoverPhoto: val }))} 
+                                />
+                            </div>
                         </div>
                     </div>
 

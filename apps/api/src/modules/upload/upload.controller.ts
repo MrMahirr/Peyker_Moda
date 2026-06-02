@@ -78,8 +78,8 @@ export class UploadController {
 
   @Post('multiple')
   @Roles('admin', 'manager', 'staff')
-  @UseInterceptors(FilesInterceptor('files', 10, multerOptions))
-  @ApiOperation({ summary: 'Coklu dosya yukle (Maks 10)' })
+  @UseInterceptors(FilesInterceptor('files', 15, multerOptions))
+  @ApiOperation({ summary: 'Coklu dosya yukle (Maks 15)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {

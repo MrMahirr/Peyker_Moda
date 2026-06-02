@@ -1,4 +1,4 @@
-﻿import api from '@/lib/axios';
+import api from '@/lib/axios';
 
 export interface StoreSettings {
     id: string;
@@ -15,6 +15,8 @@ export interface StoreSettings {
     receiptPhone: string;
     receiptTaxRate: number;
     receiptShowLogo: boolean;
+    storeLogo?: string;
+    storeCoverPhoto?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -33,6 +35,8 @@ export interface UpdateSettingsDto {
     receiptPhone?: string;
     receiptTaxRate?: number;
     receiptShowLogo?: boolean;
+    storeLogo?: string;
+    storeCoverPhoto?: string;
 }
 
 export const settingsService = {
@@ -58,6 +62,8 @@ export const settingsService = {
                 receiptPhone: '+90 555 123 4567',
                 receiptTaxRate: 18,
                 receiptShowLogo: true,
+                storeLogo: '',
+                storeCoverPhoto: '',
                 createdAt: now,
                 updatedAt: now,
             };

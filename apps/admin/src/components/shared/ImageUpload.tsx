@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '../../lib/utils';
-import { Upload, X, Loader2 } from 'lucide-react';
+import { Upload, X, Loader2, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { uploadService } from '../../services/upload.service';
 
@@ -75,6 +75,15 @@ export function ImageUpload({
         }
     };
 
+    const makeCoverImage = (indexToPromote: number) => {
+        if (indexToPromote === 0) return;
+        const updated = [...previews];
+        const item = updated.splice(indexToPromote, 1)[0];
+        updated.unshift(item);
+        setPreviews(updated);
+        onChange?.(updated);
+    };
+
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
@@ -121,19 +130,41 @@ export function ImageUpload({
                         const imgUrl = item?.url || item;
                         return (
                         <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-zinc-200">
-                            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {index === 0 && maxFiles > 1 && (
+                                <div className="absolute top-2 left-2 z-10 pointer-events-none">
+                                    <span className="bg-indigo-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                                        Vitrin
+                                    </span>
+                                </div>
+                            )}
+                            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
                                 <Button
                                     type="button"
                                     variant="destructive"
                                     size="sm"
-                                    className="h-6 w-6 p-0"
+                                    className="h-7 w-7 p-0 rounded-full shadow-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         removeImage(index);
                                     }}
                                 >
-                                    <X className="h-3 w-3" />
+                                    <X className="h-3.5 w-3.5" />
                                 </Button>
+                                {index > 0 && maxFiles > 1 && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 w-7 p-0 rounded-full shadow-sm bg-white/90 hover:bg-white text-indigo-600 border-indigo-100"
+                                        title="Vitrin Görseli Yap"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            makeCoverImage(index);
+                                        }}
+                                    >
+                                        <Star className="h-3.5 w-3.5 fill-indigo-600" />
+                                    </Button>
+                                )}
                             </div>
                             <img
                                 src={imgUrl}

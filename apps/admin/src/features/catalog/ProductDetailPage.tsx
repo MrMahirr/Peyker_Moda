@@ -22,11 +22,13 @@ const formatDate = (date?: string) => {
     });
 };
 
-const resolveImageUrl = (src?: string) => {
+const resolveImageUrl = (src?: any) => {
     if (!src) return null;
-    if (src.startsWith('http')) return src;
+    const urlStr = typeof src === 'string' ? src : src.url;
+    if (!urlStr) return null;
+    if (urlStr.startsWith('http')) return urlStr;
     const base = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000/api';
-    return `${base}/uploads/${src}`;
+    return `${base}/uploads/${urlStr}`;
 };
 
 const formatVariantLabel = (variant: ProductVariant) => {

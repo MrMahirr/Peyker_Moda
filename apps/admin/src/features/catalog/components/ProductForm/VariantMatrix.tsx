@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Plus, Trash, X } from 'lucide-react';
+import { Controller } from 'react-hook-form';
+import { StockAdjuster } from './StockAdjuster';
 
 interface VariantMatrixProps {
     form: UseFormReturn<any>;
@@ -15,7 +17,7 @@ interface ColorGroup {
 }
 
 export const VariantMatrix = ({ form }: VariantMatrixProps) => {
-    const { register, watch, setValue, getValues } = form;
+    const { register, watch, setValue, getValues, control, formState: { defaultValues } } = form;
 
     const basePrice = watch("price");
     const baseSku = watch("sku");
@@ -273,11 +275,18 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                                                 className="h-9 text-sm"
                                             />
                                         </td>
-                                        <td className="p-3">
-                                            <Input
-                                                type="number"
-                                                {...register(`variants.${index}.stock`)}
-                                                className="h-9 text-sm"
+                                        <td className="p-3 min-w-[220px]">
+                                            <Controller
+                                                name={`variants.${index}.stock`}
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <StockAdjuster
+                                                        currentStock={Number(defaultValues?.variants?.[index]?.stock || 0)}
+                                                        value={field.value}
+                                                        onChange={field.onChange}
+                                                        isVariant={true}
+                                                    />
+                                                )}
                                             />
                                         </td>
                                     </tr>

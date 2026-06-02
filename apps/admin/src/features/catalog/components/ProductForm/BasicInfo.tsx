@@ -1,4 +1,4 @@
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
@@ -6,13 +6,14 @@ import { Card } from '@/components/ui/Card';
 import { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { categoriesService } from '../../services/categories.service';
+import { StockAdjuster } from './StockAdjuster';
 
 interface BasicInfoProps {
     form: UseFormReturn<any>;
 }
 
 export const BasicInfo = ({ form }: BasicInfoProps) => {
-    const { register, formState: { errors } } = form;
+    const { register, control, formState: { errors, defaultValues } } = form;
     const [categories, setCategories] = useState<{label: string, value: string}[]>([]);
 
     useEffect(() => {
@@ -121,6 +122,25 @@ export const BasicInfo = ({ form }: BasicInfoProps) => {
                         />
                         <label htmlFor="hasVariants" className="text-sm font-medium text-zinc-700">Bu ürünün renk/beden gibi varyantları var</label>
                     </div>
+
+                    {form.watch('manageStock') && !form.watch('hasVariants') && (
+                        <div className="pt-6 mt-6 border-t border-zinc-100">
+                            <Controller
+                                name="stock"
+                                control={control}
+                                render={({ field }) => (
+                                    <StockAdjuster
+                                        currentStock={Number(defaultValues?.stock || 0)}
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                )}
+                            />
+                            {errors.stock?.message && (
+                                <p className="text-xs text-red-600 mt-1.5">{errors.stock.message as string}</p>
+                            )}
+                        </div>
+                    )}
                 </div>
             </Card>
         </div>

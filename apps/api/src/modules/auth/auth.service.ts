@@ -128,7 +128,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      expiresIn: 900, // 15 dakika (saniye cinsinden)
+      expiresIn: 86400, // 24 saat (saniye cinsinden)
     };
   }
 

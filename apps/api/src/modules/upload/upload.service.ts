@@ -1,12 +1,12 @@
-import { Injectable, Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadBucketCommand, CreateBucketCommand, GetBucketPolicyCommand, PutBucketPolicyCommand } from '@aws-sdk/client-s3';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as path from 'path';
 import * as fs from 'fs';
 
 @Injectable()
-export class UploadService {
+export class UploadService implements OnModuleInit {
     private readonly logger = new Logger(UploadService.name);
     private readonly s3Client: S3Client;
     private readonly bucketName: string;
@@ -30,6 +30,58 @@ export class UploadService {
                 secretAccessKey: this.configService.get<string>('S3_SECRET_KEY', 'minioadmin'),
             },
         });
+    }
+
+    /**
+     * Uygulama başlarken Bucket var mı diye kontrol et, yoksa oluştur ve Public Read izni ver
+     */
+    async onModuleInit() {
+        try {
+            // Bucket varlığını kontrol et
+            try {
+                await this.s3Client.send(new HeadBucketCommand({ Bucket: this.bucketName }));
+                this.logger.log(`S3 Bucket '${this.bucketName}' mevcut.`);
+            } catch (error: any) {
+                if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+                    this.logger.log(`S3 Bucket '${this.bucketName}' bulunamadı. Oluşturuluyor...`);
+                    await this.s3Client.send(new CreateBucketCommand({ Bucket: this.bucketName }));
+                    this.logger.log(`S3 Bucket '${this.bucketName}' başarıyla oluşturuldu.`);
+                } else {
+                    throw error;
+                }
+            }
+
+            // Public Read Policy kontrolü
+            try {
+                await this.s3Client.send(new GetBucketPolicyCommand({ Bucket: this.bucketName }));
+            } catch (error: any) {
+                if (error.name === 'NoSuchBucketPolicy' || error.$metadata?.httpStatusCode === 404) {
+                    this.logger.log(`S3 Bucket '${this.bucketName}' için Public Read policy ayarlanıyor...`);
+                    
+                    const policy = JSON.stringify({
+                        Version: '2012-10-17',
+                        Statement: [
+                            {
+                                Effect: 'Allow',
+                                Principal: '*',
+                                Action: ['s3:GetObject'],
+                                Resource: [`arn:aws:s3:::${this.bucketName}/*`]
+                            }
+                        ]
+                    });
+
+                    await this.s3Client.send(new PutBucketPolicyCommand({ 
+                        Bucket: this.bucketName, 
+                        Policy: policy 
+                    }));
+                    this.logger.log(`S3 Bucket '${this.bucketName}' için Public Read policy başarıyla uygulandı.`);
+                } else {
+                    this.logger.warn(`Bucket policy kontrolü sırasında hata: ${error.message}`);
+                }
+            }
+        } catch (error: any) {
+            this.logger.error(`MinIO/S3 başlatma hatası: ${error.message}`, error.stack);
+        }
     }
 
     /**

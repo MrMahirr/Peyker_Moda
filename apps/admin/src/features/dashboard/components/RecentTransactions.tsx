@@ -44,14 +44,14 @@ const getStatusLabel = (status: string) => {
     return labels[status] || status;
 };
 
-export const RecentTransactions = () => {
+export const RecentTransactions = ({ dateRange }: { dateRange?: { startDate: string, endDate: string } }) => {
     const [transactions, setTransactions] = useState<OrderData[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const data = await dashboardService.getRecentOrders(5);
+                const data = await dashboardService.getRecentOrders(5, dateRange?.startDate, dateRange?.endDate);
                 setTransactions(data);
             } catch (err) {
                 console.error('Failed to fetch recent transactions', err);
@@ -60,7 +60,7 @@ export const RecentTransactions = () => {
             }
         };
         fetchOrders();
-    }, []);
+    }, [dateRange?.startDate, dateRange?.endDate]);
     return (
         <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden">
             <div className="px-6 py-5 flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50">

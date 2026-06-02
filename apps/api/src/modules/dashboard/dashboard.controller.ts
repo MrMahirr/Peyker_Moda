@@ -40,8 +40,8 @@ export class DashboardController {
     @Get('top-products')
     @Roles('admin', 'manager')
     @ApiOperation({ summary: 'En çok satan ürünler' })
-    async getTopProducts(@Query('limit') limit?: number) {
-        return this.dashboardService.getTopProducts(limit);
+    async getTopProducts(@Query() query: DashboardQueryDto, @Query('limit') limit?: number) {
+        return this.dashboardService.getTopProducts(query, limit);
     }
 
     @Get('low-stock')
@@ -57,8 +57,8 @@ export class DashboardController {
     @Get('recent-orders')
     @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Son siparişler' })
-    async getRecentOrders(@Query('limit') limit?: number) {
-        return this.dashboardService.getRecentOrders(limit);
+    async getRecentOrders(@Query() query: DashboardQueryDto, @Query('limit') limit?: number) {
+        return this.dashboardService.getRecentOrders(query, limit);
     }
 
     @Get('order-status')

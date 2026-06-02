@@ -51,13 +51,21 @@ export const dashboardService = {
         return response.data.data;
     },
 
-    async getSalesChart(groupBy: 'day' | 'week' | 'month' = 'day'): Promise<SalesChartData> {
-        const response = await api.get(`/dashboard/sales-chart?groupBy=${groupBy}`);
+    async getSalesChart(groupBy: 'day' | 'week' | 'month' = 'day', startDate?: string, endDate?: string): Promise<SalesChartData> {
+        const params = new URLSearchParams();
+        params.append('groupBy', groupBy);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        const response = await api.get(`/dashboard/sales-chart?${params.toString()}`);
         return response.data.data;
     },
 
-    async getTopProducts(limit = 10): Promise<TopProduct[]> {
-        const response = await api.get(`/dashboard/top-products?limit=${limit}`);
+    async getTopProducts(limit = 10, startDate?: string, endDate?: string): Promise<TopProduct[]> {
+        const params = new URLSearchParams();
+        params.append('limit', String(limit));
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        const response = await api.get(`/dashboard/top-products?${params.toString()}`);
         return response.data.data;
     },
 
@@ -66,8 +74,12 @@ export const dashboardService = {
         return response.data.data;
     },
 
-    async getRecentOrders(limit = 10) {
-        const response = await api.get(`/dashboard/recent-orders?limit=${limit}`);
+    async getRecentOrders(limit = 10, startDate?: string, endDate?: string) {
+        const params = new URLSearchParams();
+        params.append('limit', String(limit));
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        const response = await api.get(`/dashboard/recent-orders?${params.toString()}`);
         return response.data.data;
     },
 

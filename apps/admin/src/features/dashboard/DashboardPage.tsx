@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { StatCard } from './components/StatCard';
 import { SalesChart } from './components/SalesChart';
 import { InventoryAlerts } from './components/InventoryAlerts';
@@ -7,6 +7,8 @@ import { Banknote, ShoppingBag, Users, TrendingUp, Loader2, Download, Calendar }
 import { dashboardService, DashboardSummary } from './services/dashboard.service';
 import { Button } from '@/components/ui/Button';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { Select } from '@/components/ui/Select';
+import { Input } from '@/components/ui/Input';
 
 const formatCurrency = (value: number) => {
     return '₺' + new Intl.NumberFormat('tr-TR', { style: 'decimal' }).format(value);
@@ -16,10 +18,31 @@ export const DashboardPage = () => {
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState<string>('');
+    const [dateFilterType, setDateFilterType] = useState('this_week');
+    const [customDates, setCustomDates] = useState({ startDate: '', endDate: '' });
+
+    const dateRange = useMemo(() => {
+        const now = new Date();
+        let startDate = '';
+        let endDate = '';
+        if (dateFilterType === 'this_week') {
+            const firstDay = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)));
+            startDate = firstDay.toISOString().split('T')[0];
+            endDate = new Date().toISOString().split('T')[0];
+        } else if (dateFilterType === 'this_month') {
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            startDate = firstDay.toISOString().split('T')[0];
+            endDate = new Date().toISOString().split('T')[0];
+        } else if (dateFilterType === 'custom') {
+            startDate = customDates.startDate;
+            endDate = customDates.endDate;
+        }
+        return { startDate, endDate };
+    }, [dateFilterType, customDates]);
 
     const fetchData = useCallback(async () => {
         try {
-            const data = await dashboardService.getSummary();
+            const data = await dashboardService.getSummary(dateRange.startDate, dateRange.endDate);
             setSummary(data);
             setLastUpdate(new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }));
         } catch (err) {
@@ -62,9 +85,35 @@ export const DashboardPage = () => {
                 subtitle={`Mağazanızın bugünkü performansı. Son güncellenme: ${lastUpdate}`}
                 actions={
                     <>
-                        <Button variant="secondary" className="bg-white" icon={<Calendar className="w-4 h-4" />}>
-                            Bu Hafta
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            {dateFilterType === 'custom' && (
+                                <div className="flex items-center gap-2">
+                                    <Input 
+                                        type="date" 
+                                        value={customDates.startDate} 
+                                        onChange={(e) => setCustomDates(prev => ({ ...prev, startDate: e.target.value }))}
+                                        className="h-10 text-sm"
+                                    />
+                                    <span className="text-zinc-400">-</span>
+                                    <Input 
+                                        type="date" 
+                                        value={customDates.endDate} 
+                                        onChange={(e) => setCustomDates(prev => ({ ...prev, endDate: e.target.value }))}
+                                        className="h-10 text-sm"
+                                    />
+                                </div>
+                            )}
+                            <Select 
+                                value={dateFilterType}
+                                onChange={(e) => setDateFilterType(e.target.value)}
+                                className="w-36"
+                                options={[
+                                    { value: 'this_week', label: 'Bu Hafta' },
+                                    { value: 'this_month', label: 'Bu Ay' },
+                                    { value: 'custom', label: 'Özel Tarih' }
+                                ]}
+                            />
+                        </div>
                         <Button variant="primary" className="shadow-md" icon={<Download className="w-4 h-4" />}>
                             Rapor İndir
                         </Button>
@@ -110,11 +159,11 @@ export const DashboardPage = () => {
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <SalesChart />
+                <SalesChart dateRange={dateRange} />
                 <InventoryAlerts />
             </div>
 
-            <RecentTransactions />
+            <RecentTransactions dateRange={dateRange} />
         </div>
     );
 };

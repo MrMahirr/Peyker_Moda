@@ -3,14 +3,14 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { dashboardService } from '../services/dashboard.service';
 import { Loader2 } from 'lucide-react';
 
-export const SalesChart = () => {
+export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, endDate: string } }) => {
     const [data, setData] = useState<{ name: string; gelir: number; gider: number }[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchChart = async () => {
             try {
-                const res = await dashboardService.getSalesChart('day');
+                const res = await dashboardService.getSalesChart('day', dateRange?.startDate, dateRange?.endDate);
                 const chartData = res.labels.map((label, idx) => ({
                     name: label,
                     gelir: res.data[idx],
@@ -24,7 +24,7 @@ export const SalesChart = () => {
             }
         };
         fetchChart();
-    }, []);
+    }, [dateRange?.startDate, dateRange?.endDate]);
 
     return (
         <div className="lg:col-span-2 bg-surface rounded-xl border border-zinc-200/80 flex flex-col">

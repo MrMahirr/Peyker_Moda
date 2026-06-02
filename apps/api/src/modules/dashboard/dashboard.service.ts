@@ -154,12 +154,19 @@ export class DashboardService {
     /**
      * En çok satan ürünler
      */
-    async getTopProducts(limit = 10) {
+    async getTopProducts(query: DashboardQueryDto, limit = 10) {
+        const dateFilter = this.getDateFilter(query);
         const topProducts = await this.prisma.orderItem.groupBy({
             by: ['variantId'],
+            where: {
+                order: {
+                    createdAt: dateFilter,
+                    status: { not: OrderStatus.CANCELLED },
+                }
+            },
             _sum: { quantity: true, total: true },
             orderBy: { _sum: { quantity: 'desc' } },
-            take: limit,
+            take: limit ? Number(limit) : 10,
         });
 
         // Ürün detaylarını getir
@@ -215,9 +222,13 @@ export class DashboardService {
     /**
      * Son siparişler
      */
-    async getRecentOrders(limit = 10) {
+    async getRecentOrders(query: DashboardQueryDto, limit = 10) {
+        const dateFilter = this.getDateFilter(query);
         const orders = await this.prisma.order.findMany({
-            take: limit,
+            where: {
+                createdAt: dateFilter,
+            },
+            take: limit ? Number(limit) : 10,
             orderBy: { createdAt: 'desc' },
             include: {
                 customer: {

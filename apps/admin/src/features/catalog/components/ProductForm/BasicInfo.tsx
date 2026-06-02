@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { useState, useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { categoriesService } from '../../services/categories.service';
 
 interface BasicInfoProps {
@@ -25,6 +26,12 @@ export const BasicInfo = ({ form }: BasicInfoProps) => {
         }
         fetchCategories();
     }, []);
+
+    const generateSku = () => {
+        // Örn: PM-A8B9C2
+        const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
+        form.setValue('sku', `PM-${randomStr}`, { shouldValidate: true, shouldDirty: true });
+    };
 
     return (
         <div className="space-y-6">
@@ -61,6 +68,16 @@ export const BasicInfo = ({ form }: BasicInfoProps) => {
                         placeholder="Örn: ELB-001"
                         error={errors.sku?.message as string}
                         {...register('sku')}
+                        suffix={
+                            <button
+                                type="button"
+                                onClick={generateSku}
+                                className="p-1.5 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                                title="Otomatik SKU Oluştur"
+                            >
+                                <RefreshCw className="h-4 w-4" />
+                            </button>
+                        }
                     />
 
                     <Input

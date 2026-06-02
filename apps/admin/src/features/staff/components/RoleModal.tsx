@@ -13,6 +13,7 @@ interface RoleModalProps {
     onClose: () => void;
     permissions: Permission[];
     onSuccess: () => void;
+    initialRole?: any; // Role type
 }
 
 const titleCase = (value: string) =>
@@ -28,7 +29,7 @@ const normalizeRoleKey = (value: string) =>
         .replace(/\s+/g, '-')
         .replace(/[^a-z0-9-]/g, '');
 
-export const RoleModal = ({ isOpen, onClose, permissions, onSuccess }: RoleModalProps) => {
+export const RoleModal = ({ isOpen, onClose, permissions, onSuccess, initialRole }: RoleModalProps) => {
     const [name, setName] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [description, setDescription] = useState('');
@@ -37,12 +38,23 @@ export const RoleModal = ({ isOpen, onClose, permissions, onSuccess }: RoleModal
 
     useEffect(() => {
         if (isOpen) {
-            setName('');
-            setDisplayName('');
-            setDescription('');
-            setSelectedPermissions([]);
+            if (initialRole) {
+                setName(initialRole.name);
+                setDisplayName(initialRole.name);
+                setDescription(initialRole.description || '');
+                const permStrings = initialRole.permissions.map((pid: string) => {
+                    const p = permissions.find((x) => x.id === pid);
+                    return p ? p.name : null;
+                }).filter(Boolean) as string[];
+                setSelectedPermissions(permStrings);
+            } else {
+                setName('');
+                setDisplayName('');
+                setDescription('');
+                setSelectedPermissions([]);
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, initialRole, permissions]);
 
     const permissionGroups = useMemo<PermissionGroup[]>(() => {
         const map = new Map<string, { id: string; label: string }[]>();
@@ -87,17 +99,27 @@ export const RoleModal = ({ isOpen, onClose, permissions, onSuccess }: RoleModal
 
         try {
             setSaving(true);
-            await staffService.createRole({
-                name: normalizedName,
-                displayName: displayName.trim(),
-                description: description.trim() || undefined,
-                permissions: permissionPayload,
-            });
-            toast.success('Yeni rol olusturuldu', { className: 'font-medium' });
+            if (initialRole) {
+                // Sadece izinleri güncelle veya displayName vs.
+                await staffService.updateRole(initialRole.id, {
+                    displayName: displayName.trim(),
+                    description: description.trim() || undefined,
+                });
+                await staffService.assignPermissions(initialRole.id, permissionPayload);
+                toast.success('Rol başarıyla güncellendi', { className: 'font-medium' });
+            } else {
+                await staffService.createRole({
+                    name: normalizedName,
+                    displayName: displayName.trim(),
+                    description: description.trim() || undefined,
+                    permissions: permissionPayload,
+                });
+                toast.success('Yeni rol oluşturuldu', { className: 'font-medium' });
+            }
             onSuccess();
             onClose();
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Rol olusturulamadi', { className: 'font-medium' });
+            toast.error(error.response?.data?.message || 'İşlem başarısız', { className: 'font-medium' });
         } finally {
             setSaving(false);
         }
@@ -108,7 +130,7 @@ export const RoleModal = ({ isOpen, onClose, permissions, onSuccess }: RoleModal
             isOpen={isOpen}
             onClose={onClose}
             size="xl"
-            title="Yeni Rol Ekle"
+            title={initialRole ? "Rolü Düzenle" : "Yeni Rol Ekle"}
             description="Rol detaylarini ve izinlerini belirleyin."
         >
             <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-1">
@@ -118,6 +140,7 @@ export const RoleModal = ({ isOpen, onClose, permissions, onSuccess }: RoleModal
                         placeholder="ornek: editor"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        disabled={!!initialRole} // Düzenlerken anahtar değiştirilemez
                     />
                     <Input
                         label="Rol Adi"

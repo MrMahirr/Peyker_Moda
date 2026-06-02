@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Shield, Plus, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Shield, Plus, Loader2, ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { staffService } from '../services/staff.service';
 import type { Role, Permission } from '../types';
@@ -47,7 +47,18 @@ export const RoleManager = () => {
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingRole, setEditingRole] = useState<Role | undefined>();
     const [expandedRoles, setExpandedRoles] = useState<Record<string, boolean>>({});
+
+    const openCreateModal = () => {
+        setEditingRole(undefined);
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (role: Role) => {
+        setEditingRole(role);
+        setIsModalOpen(true);
+    };
 
     useEffect(() => {
         loadData();
@@ -82,7 +93,7 @@ export const RoleManager = () => {
         <div className="space-y-6 p-6">
             <div className="flex justify-between items-center">
                 <div><h2 className="text-xl font-bold text-zinc-900">Rol & Yetki Yonetimi</h2><p className="text-[13px] text-zinc-500 mt-1">Personel rollerini ve erisim yetkilerini yonetin.</p></div>
-                <Button icon={<Plus className="w-4 h-4" />} className="font-semibold shadow-md" onClick={() => setIsModalOpen(true)}>Yeni Rol</Button>
+                <Button icon={<Plus className="w-4 h-4" />} className="font-semibold shadow-md" onClick={openCreateModal}>Yeni Rol</Button>
             </div>
             
             <div className="grid md:grid-cols-2 gap-4">
@@ -93,7 +104,16 @@ export const RoleManager = () => {
                                 <div className="p-3 bg-red-50 rounded-xl"><Shield className="h-5 w-5 text-red-600" /></div>
                                 <div><h3 className="font-bold text-zinc-900">{role.name}</h3><span className="text-[11px] text-zinc-500">{role.description}</span></div>
                             </div>
-                            {role.isSystem && <Badge variant="neutral">Sistem</Badge>}
+                            <div className="flex items-center gap-2">
+                                {role.isSystem && <Badge variant="neutral">Sistem</Badge>}
+                                <button 
+                                    onClick={() => openEditModal(role)}
+                                    title="Rolü Düzenle"
+                                    className="p-1.5 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                >
+                                    <Edit2 className="h-4 w-4" />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -125,6 +145,7 @@ export const RoleManager = () => {
                 onClose={() => setIsModalOpen(false)}
                 permissions={permissions}
                 onSuccess={loadData}
+                initialRole={editingRole}
             />
         </div>
     );

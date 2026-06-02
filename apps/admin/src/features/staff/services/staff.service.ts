@@ -150,6 +150,7 @@ export const staffService = {
     async createRole(data: RoleInput): Promise<Role> {
         const response = await api.post('/roles', data);
         const role = unwrapObject<ApiRole>(response.data);
+        cachedRoles = null; // Cache'i temizle
         return {
             id: role.id,
             name: role.displayName || role.name,
@@ -162,6 +163,20 @@ export const staffService = {
     async updateRole(id: string, data: Partial<RoleInput>): Promise<Role> {
         const response = await api.patch(`/roles/${id}`, data);
         const role = unwrapObject<ApiRole>(response.data);
+        cachedRoles = null; // Cache'i temizle
+        return {
+            id: role.id,
+            name: role.displayName || role.name,
+            description: role.description || '',
+            permissions: role.permissions?.map((p) => p.id) || [],
+            isSystem: Boolean(role.isSystem),
+        };
+    },
+
+    async assignPermissions(id: string, permissions: { resource: string; action: string }[]): Promise<Role> {
+        const response = await api.put(`/roles/${id}/permissions`, { permissions });
+        const role = unwrapObject<ApiRole>(response.data);
+        cachedRoles = null; // Cache'i temizle
         return {
             id: role.id,
             name: role.displayName || role.name,
@@ -173,6 +188,7 @@ export const staffService = {
 
     async deleteRole(id: string): Promise<void> {
         await api.delete(`/roles/${id}`);
+        cachedRoles = null; // Cache'i temizle
     },
 
     async getAll(): Promise<User[]> {

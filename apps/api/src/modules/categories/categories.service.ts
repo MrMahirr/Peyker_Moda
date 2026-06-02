@@ -38,18 +38,23 @@ export class CategoriesService {
             orderBy: [{ order: 'asc' }, { name: 'asc' }],
             include: query.includeChildren
                 ? {
+                    _count: { select: { products: true } },
                     children: {
                         where: query.isActive !== undefined ? { isActive: query.isActive } : {},
                         orderBy: [{ order: 'asc' }, { name: 'asc' }],
                         include: {
+                            _count: { select: { products: true } },
                             children: {
                                 where: query.isActive !== undefined ? { isActive: query.isActive } : {},
                                 orderBy: [{ order: 'asc' }, { name: 'asc' }],
+                                include: {
+                                    _count: { select: { products: true } },
+                                }
                             },
                         },
                     },
                 }
-                : undefined,
+                : { _count: { select: { products: true } } },
         });
 
         return categories;
@@ -63,13 +68,18 @@ export class CategoriesService {
             where: { parentId: null, isActive: true },
             orderBy: [{ order: 'asc' }, { name: 'asc' }],
             include: {
+                _count: { select: { products: true } },
                 children: {
                     where: { isActive: true },
                     orderBy: [{ order: 'asc' }, { name: 'asc' }],
                     include: {
+                        _count: { select: { products: true } },
                         children: {
                             where: { isActive: true },
                             orderBy: [{ order: 'asc' }, { name: 'asc' }],
+                            include: {
+                                _count: { select: { products: true } },
+                            }
                         },
                     },
                 },

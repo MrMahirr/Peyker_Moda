@@ -33,11 +33,16 @@ export const CategoryList = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const payload = {
+                ...formData,
+                parentId: formData.parentId ? formData.parentId : null,
+            };
+
             if (editingCategory) {
-                await categoriesService.update(editingCategory.id, formData);
+                await categoriesService.update(editingCategory.id, payload);
                 toast.success('Kategori güncellendi');
             } else {
-                await categoriesService.create(formData);
+                await categoriesService.create(payload);
                 toast.success('Kategori oluşturuldu');
             }
             setShowForm(false);
@@ -61,15 +66,15 @@ export const CategoryList = () => {
     };
 
     const handleDelete = async (id: string) => {
-        const result = await showDeleteConfirm('Kategoriyi Sil?', 'Alt kategoriler de silinecek!');
+        const result = await showDeleteConfirm('Kategoriyi Sil?', 'Kategoriyi silmek istediğinize emin misiniz? (Eğer alt kategorisi veya ürünü varsa silinemez)');
         if (result.isConfirmed) {
             try {
                 await categoriesService.delete(id);
                 toast.success('Kategori silindi');
                 fetchCategories();
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Delete error:', err);
-                toast.error('Kategori silinemedi');
+                toast.error(err.response?.data?.message || 'Kategori silinemedi');
             }
         }
     };

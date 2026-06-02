@@ -183,6 +183,13 @@ export class UpdateProductDto {
     @IsUUID('all', { each: true })
     @IsOptional()
     mediaIds?: string[];
+
+    @ApiPropertyOptional({ type: [CreateProductVariantDto], description: 'Ürün Varyantları' })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateProductVariantDto)
+    @IsOptional()
+    variants?: CreateProductVariantDto[];
 }
 
 export class ProductQueryDto {

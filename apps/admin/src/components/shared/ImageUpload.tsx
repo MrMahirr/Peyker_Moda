@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '../../lib/utils';
 import { Upload, X, Loader2 } from 'lucide-react';
@@ -6,8 +6,8 @@ import { Button } from '../ui/Button';
 import { uploadService } from '../../services/upload.service';
 
 interface ImageUploadProps {
-    value?: string[];
-    onChange?: (urls: string[]) => void;
+    value?: any[];
+    onChange?: (items: any[]) => void;
     maxFiles?: number;
     className?: string;
 }
@@ -19,7 +19,13 @@ export function ImageUpload({
     className,
 }: ImageUploadProps) {
     const [loading, setLoading] = useState(false);
-    const [previews, setPreviews] = useState<string[]>(value);
+    const [previews, setPreviews] = useState<any[]>(value);
+
+    useEffect(() => {
+        if (value && JSON.stringify(value) !== JSON.stringify(previews)) {
+            setPreviews(value);
+        }
+    }, [value]);
 
     const onDrop = useCallback(async (acceptedFiles: File[]) => {
         if (acceptedFiles.length === 0) return;
@@ -29,11 +35,13 @@ export function ImageUpload({
             // Upload files to backend
             const results = await uploadService.uploadMultipleFiles(acceptedFiles, 'products');
 
-            // Get URLs from response
-            const newUrls = results.map(result => result.url);
+            // Get items from response safely
+            const newItems = Array.isArray(results) 
+                ? results.filter(Boolean)
+                : [];
 
             // Update state
-            const updatedPreviews = [...previews, ...newUrls].slice(0, maxFiles);
+            const updatedPreviews = [...previews, ...newItems].slice(0, maxFiles);
             setPreviews(updatedPreviews);
             onChange?.(updatedPreviews);
         } catch (error) {
@@ -45,7 +53,7 @@ export function ImageUpload({
     }, [previews, maxFiles, onChange]);
 
     const removeImage = async (indexToRemove: number) => {
-        const urlToRemove = previews[indexToRemove];
+        const itemToRemove = previews[indexToRemove];
 
         // Optimistic update
         const updated = previews.filter((_, index) => index !== indexToRemove);
@@ -53,11 +61,14 @@ export function ImageUpload({
         onChange?.(updated);
 
         // Delete from server (optional, but good for cleanup)
-        // Extract filename from URL
+        // Extract filename from URL or key
         try {
-            const filename = urlToRemove.split('/').pop();
-            if (filename) {
-                await uploadService.deleteFile(filename, 'products');
+            const urlString = itemToRemove?.url || itemToRemove;
+            if (typeof urlString === 'string') {
+                const filename = urlString.split('/').pop();
+                if (filename) {
+                    await uploadService.deleteFile(filename, 'products');
+                }
             }
         } catch (error) {
             console.error('Delete failed:', error);
@@ -106,7 +117,9 @@ export function ImageUpload({
 
             {previews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {previews.map((url, index) => (
+                    {previews.map((item, index) => {
+                        const imgUrl = item?.url || item;
+                        return (
                         <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-zinc-200">
                             <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
@@ -123,12 +136,12 @@ export function ImageUpload({
                                 </Button>
                             </div>
                             <img
-                                src={url}
+                                src={imgUrl}
                                 alt="Upload preview"
                                 className="object-cover w-full h-full"
                             />
                         </div>
-                    ))}
+                    )})}
                 </div>
             )}
         </div>

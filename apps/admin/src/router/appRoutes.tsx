@@ -72,6 +72,7 @@ export const AppRoutes = () => {
                 { path: 'inventory', element: <RequireRole allowedRoles={['admin', 'manager']}><InventoryPage /></RequireRole> },
                 { path: 'catalog', element: <RequireRole allowedRoles={['admin', 'manager']}><CatalogPage /></RequireRole> },
                 { path: 'catalog/new', element: <RequireRole allowedRoles={['admin', 'manager']}><AddProductPage /></RequireRole> },
+                { path: 'catalog/:id/edit', element: <RequireRole allowedRoles={['admin', 'manager']}><AddProductPage /></RequireRole> },
                 { path: 'catalog/:id', element: <RequireRole allowedRoles={['admin', 'manager']}><ProductDetailPage /></RequireRole> },
                 { path: 'catalog/categories', element: <RequireRole allowedRoles={['admin', 'manager']}><CategoryList /></RequireRole> },
                 {

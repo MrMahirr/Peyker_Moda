@@ -1,103 +1,99 @@
 import React, { useState, useEffect } from 'react';
-import { UseFormReturn, useFieldArray } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Plus, Trash, X } from 'lucide-react';
 
-// Helper to generate combinations
-const cartesian = (args: any[][]) => {
-    const r: any[][] = [];
-    const max = args.length - 1;
-    function helper(arr: any[], i: number) {
-        for (let j = 0, l = args[i].length; j < l; j++) {
-            const a = arr.slice(0); // clone arr
-            a.push(args[i][j]);
-            if (i === max) r.push(a);
-            else helper(a, i + 1);
-        }
-    }
-    helper([], 0);
-    return r;
-};
-
 interface VariantMatrixProps {
     form: UseFormReturn<any>;
 }
 
-export const VariantMatrix = ({ form }: VariantMatrixProps) => {
-    const { register, control, watch, setValue } = form;
-    const { fields: optionFields, append: appendOption, remove: removeOption } = useFieldArray({
-        control,
-        name: "options"
-    });
+interface ColorGroup {
+    color: string;
+    sizes: string[];
+}
 
-    // We monitor options to regenerate variants
-    const watchedOptions = watch("options");
+export const VariantMatrix = ({ form }: VariantMatrixProps) => {
+    const { register, watch, setValue, getValues } = form;
+
     const basePrice = watch("price");
     const baseSku = watch("sku");
 
-    // Local state for adding new values to an option
-    // Map of optionIndex -> string (inputValue)
-    const [newValues, setNewValues] = useState<Record<number, string>>({});
+    const [colorGroups, setColorGroups] = useState<ColorGroup[]>([]);
+    const [newSizeInputs, setNewSizeInputs] = useState<Record<number, string>>({});
+    const [isInitialized, setIsInitialized] = useState(false);
 
-    const handleAddValue = (e: React.KeyboardEvent, index: number) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const val = newValues[index]?.trim();
-            if (val) {
-                const currentValues = watchedOptions[index].values || [];
-                // update form value
-                const updatedOption = { ...watchedOptions[index], values: [...currentValues, val] };
-                setValue(`options.${index}`, updatedOption);
-                setNewValues(prev => ({ ...prev, [index]: '' }));
+    // Initial load from existing variants (if edit mode)
+    useEffect(() => {
+        if (isInitialized) return;
+        const existingVariants = getValues('variants') || [];
+        if (existingVariants.length > 0) {
+            const groups: Record<string, string[]> = {};
+            existingVariants.forEach((v: any) => {
+                const c = v.color || '';
+                if (!groups[c]) groups[c] = [];
+                if (v.size && !groups[c].includes(v.size)) {
+                    groups[c].push(v.size);
+                }
+            });
+            const loadedGroups = Object.keys(groups).map(c => ({
+                color: c,
+                sizes: groups[c]
+            }));
+            if (loadedGroups.length > 0) {
+                setColorGroups(loadedGroups);
             }
         }
-    };
+        setIsInitialized(true);
+    }, [getValues, isInitialized]);
 
-    const removeValue = (optIndex: number, valIndex: number) => {
-        const currentValues = [...watchedOptions[optIndex].values];
-        currentValues.splice(valIndex, 1);
-        const updatedOption = { ...watchedOptions[optIndex], values: currentValues };
-        setValue(`options.${optIndex}`, updatedOption);
-    };
-
-    // Generate variants effect
+    // Re-generate variants when colorGroups changes
     useEffect(() => {
-        if (!watchedOptions?.length) return;
+        if (!isInitialized) return;
 
-        // Filter valid options (must have values)
-        const validOptions = watchedOptions.filter((o: any) => o.values && o.values.length > 0);
+        let newVariants: any[] = [];
 
-        if (validOptions.length === 0) {
+        if (colorGroups.length === 0) {
             setValue('variants', []);
             return;
         }
 
-        const arraysToCombine = validOptions.map((o: any) => o.values);
-        const combinations = cartesian(arraysToCombine);
-
-        // Generate variant objects
-        const newVariants = combinations.map((combo) => {
-            const name = combo.join(' / ');
-            // Sku generation logic: BASESKU-VAR1-VAR2
-            const suffix = combo.map((c: string) => c.substring(0, 3).toUpperCase()).join('-');
-            const variantSku = `${baseSku}-${suffix}`;
-
-            return {
-                name,
-                sku: variantSku,
-                price: Number(basePrice) || 0,
-                stock: 0,
-                options: combo
-            };
+        colorGroups.forEach(group => {
+            const colorName = group.color.trim() || 'Standart';
+            const colorCode = colorName.substring(0, 3).toUpperCase();
+            
+            if (group.sizes.length === 0) {
+                // Just a color without sizes
+                if (group.color.trim()) {
+                    newVariants.push({
+                        name: colorName,
+                        sku: `${baseSku || 'SKU'}-${colorCode}`,
+                        price: Number(basePrice) || 0,
+                        stock: 0,
+                        color: group.color.trim(),
+                        size: ''
+                    });
+                }
+            } else {
+                // Color + Sizes
+                group.sizes.forEach(size => {
+                    const name = group.color.trim() ? `${colorName} / ${size}` : size;
+                    const suffix = group.color.trim() ? `${colorCode}-${size.toUpperCase()}` : size.toUpperCase();
+                    newVariants.push({
+                        name,
+                        sku: `${baseSku || 'SKU'}-${suffix}`,
+                        price: Number(basePrice) || 0,
+                        stock: 0,
+                        color: group.color.trim(),
+                        size: size
+                    });
+                });
+            }
         });
 
-        // Important: We should preserve existing values (stock/price) if variant already existed
-        const currentVariants = form.getValues('variants') || [];
-
+        const currentVariants = getValues('variants') || [];
         const mergedVariants = newVariants.map((nv: any) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const existing = currentVariants.find((cv: any) => cv.name === nv.name);
             if (existing) {
                 return { ...nv, price: existing.price, stock: existing.stock, sku: existing.sku || nv.sku };
@@ -106,85 +102,143 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
         });
 
         setValue('variants', mergedVariants);
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify(watchedOptions), basePrice, baseSku, setValue]); // Deep compare options
+    }, [colorGroups, basePrice, baseSku]); // We only trigger when colorGroups change
+
+    const handleAddSize = (index: number) => {
+        const val = newSizeInputs[index]?.trim();
+        if (val) {
+            const newGroups = [...colorGroups];
+            if (!newGroups[index].sizes.includes(val)) {
+                newGroups[index].sizes.push(val);
+                setColorGroups(newGroups);
+            }
+            setNewSizeInputs(prev => ({ ...prev, [index]: '' }));
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddSize(index);
+        }
+    };
 
     return (
         <div className="space-y-8">
-            {/* Options Configuration */}
             <Card className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-medium">Varyant Seçenekleri</h3>
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 className="text-lg font-medium text-zinc-900">Renk ve Beden Yapılandırması</h3>
+                        <p className="text-sm text-zinc-500 mt-1">Her bir renk için stokta bulunan bedenleri ayrı ayrı ekleyebilirsiniz.</p>
+                    </div>
                     <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => appendOption({ name: '', values: [] })}
+                        onClick={() => setColorGroups([...colorGroups, { color: '', sizes: [] }])}
                         type="button"
                     >
                         <Plus className="mr-2 h-4 w-4" />
-                        Seçenek Ekle
+                        Renk Ekle
                     </Button>
                 </div>
 
-                {optionFields.length === 0 && (
-                    <p className="text-sm text-center text-zinc-500 py-4 border-2 border-dashed rounded-md">
-                        Henüz seçenek eklenmemiş (Örn: Renk, Beden).
-                    </p>
-                )}
+                {colorGroups.length === 0 ? (
+                    <div className="text-center py-10 border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50/50">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-zinc-100">
+                            <Plus className="w-5 h-5 text-zinc-400" />
+                        </div>
+                        <p className="text-sm font-medium text-zinc-700">Henüz varyant eklenmedi</p>
+                        <p className="text-xs text-zinc-500 mt-1">Farklı renk ve bedenler girmek için yukarıdan "Renk Ekle" butonunu kullanın.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {colorGroups.map((group, groupIdx) => (
+                            <div key={groupIdx} className="bg-white p-5 rounded-xl border border-zinc-200/80 shadow-sm relative group transition-all hover:border-zinc-300">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    type="button"
+                                    className="absolute top-3 right-3 w-8 h-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                                    onClick={() => {
+                                        const newGroups = [...colorGroups];
+                                        newGroups.splice(groupIdx, 1);
+                                        setColorGroups(newGroups);
+                                    }}
+                                    title="Bu Renk Grubunu Sil"
+                                >
+                                    <Trash className="h-4 w-4" />
+                                </Button>
 
-                <div className="space-y-6">
-                    {optionFields.map((field, index) => (
-                        <div key={field.id} className="bg-zinc-50 p-4 rounded-md border border-zinc-200 relative">
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                type="button"
-                                className="absolute top-2 right-2 w-9 h-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => removeOption(index)}
-                            >
-                                <Trash className="h-4 w-4" />
-                            </Button>
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                                    <div className="md:col-span-4">
+                                        <Input
+                                            label="Renk Adı"
+                                            placeholder="Örn: Kırmızı, Lacivert..."
+                                            value={group.color}
+                                            onChange={(e) => {
+                                                const newGroups = [...colorGroups];
+                                                newGroups[groupIdx].color = e.target.value;
+                                                setColorGroups(newGroups);
+                                            }}
+                                            className="bg-zinc-50 focus:bg-white transition-colors"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-8">
+                                        <div className="space-y-3">
+                                            <label className="text-sm font-semibold text-zinc-800">Bu Renge Ait Bedenler</label>
+                                            
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    placeholder="Örn: S, M, L, XL, 38, 40..."
+                                                    value={newSizeInputs[groupIdx] || ''}
+                                                    onChange={(e) => setNewSizeInputs({ ...newSizeInputs, [groupIdx]: e.target.value })}
+                                                    onKeyDown={(e) => handleKeyDown(e, groupIdx)}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="secondary"
+                                                    className="shrink-0"
+                                                    onClick={() => handleAddSize(groupIdx)}
+                                                >
+                                                    Ekle
+                                                </Button>
+                                            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <Input
-                                        label="Seçenek Adı (Örn: Renk)"
-                                        placeholder="Renk, Beden vb."
-                                        {...register(`options.${index}.name` as const)}
-                                    />
-                                </div>
-                                <div className="md:col-span-2">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-zinc-700">Değerler</label>
-                                        <div className="flex flex-wrap gap-2 p-3 bg-white border border-zinc-200 rounded min-h-[42px]">
-                                            {watchedOptions[index]?.values?.map((val: string, vIndex: number) => (
-                                                <span key={vIndex} className="inline-flex items-center px-2 py-1 rounded bg-indigo-50 text-indigo-700 text-sm border border-indigo-100">
-                                                    {val}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeValue(index, vIndex)}
-                                                        className="ml-1 hover:text-indigo-900"
-                                                    >
-                                                        <X className="h-3 w-3" />
-                                                    </button>
-                                                </span>
-                                            ))}
-                                            <input
-                                                type="text"
-                                                className="outline-none bg-transparent text-sm min-w-[100px] flex-1"
-                                                placeholder="Değer yaz ve Enter'a bas..."
-                                                value={newValues[index] || ''}
-                                                onChange={(e) => setNewValues({ ...newValues, [index]: e.target.value })}
-                                                onKeyDown={(e) => handleAddValue(e, index)}
-                                            />
+                                            {group.sizes.length > 0 ? (
+                                                <div className="flex flex-wrap gap-2 p-4 bg-zinc-50 border border-zinc-100 rounded-lg min-h-[56px]">
+                                                    {group.sizes.map((size, sizeIdx) => (
+                                                        <span 
+                                                            key={sizeIdx} 
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-zinc-800 text-sm font-medium border border-zinc-200 shadow-sm hover:border-zinc-300 transition-colors"
+                                                        >
+                                                            {size}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newGroups = [...colorGroups];
+                                                                    newGroups[groupIdx].sizes.splice(sizeIdx, 1);
+                                                                    setColorGroups(newGroups);
+                                                                }}
+                                                                className="text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5 transition-colors"
+                                                            >
+                                                                <X className="h-3.5 w-3.5" />
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-center p-4 bg-zinc-50 border border-zinc-100 border-dashed rounded-lg min-h-[56px] text-sm text-zinc-400">
+                                                    Bu renk için henüz beden eklenmedi.
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </Card>
 
             {/* Generated Variants Table */}
@@ -193,37 +247,37 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                     <h3 className="text-lg font-medium mb-4">Varyant Listesi ({watch('variants')?.length})</h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-zinc-50 text-zinc-700 font-medium">
+                            <thead className="bg-zinc-50 text-zinc-700 font-medium border-y border-zinc-200/80">
                                 <tr>
-                                    <th className="p-3 border-b">Varyant Adı</th>
-                                    <th className="p-3 border-b w-48">SKU</th>
-                                    <th className="p-3 border-b w-32">Fiyat (TL)</th>
-                                    <th className="p-3 border-b w-32">Stok</th>
+                                    <th className="p-3">Varyant (Renk / Beden)</th>
+                                    <th className="p-3 w-48">SKU</th>
+                                    <th className="p-3 w-32">Fiyat (TL)</th>
+                                    <th className="p-3 w-32">Stok</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-100">
                                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                {form.getValues('variants').map((_: any, index: number) => (
-                                    <tr key={index}>
+                                {getValues('variants').map((_: any, index: number) => (
+                                    <tr key={index} className="hover:bg-zinc-50/50 transition-colors">
                                         <td className="p-3 font-medium text-zinc-900">
                                             {watch(`variants.${index}.name`)}
                                         </td>
                                         <td className="p-3">
-                                            <Input {...register(`variants.${index}.sku`)} className="h-8" />
+                                            <Input {...register(`variants.${index}.sku`)} className="h-9 text-sm" />
                                         </td>
                                         <td className="p-3">
                                             <Input
                                                 type="number"
                                                 step="0.01"
                                                 {...register(`variants.${index}.price`)}
-                                                className="h-8"
+                                                className="h-9 text-sm"
                                             />
                                         </td>
                                         <td className="p-3">
                                             <Input
                                                 type="number"
                                                 {...register(`variants.${index}.stock`)}
-                                                className="h-8"
+                                                className="h-9 text-sm"
                                             />
                                         </td>
                                     </tr>

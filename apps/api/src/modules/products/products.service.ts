@@ -195,7 +195,7 @@ export class ProductsService {
           counter++;
       }
 
-      const { price, variants, mediaIds, ...rest } = createProductDto;
+      const { price, comparePrice, variants, mediaIds, ...rest } = createProductDto;
       
       let mediaData: any[] = [];
       if (mediaIds && mediaIds.length > 0) {
@@ -209,6 +209,7 @@ export class ProductsService {
           data: {
               ...rest,
               basePrice: price,
+              salePrice: comparePrice,
               slug: uniqueSlug,
               images: mediaData as any, // Cast to any to bypass Prisma Json strict typing
               variants: variants?.length ? {
@@ -241,8 +242,15 @@ export class ProductsService {
         throw new NotFoundException('Ürün bulunamadı');
       }
 
-      const { mediaIds, ...rest } = updateProductDto;
+      const { mediaIds, variants, price, comparePrice, ...rest } = updateProductDto;
       const data: any = { ...rest };
+
+      if (price !== undefined) {
+          data.basePrice = price;
+      }
+      if (comparePrice !== undefined) {
+          data.salePrice = comparePrice;
+      }
 
       if (updateProductDto.name) {
           const slug = slugify(updateProductDto.name);
@@ -296,6 +304,54 @@ export class ProductsService {
               category: { select: { id: true, name: true } },
           },
       });
+
+      // Varyant güncelleme işlemleri (Upsert / Soft Delete)
+      if (variants) {
+          const currentVariants = await this.prisma.variant.findMany({ where: { productId: id } });
+          const incomingSkus = variants.map(v => v.sku);
+          
+          // Gelen listede olmayanları silmeyi dene, hata alırsan (ilişki varsa) pasif yapıp stoğunu sıfırla
+          const variantsToDelete = currentVariants.filter(v => !incomingSkus.includes(v.sku));
+          for (const v of variantsToDelete) {
+              try {
+                  await this.prisma.variant.delete({ where: { id: v.id } });
+              } catch (e) {
+                  await this.prisma.variant.update({
+                      where: { id: v.id },
+                      data: { isActive: false, stock: 0 }
+                  });
+              }
+          }
+
+          // Yeni gelenleri ekle veya mevcut olanları güncelle
+          for (const v of variants) {
+              const existing = currentVariants.find(cv => cv.sku === v.sku);
+              if (existing) {
+                  await this.prisma.variant.update({
+                      where: { id: existing.id },
+                      data: {
+                          price: v.price ?? existing.price,
+                          stock: v.stock ?? existing.stock,
+                          size: v.size,
+                          color: v.color,
+                          colorCode: v.colorCode,
+                          barcode: v.barcode,
+                          isActive: true
+                      }
+                  });
+              } else {
+                  await this.prisma.variant.create({
+                      data: {
+                          ...v,
+                          productId: id,
+                          price: v.price ?? data.basePrice ?? existingProduct.basePrice,
+                          stock: v.stock ?? 0,
+                          isActive: true
+                      }
+                  });
+              }
+          }
+      }
 
       this.logger.log(`Ürün güncellendi: ${product.name}`);
       return product;

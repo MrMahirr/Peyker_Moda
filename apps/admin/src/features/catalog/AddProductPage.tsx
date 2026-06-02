@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { BasicInfo } from './components/ProductForm/BasicInfo';
 import { VariantMatrix } from './components/ProductForm/VariantMatrix';
 import { ChevronLeft, Save, Loader2, Check } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { productsService } from './services/products.service';
@@ -30,7 +30,8 @@ const productSchema = z.object({
         sku: z.string(),
         price: z.coerce.number(),
         stock: z.coerce.number(),
-        options: z.array(z.string())
+        color: z.string().optional(),
+        size: z.string().optional()
     })).optional(),
     images: z.array(z.string()).optional(),
 });
@@ -55,8 +56,10 @@ const isUuid = (value: string) =>
 
 export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPageProps) => {
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(!!id);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
     const form = useForm<ProductFormInput, unknown, ProductFormData>({
@@ -79,6 +82,39 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
     const { handleSubmit, watch, trigger, setValue } = form;
     const hasVariants = watch('hasVariants');
 
+    useEffect(() => {
+        if (!id) return;
+        const loadProduct = async () => {
+            try {
+                const product = await productsService.getById(id);
+                form.reset({
+                    name: product.name,
+                    description: product.description || '',
+                    category: product.category?.id || '',
+                    sku: product.sku,
+                    price: product.basePrice,
+                    costPrice: 0,
+                    manageStock: true,
+                    hasVariants: (product.variants?.length || 0) > 1,
+                    images: product.images || [],
+                    variants: product.variants?.map(v => ({
+                        name: v.sku,
+                        sku: v.sku,
+                        price: v.price || product.basePrice,
+                        stock: v.stock,
+                        color: v.color || '',
+                        size: v.size || ''
+                    })) || [],
+                });
+            } catch (err) {
+                console.error("Failed to load product", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadProduct();
+    }, [id, form]);
+
     const handleClose = () => {
         if (onClose) {
             onClose();
@@ -91,7 +127,10 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
         setIsSubmitting(true);
         setSubmitError(null);
         try {
-            const mediaIds = (data.images || []).filter((id) => isUuid(id));
+            const mediaIds = (data.images || [])
+                .map((img: any) => typeof img === 'string' ? img : img?.id)
+                .filter((id: any) => typeof id === 'string' && id.length > 10); // Güvenli kontrol (uuid veya fallback)
+            
             const productData: any = {
                 name: data.name,
                 sku: data.sku,
@@ -108,8 +147,8 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
                     sku: v.sku,
                     price: v.price,
                     stock: Number.isFinite(v.stock) ? Math.max(0, Math.round(v.stock)) : 0,
-                    size: v.options?.[0] || undefined,
-                    color: v.options?.[1] || undefined,
+                    size: v.size || undefined,
+                    color: v.color || undefined,
                 }));
             } else if (data.manageStock) {
                 productData.variants = [{
@@ -119,7 +158,11 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
                 }];
             }
 
-            await productsService.create(productData);
+            if (id) {
+                await productsService.update(id, productData);
+            } else {
+                await productsService.create(productData);
+            }
             onSuccess?.();
             handleClose();
         } catch (err: any) {
@@ -159,8 +202,8 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
                         <ChevronLeft className="w-4 h-4" />
                     </button>
                     <div>
-                        <PageHeader title="Yeni Ürün Ekle" />
-                        <p className="text-sm font-medium text-zinc-500">Ürün detaylarını doldurarak kataloğunuza işleyin.</p>
+                        <PageHeader title={id ? "Ürünü Düzenle" : "Yeni Ürün Ekle"} />
+                        <p className="text-sm font-medium text-zinc-500">{id ? "Ürün detaylarını güncelleyin." : "Ürün detaylarını doldurarak kataloğunuza işleyin."}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -212,7 +255,13 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
 
             {/* Content Area */}
             <div className="min-h-[400px]">
-                {submitError && (
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-64">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                ) : (
+                    <>
+                        {submitError && (
                     <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm font-medium rounded-lg border border-red-100">
                         {submitError}
                     </div>
@@ -257,6 +306,8 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
                             className="w-full"
                         />
                     </div>
+                )}
+                </>
                 )}
             </div>
 

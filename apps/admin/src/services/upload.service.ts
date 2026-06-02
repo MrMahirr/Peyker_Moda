@@ -19,7 +19,7 @@ export const uploadService = {
                 'Content-Type': 'multipart/form-data',
             },
         });
-        return response.data;
+        return response.data.data || response.data;
     },
 
     async uploadMultipleFiles(files: File[], folder: string = 'products'): Promise<UploadResult[]> {
@@ -33,7 +33,7 @@ export const uploadService = {
                 'Content-Type': 'multipart/form-data',
             },
         });
-        return response.data;
+        return response.data.data || response.data;
     },
 
     async deleteFile(filename: string, folder: string = 'products'): Promise<boolean> {

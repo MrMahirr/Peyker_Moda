@@ -154,11 +154,11 @@ export const ProductList = () => {
             id: 'actions',
             cell: ({ row }) => {
                 return (
-                    <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-end gap-1.5">
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 text-zinc-400 hover:text-primary hover:bg-zinc-50"
+                            className="h-8 w-8 p-0 text-zinc-400 hover:text-primary hover:bg-zinc-50 transition-all hover:scale-110 active:scale-95"
                             onClick={(event) => {
                                 event.stopPropagation();
                                 navigate(`/catalog/${row.original.id}`);
@@ -169,7 +169,7 @@ export const ProductList = () => {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
+                            className="h-8 w-8 p-0 text-zinc-400 hover:text-amber-600 hover:bg-amber-50 transition-all hover:scale-110 active:scale-95"
                             onClick={(event) => {
                                 event.stopPropagation();
                                 navigate(`/catalog/${row.original.id}/edit`);
@@ -180,7 +180,7 @@ export const ProductList = () => {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
+                            className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-all hover:scale-110 active:scale-95"
                             onClick={(event) => {
                                 event.stopPropagation();
                                 handleDelete(row.original.id);

@@ -6,6 +6,8 @@ import { ChevronLeft, Loader2, Package, User, CreditCard, Truck } from 'lucide-r
 import { ordersService, Order } from '../services/orders.service';
 import Swal from 'sweetalert2';
 
+import { shippingService } from '../../shipping/services/shipping.service';
+
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
 };
@@ -27,22 +29,27 @@ export const OrderDetail = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [order, setOrder] = useState<Order | null>(null);
+    const [carriers, setCarriers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
 
     useEffect(() => {
-        const fetchOrder = async () => {
+        const fetchData = async () => {
             if (!id) return;
             try {
-                const data = await ordersService.getById(id);
-                setOrder(data);
+                const [orderData, carriersData] = await Promise.all([
+                    ordersService.getById(id),
+                    shippingService.getCarriers().catch(() => [])
+                ]);
+                setOrder(orderData);
+                setCarriers(carriersData);
             } catch (err) {
-                console.error('Order fetch error:', err);
+                console.error('Fetch error:', err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchOrder();
+        fetchData();
     }, [id]);
 
     const handleStatusChange = async (newStatus: string) => {
@@ -97,17 +104,25 @@ export const OrderDetail = () => {
                             variant="primary"
                             className="bg-orange-600 hover:bg-orange-700 text-white"
                             onClick={async () => {
+                                const optionsHtml = carriers.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                                const selectHtml = carriers.length > 0
+                                    ? `<select id="swal-input1" class="swal2-select" style="display: flex; width: 100%; box-sizing: border-box; max-width: 100%; margin: 1em auto;">
+                                         <option value="" disabled selected>Kargo Firması Seçin</option>
+                                         ${optionsHtml}
+                                       </select>`
+                                    : '<input id="swal-input1" class="swal2-input" placeholder="Kargo Firması (Örn: Yurtiçi Kargo)">';
+
                                 const { value: formValues } = await Swal.fire({
                                     title: 'Siparişi Kargoya Ver',
                                     html:
-                                        '<input id="swal-input1" class="swal2-input" placeholder="Kargo Firması (Örn: Yurtiçi Kargo)">' +
+                                        selectHtml +
                                         '<input id="swal-input2" class="swal2-input" placeholder="Takip Numarası">',
                                     focusConfirm: false,
                                     showCancelButton: true,
                                     confirmButtonText: 'Kargoya Ver',
                                     cancelButtonText: 'İptal',
                                     preConfirm: () => {
-                                        const provider = (document.getElementById('swal-input1') as HTMLInputElement).value;
+                                        const provider = (document.getElementById('swal-input1') as HTMLInputElement | HTMLSelectElement).value;
                                         const tracking = (document.getElementById('swal-input2') as HTMLInputElement).value;
                                         if (!provider || !tracking) {
                                             Swal.showValidationMessage('Kargo firması ve takip numarası zorunludur');

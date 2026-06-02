@@ -34,14 +34,13 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 
 export default function LoginPage() {
     const router = useRouter();
-    const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "336940869300-g5itv0o638k40fptbe3hctp6f5d7fdfd.apps.googleusercontent.com";
 
     const initializeGoogle = () => {
         if (!clientId) return;
@@ -84,7 +83,7 @@ export default function LoginPage() {
             if (result.accessToken) {
                 localStorage.setItem("accessToken", result.accessToken);
                 localStorage.setItem("user", JSON.stringify(result.user));
-                router.push("/profil");
+                window.location.href = "/profil";
             }
         } catch (err: unknown) {
             setError(getErrorMessage(err, "Google ile giriş başarısız. Lütfen tekrar deneyin."));
@@ -103,7 +102,7 @@ export default function LoginPage() {
             if (result.accessToken) {
                 localStorage.setItem("accessToken", result.accessToken);
                 localStorage.setItem("user", JSON.stringify(result.user));
-                router.push("/profil");
+                window.location.href = "/profil";
             }
         } catch (err: unknown) {
             setError(getErrorMessage(err, "Giriş başarısız. Lütfen bilgilerinizi kontrol edin."));
@@ -196,22 +195,18 @@ export default function LoginPage() {
                             </Button>
                         </form>
 
-                        {clientId && (
-                            <>
-                                <div className="mt-6 relative">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <div className="w-full border-t border-stone-200"></div>
-                                    </div>
-                                    <div className="relative flex justify-center text-sm">
-                                        <span className="px-4 bg-white text-stone-400">veya</span>
-                                    </div>
-                                </div>
+                        <div className="mt-6 relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-stone-200"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-4 bg-white text-stone-400">veya</span>
+                            </div>
+                        </div>
 
-                                <div className="mt-6 flex justify-center">
-                                    <div id="google-signin-btn" className="w-full max-w-[382px]"></div>
-                                </div>
-                            </>
-                        )}
+                        <div className="mt-6 flex justify-center">
+                            <div id="google-signin-btn" className="w-full max-w-[382px]"></div>
+                        </div>
 
                         <div className="mt-8 text-center">
                             <p className="text-stone-500">
@@ -228,13 +223,11 @@ export default function LoginPage() {
 
             <Footer />
             
-            {clientId && (
-                <Script
-                    src="https://accounts.google.com/gsi/client"
-                    onLoad={initializeGoogle}
-                    strategy="lazyOnload"
-                />
-            )}
+            <Script
+                src="https://accounts.google.com/gsi/client"
+                onLoad={initializeGoogle}
+                strategy="lazyOnload"
+            />
         </div>
     );
 }

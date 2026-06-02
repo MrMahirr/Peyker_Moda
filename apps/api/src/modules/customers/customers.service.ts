@@ -45,6 +45,8 @@ export class CustomersService {
         // Aktif durumu
         if (query.isActive !== undefined) {
             where.isActive = query.isActive;
+        } else {
+            where.isActive = true; // Varsayılan olarak silinmemiş (aktif) müşterileri getir
         }
 
         // Sıralama

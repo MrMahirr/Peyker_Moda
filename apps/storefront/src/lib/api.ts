@@ -344,7 +344,7 @@ export const storeApi = {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Giriş başarısız');
-        return data;
+        return data.data || data;
     },
 
     async loginGoogle(idToken: string): Promise<{ accessToken: string; user: StoreUser }> {
@@ -355,7 +355,7 @@ export const storeApi = {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Google giriş başarısız');
-        return data;
+        return data.data || data;
     },
 
     async register(userData: {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Search, Menu, User, ChevronDown, LogOut } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -17,6 +17,7 @@ type CollectionLink = {
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { itemCount } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(() => storeApi.isLoggedIn());
@@ -72,10 +73,14 @@ export default function Header() {
     router.push('/');
   };
 
+  // Eğer ana sayfadaysak transparan başlar, değilse her zaman dolu/siyah yazı başlar
+  const isHomePage = pathname === '/';
+  const shouldApplyScrolledStyle = isScrolled || !isHomePage;
+
   return (
     <motion.header
-      className={`fixed top-0 w-full z-50 transition-all duration-500 border-b ${isScrolled
-        ? 'bg-white/30 backdrop-blur-md shadow-sm border-white/20 py-3'
+      className={`fixed top-0 w-full z-50 transition-all duration-500 border-b ${shouldApplyScrolledStyle
+        ? 'bg-white/70 backdrop-blur-md shadow-sm border-stone-200 py-3'
         : 'bg-transparent border-transparent py-5'
         }`}
       initial={{ y: -100 }}
@@ -84,17 +89,17 @@ export default function Header() {
     >
       <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
         {/* Mobile Menu */}
-        <Menu className={`w-6 h-6 md:hidden cursor-pointer ${isScrolled ? 'text-stone-900' : 'text-white'}`} />
+        <Menu className={`w-6 h-6 md:hidden cursor-pointer ${shouldApplyScrolledStyle ? 'text-stone-900' : 'text-white'}`} />
 
         {/* Logo */}
         <Link href="/" className="flex-shrink-0">
-          <h1 className={`text-2xl md:text-3xl font-serif font-bold tracking-tight bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-90'}`}>
+          <h1 className={`text-2xl md:text-3xl font-serif font-bold tracking-tight bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent transition-opacity duration-300 ${shouldApplyScrolledStyle ? 'opacity-100' : 'opacity-90'}`}>
             PEYKER MODA
           </h1>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide ${isScrolled ? 'text-stone-700' : 'text-white'}`}>
+        <nav className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide ${shouldApplyScrolledStyle ? 'text-stone-700' : 'text-white'}`}>
           <Link href="/" className="hover:text-amber-500 transition-colors relative group">Ana Sayfa</Link>
 
           <DropdownMenu>
@@ -125,7 +130,7 @@ export default function Header() {
         </nav>
 
         {/* Icons */}
-        <div className={`flex items-center gap-3 md:gap-5 ${isScrolled ? 'text-stone-900' : 'text-white'}`}>
+        <div className={`flex items-center gap-3 md:gap-5 ${shouldApplyScrolledStyle ? 'text-stone-900' : 'text-white'}`}>
           <button onClick={() => setIsSearchOpen(true)} className="hover:text-amber-500 transition-colors hidden sm:block">
             <Search className="w-5 h-5" />
           </button>

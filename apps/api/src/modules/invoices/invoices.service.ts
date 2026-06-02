@@ -203,80 +203,8 @@ export class InvoicesService {
                 status: 'ISSUED'
             }
         });
-
         this.logger.log(`Fatura PDF oluşturuldu: ${fileName}`);
     }
-
-    async getPdfPath(id: string) {
-        const invoice = await this.findOne(id);
-        if (!invoice.pdfUrl) {
-            // Eğer PDF yoksa oluştur
-            await this.generatePdf(id);
-
-    async generatePdf(invoiceId: string) {
-        const invoice = await this.prisma.invoice.findUnique({
-            where: { id: invoiceId },
-            include: {
-                order: {
-                    include: { items: { include: { variant: { include: { product: true } } } } }
-                }
-            }
-        });
-
-        if (!invoice) return;
-
-        const doc = new PDFDocument({ margin: 50 });
-        const fileName = `invoice-${invoice.invoiceNo}.pdf`;
-        const uploadDir = path.join(process.cwd(), 'uploads', 'invoices');
-
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        const filePath = path.join(uploadDir, fileName);
-        const stream = fs.createWriteStream(filePath);
-
-        doc.pipe(stream);
-
-        // Header
-        doc.fontSize(20).text('Peyker Moda', { align: 'center' });
-        doc.fontSize(12).text('Fatura', { align: 'center' });
-        doc.moveDown();
-
-        // Info
-        doc.fontSize(10).text(`Fatura No: ${invoice.invoiceNo}`);
-        doc.text(`Tarih: ${invoice.createdAt.toLocaleDateString('tr-TR')}`);
-        doc.text(`Müşteri: ${invoice.customerName}`);
-        if (invoice.taxId) doc.text(`Vergi No: ${invoice.taxId}`);
-        doc.moveDown();
-
-        // Items
-        doc.text('Ürünler:', { underline: true });
-        invoice.order?.items.forEach((item, index) => {
-            const productName = item.variant?.product?.name || 'Ürün';
-            doc.text(`${index + 1}. ${productName} x ${item.quantity} = ${item.total} TL`);
-        });
-        doc.moveDown();
-
-        // Totals
-        doc.text(`Ara Toplam (KDV Hariç): ${(Number(invoice.amount) - Number(invoice.taxAmount)).toFixed(2)} TL`, { align: 'right' });
-        doc.text(`KDV (%${invoice.taxRate}): ${Number(invoice.taxAmount).toFixed(2)} TL`, { align: 'right' });
-        doc.font('Helvetica-Bold').fontSize(12).text(`Genel Toplam: ${Number(invoice.amount).toFixed(2)} TL`, { align: 'right' });
-
-        doc.end();
-
-        // Update Invoice with PDF URL (Local path for now, usually would be S3 url)
-        await this.prisma.invoice.update({
-            where: { id: invoiceId },
-            data: {
-                pdfUrl: `/uploads/invoices/${fileName}`,
-                status: 'ISSUED'
-            }
-        });
-
-        this.logger.log(`Fatura PDF oluşturuldu: ${fileName}`);
-    }
-
     async getPdfPath(id: string) {
         const invoice = await this.findOne(id);
         if (!invoice.pdfUrl) {

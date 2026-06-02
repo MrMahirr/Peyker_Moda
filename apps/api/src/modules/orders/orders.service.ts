@@ -52,7 +52,6 @@ export class OrdersService {
                 status: OrderStatus.SHIPPED,
                 cargoProvider: cargoProvider,
                 cargoTrackingCode: cargoTrackingCode,
-                shippedAt: new Date(),
                 notes: order.notes ? `${order.notes}\n[${new Date().toLocaleString('tr-TR')}] Sipariş kargoya verildi: ${cargoProvider} - ${cargoTrackingCode}` : `[${new Date().toLocaleString('tr-TR')}] Sipariş kargoya verildi: ${cargoProvider} - ${cargoTrackingCode}`,
             },
         });

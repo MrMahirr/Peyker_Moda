@@ -4,8 +4,11 @@ export interface DashboardSummary {
     todaySales: { count: number; amount: number };
     weekSales: { count: number; amount: number };
     monthSales: { count: number; amount: number };
+    totalOrders: number;
+    totalRevenue: number;
     pendingOrders: number;
     totalCustomers: number;
+    filteredCustomers: number;
     newCustomersThisWeek: number;
     lowStockCount: number;
     trends: {
@@ -35,10 +38,9 @@ export interface LowStockProduct {
 }
 
 export interface SalesChartData {
-    labels: string[];
-    data: number[];
-    totalAmount: number;
-    averageAmount: number;
+    date: string;
+    count: number;
+    amount: number;
 }
 
 export const dashboardService = {
@@ -51,7 +53,7 @@ export const dashboardService = {
         return response.data.data;
     },
 
-    async getSalesChart(groupBy: 'day' | 'week' | 'month' = 'day', startDate?: string, endDate?: string): Promise<SalesChartData> {
+    async getSalesChart(groupBy: 'day' | 'week' | 'month' = 'day', startDate?: string, endDate?: string): Promise<SalesChartData[]> {
         const params = new URLSearchParams();
         params.append('groupBy', groupBy);
         if (startDate) params.append('startDate', startDate);
@@ -71,7 +73,15 @@ export const dashboardService = {
 
     async getLowStock(threshold = 10, limit = 20): Promise<LowStockProduct[]> {
         const response = await api.get(`/dashboard/low-stock?threshold=${threshold}&limit=${limit}`);
-        return response.data.data;
+        return response.data.data.map((item: any) => ({
+            id: item.variant?.id || '',
+            productId: item.product?.id || '',
+            productName: item.product?.name || 'Bilinmeyen Ürün',
+            sku: item.variant?.sku || item.product?.sku || '',
+            size: item.variant?.size || '',
+            color: item.variant?.color || '',
+            stock: item.stock || 0,
+        }));
     },
 
     async getRecentOrders(limit = 10, startDate?: string, endDate?: string) {

@@ -64,11 +64,11 @@ export const QuickPayment = ({ total, onComplete }: QuickPaymentProps) => {
 
             <div className="bg-zinc-50 border border-zinc-200/80 rounded-xl p-4">
                 <div className="flex justify-between text-sm text-zinc-500">
-                    <span>Odenecek</span>
+                    <span>Ödenecek</span>
                     <span className="font-semibold text-zinc-700">{total.toFixed(2)} TL</span>
                 </div>
                 <div className="flex justify-between text-sm text-zinc-500 mt-2">
-                    <span>Alinan</span>
+                    <span>Alınan</span>
                     <input
                         className="w-28 text-right bg-transparent font-semibold text-zinc-700 focus:outline-none"
                         value={received}
@@ -76,7 +76,7 @@ export const QuickPayment = ({ total, onComplete }: QuickPaymentProps) => {
                     />
                 </div>
                 <div className="flex justify-between text-sm text-zinc-500 mt-2">
-                    <span>Para Ustu</span>
+                    <span>Para Üstü</span>
                     <span className="font-semibold text-emerald-600">{change.toFixed(2)} TL</span>
                 </div>
             </div>
@@ -85,7 +85,7 @@ export const QuickPayment = ({ total, onComplete }: QuickPaymentProps) => {
                 className="w-full font-bold"
                 onClick={() => onComplete?.(Number(received), method)}
             >
-                Odemeyi Tamamla
+                Ödemeyi Tamamla
             </Button>
         </div>
     );

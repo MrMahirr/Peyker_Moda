@@ -4,11 +4,12 @@ import { Badge } from '@/components/ui/Badge';
 import { dashboardService } from '../services/dashboard.service';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 interface OrderData {
     id: string;
     orderNumber: string;
-    customer: { firstName: string; lastName: string } | null;
+    customer: string;
     createdAt: string;
     totalAmount: number;
     status: string;
@@ -44,14 +45,16 @@ const getStatusLabel = (status: string) => {
     return labels[status] || status;
 };
 
-export const RecentTransactions = ({ dateRange }: { dateRange?: { startDate: string, endDate: string } }) => {
+export const RecentTransactions = () => {
     const [transactions, setTransactions] = useState<OrderData[]>([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const data = await dashboardService.getRecentOrders(5, dateRange?.startDate, dateRange?.endDate);
+                const data = await dashboardService.getRecentOrders(5, undefined, undefined);
+                console.log('Recent transactions fetched:', data);
                 setTransactions(data);
             } catch (err) {
                 console.error('Failed to fetch recent transactions', err);
@@ -60,7 +63,7 @@ export const RecentTransactions = ({ dateRange }: { dateRange?: { startDate: str
             }
         };
         fetchOrders();
-    }, [dateRange?.startDate, dateRange?.endDate]);
+    }, []);
     return (
         <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden">
             <div className="px-6 py-5 flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50">
@@ -68,7 +71,10 @@ export const RecentTransactions = ({ dateRange }: { dateRange?: { startDate: str
                     <h3 className="text-[16px] font-bold text-zinc-900">Son İşlemler</h3>
                     <p className="text-[13px] font-medium text-zinc-500 mt-0.5">En son yapılan satışlar ve kargo durumları.</p>
                 </div>
-                <button className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
+                <button 
+                    onClick={() => navigate('/sales/orders')}
+                    className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors"
+                >
                     Tümünü Gör
                     <ArrowRight className="w-4 h-4" />
                 </button>
@@ -102,14 +108,18 @@ export const RecentTransactions = ({ dateRange }: { dateRange?: { startDate: str
                             transactions.map((tx) => {
                                 const variant = getStatusVariant(tx.status);
                                 return (
-                                    <tr key={tx.id} className="hover:bg-zinc-50/80 transition-colors group cursor-pointer">
+                                    <tr 
+                                        key={tx.id} 
+                                        onClick={() => navigate(`/sales/orders/${tx.id}`)}
+                                        className="hover:bg-zinc-50/80 transition-colors group cursor-pointer"
+                                    >
                                         <td className="px-6 py-4">
                                             <span className="font-mono text-[13px] font-bold text-zinc-900 bg-zinc-100 px-2 py-1 rounded">
                                                 {tx.orderNumber}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-[14px] font-semibold text-zinc-700 group-hover:text-zinc-900 transition-colors">
-                                            {tx.customer ? `${tx.customer.firstName} ${tx.customer.lastName}` : 'Kayıtsız Müşteri'}
+                                            {tx.customer}
                                         </td>
                                         <td className="px-6 py-4 text-[13px] font-medium text-zinc-500">
                                             {format(new Date(tx.createdAt), 'dd MMM, HH:mm', { locale: tr })}
@@ -132,7 +142,10 @@ export const RecentTransactions = ({ dateRange }: { dateRange?: { startDate: str
             </div>
             
             <div className="p-4 bg-zinc-50 border-t border-zinc-100 sm:hidden">
-                <button className="w-full inline-flex justify-center items-center gap-1.5 text-[13px] font-bold text-indigo-600 bg-indigo-50 px-3 py-2.5 rounded-lg transition-colors">
+                <button 
+                    onClick={() => navigate('/sales/orders')}
+                    className="w-full inline-flex justify-center items-center gap-1.5 text-[13px] font-bold text-indigo-600 bg-indigo-50 px-3 py-2.5 rounded-lg transition-colors"
+                >
                     Tümünü Gör
                     <ArrowRight className="w-4 h-4" />
                 </button>

@@ -11,11 +11,14 @@ export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, end
         const fetchChart = async () => {
             try {
                 const res = await dashboardService.getSalesChart('day', dateRange?.startDate, dateRange?.endDate);
-                const chartData = res.labels.map((label, idx) => ({
-                    name: label,
-                    gelir: res.data[idx],
-                    gider: 0, // Gider verisi backend'den gelmediği takdirde 0
-                }));
+                const chartData = res.map((item) => {
+                    const [year, month, day] = item.date.split('-');
+                    return {
+                        name: day ? `${day}/${month}` : item.date,
+                        gelir: item.amount,
+                        gider: 0, // Gider verisi backend'den gelmediği takdirde 0
+                    };
+                });
                 setData(chartData);
             } catch (err) {
                 console.error('Failed to fetch sales chart', err);
@@ -31,7 +34,7 @@ export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, end
             <div className="p-5 pb-0 flex items-center justify-between">
                 <div>
                     <h3 className="text-sm font-semibold text-zinc-800">Satış Analizi</h3>
-                    <p className="text-xs text-zinc-400 mt-0.5">Son 7 günlük gelir ve gider</p>
+                    <p className="text-xs text-zinc-400 mt-0.5">Seçili dönem gelir ve gider</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5">

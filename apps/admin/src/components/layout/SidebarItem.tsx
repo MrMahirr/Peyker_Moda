@@ -68,23 +68,27 @@ export const SidebarItem = ({ item, isSidebarOpen, Icon, isActiveParent, locatio
             )}
           >
             <ul className="ml-[30px] border-l-2 border-zinc-200 pl-3 space-y-1 py-1">
-              {item.children.map((child) => (
+              {item.children.map((child) => {
+                const isChildActive = child.path === item.path
+                  ? location.pathname === child.path || (location.pathname.startsWith(child.path) && !item.children!.some(c => c.path !== child.path && location.pathname.startsWith(c.path)))
+                  : location.pathname.startsWith(child.path);
+
+                return (
                 <li key={child.path}>
                   <NavLink
                     to={child.path}
-                    className={({ isActive }) =>
-                      cn(
+                    className={cn(
                         "block px-3 py-2 rounded-md text-[13px] font-semibold transition-all duration-150",
-                        isActive
+                        isChildActive
                           ? "text-zinc-900 bg-sidebar-active/50 shadow-sm"
                           : "text-zinc-500 hover:text-zinc-900 hover:bg-sidebar-hover"
-                      )
-                    }
+                      )}
                   >
                     {child.title}
                   </NavLink>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         )}

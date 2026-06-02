@@ -50,13 +50,39 @@ export const DashboardPage = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [dateRange.startDate, dateRange.endDate]);
 
     useEffect(() => {
         fetchData();
         const interval = setInterval(fetchData, 60000);
         return () => clearInterval(interval);
     }, [fetchData]);
+
+    const handleDownloadReport = () => {
+        if (!summary) return;
+
+        const csvRows = [
+            ['Rapor Olusturulma Tarihi', new Date().toLocaleString('tr-TR')],
+            ['Tarih Araligi', dateRange.startDate ? `${dateRange.startDate} - ${dateRange.endDate}` : 'Son 30 Gun'],
+            [],
+            ['Metrik', 'Deger'],
+            ['Toplam Musteri', summary.totalCustomers || 0],
+            ['Bekleyen Siparis', summary.pendingOrders || 0],
+            ['Yeni Musteri', summary.filteredCustomers || 0],
+            ['Satis Adedi', summary.totalOrders || 0],
+            ['Satis Tutari (TL)', summary.totalRevenue || 0],
+        ];
+
+        const csvContent = '\uFEFF' + csvRows.map(row => row.join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `dashboard_rapor_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     if (loading) {
         return (
@@ -114,7 +140,7 @@ export const DashboardPage = () => {
                                 ]}
                             />
                         </div>
-                        <Button variant="primary" className="shadow-md" icon={<Download className="w-4 h-4" />}>
+                        <Button variant="primary" className="shadow-md" icon={<Download className="w-4 h-4" />} onClick={handleDownloadReport}>
                             Rapor İndir
                         </Button>
                     </>
@@ -124,16 +150,16 @@ export const DashboardPage = () => {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <StatCard
-                    title="Günlük Satış (Brüt)"
-                    value={summary ? formatCurrency(summary.todaySales.amount) : '₺0'}
+                    title={dateFilterType === 'this_week' ? 'Haftalık Satış (Brüt)' : dateFilterType === 'this_month' ? 'Aylık Satış (Brüt)' : 'Toplam Satış (Brüt)'}
+                    value={summary ? formatCurrency(summary.totalRevenue) : '₺0'}
                     change={salesTrend.text}
                     icon={Banknote}
                     trend={salesTrend.type}
                     color="blue"
                 />
                 <StatCard
-                    title="Satış Adedi Bugün"
-                    value={String(summary?.todaySales.count || 0)}
+                    title="Satış Adedi"
+                    value={String(summary?.totalOrders || 0)}
                     change={countTrend.text}
                     icon={TrendingUp}
                     trend={countTrend.type}
@@ -148,11 +174,11 @@ export const DashboardPage = () => {
                     color="orange"
                 />
                 <StatCard
-                    title="Yeni Müşteri (Haftalık)"
-                    value={String(summary?.newCustomersThisWeek || 0)}
-                    change={customerTrend.text}
+                    title={dateFilterType === 'this_week' ? 'Yeni Müşteri (Haftalık)' : dateFilterType === 'this_month' ? 'Yeni Müşteri (Aylık)' : 'Yeni Müşteri'}
+                    value={String(summary?.filteredCustomers || 0)}
+                    change={dateFilterType === 'this_week' ? customerTrend.text : ''}
                     icon={Users}
-                    trend={customerTrend.type}
+                    trend={dateFilterType === 'this_week' ? customerTrend.type : 'neutral'}
                     color="emerald"
                 />
             </div>
@@ -163,7 +189,7 @@ export const DashboardPage = () => {
                 <InventoryAlerts />
             </div>
 
-            <RecentTransactions dateRange={dateRange} />
+            <RecentTransactions />
         </div>
     );
 };

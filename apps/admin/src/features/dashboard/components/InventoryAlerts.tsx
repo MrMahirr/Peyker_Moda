@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { dashboardService, LowStockProduct } from '../services/dashboard.service';
+import { useNavigate } from 'react-router-dom';
 
 export const InventoryAlerts = () => {
     const [alerts, setAlerts] = useState<LowStockProduct[]>([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchAlerts = async () => {
@@ -42,7 +44,8 @@ export const InventoryAlerts = () => {
                         return (
                             <div
                                 key={item.id}
-                                className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50/80 hover:bg-zinc-100/80 transition-colors"
+                                onClick={() => navigate(`/catalog/${item.productId}`)}
+                                className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50/80 hover:bg-zinc-100/80 transition-colors cursor-pointer"
                             >
                                 <div className={cn(
                                     "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
@@ -66,7 +69,10 @@ export const InventoryAlerts = () => {
             </div>
 
             <div className="p-4 mt-2">
-                <button className="w-full flex items-center justify-center gap-2 text-xs font-medium text-primary hover:text-primary-dark transition-colors py-2 rounded-lg hover:bg-primary/5">
+                <button 
+                    onClick={() => navigate('/inventory')}
+                    className="w-full flex items-center justify-center gap-2 text-xs font-medium text-primary hover:text-primary-dark transition-colors py-2 rounded-lg hover:bg-primary/5"
+                >
                     Tüm Envanteri Gör
                     <ArrowRight className="w-3.5 h-3.5" />
                 </button>

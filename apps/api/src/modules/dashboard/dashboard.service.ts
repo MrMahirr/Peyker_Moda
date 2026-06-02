@@ -25,6 +25,7 @@ export class DashboardService {
             totalOrders,
             totalRevenue,
             totalCustomers,
+            filteredCustomers,
             totalProducts,
             pendingOrders,
             todaySales,
@@ -45,9 +46,13 @@ export class DashboardService {
                 },
                 _sum: { totalAmount: true },
             }),
-            // Toplam müşteri
+            // Toplam müşteri (Tüm zamanlar)
             this.prisma.customer.count({
                 where: { isActive: true },
+            }),
+            // Seçili tarih aralığında yeni müşteri
+            this.prisma.customer.count({
+                where: { createdAt: dateFilter },
             }),
             // Toplam ürün
             this.prisma.product.count({
@@ -97,6 +102,7 @@ export class DashboardService {
             totalOrders,
             totalRevenue: totalRevenue._sum.totalAmount || 0,
             totalCustomers,
+            filteredCustomers,
             totalProducts,
             pendingOrders,
             newCustomersThisWeek: thisWeekCustomers,
@@ -135,6 +141,18 @@ export class DashboardService {
         // Tarihe göre grupla
         const salesByDate = new Map<string, { count: number; amount: number }>();
 
+        // Eksik günleri 0 ile doldur (sadece day gruplaması için)
+        if (groupBy === 'day') {
+            const start = dateFilter.gte ? new Date(dateFilter.gte) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const end = dateFilter.lte ? new Date(dateFilter.lte) : new Date();
+            const curr = new Date(start);
+            while (curr <= end) {
+                const key = this.getDateKey(curr, 'day');
+                salesByDate.set(key, { count: 0, amount: 0 });
+                curr.setDate(curr.getDate() + 1);
+            }
+        }
+
         for (const order of orders) {
             const dateKey = this.getDateKey(order.createdAt, groupBy);
             const existing = salesByDate.get(dateKey) || { count: 0, amount: 0 };
@@ -144,11 +162,13 @@ export class DashboardService {
             });
         }
 
-        return Array.from(salesByDate.entries()).map(([date, data]) => ({
-            date,
-            count: data.count,
-            amount: data.amount,
-        }));
+        return Array.from(salesByDate.entries())
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([date, data]) => ({
+                date,
+                count: data.count,
+                amount: data.amount,
+            }));
     }
 
     /**

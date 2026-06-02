@@ -16,4 +16,8 @@ export class DashboardQueryDto {
     @IsString()
     @IsOptional()
     groupBy?: 'day' | 'week' | 'month';
+
+    @ApiPropertyOptional({ example: 10, description: 'Limit' })
+    @IsOptional()
+    limit?: number | string;
 }

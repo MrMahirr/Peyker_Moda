@@ -4,9 +4,164 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { DEFAULT_TAX_RATE } from './accounting.constants';
 import { AccountingPeriodSummary } from './accounting.types';
 
+import { AccountingStorageService } from './accounting-storage.service';
+
 @Injectable()
 export class AccountingReportService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: AccountingStorageService,
+  ) {}
+
+  async getZReport(period: string = 'daily') {
+    const today = new Date();
+    let startDate: Date;
+    const endDate = new Date(today);
+    endDate.setHours(23, 59, 59, 999);
+
+    if (period === 'weekly') {
+      startDate = new Date(today);
+      const day = startDate.getDay() || 7;
+      startDate.setDate(startDate.getDate() - (day - 1));
+      startDate.setHours(0, 0, 0, 0);
+    } else if (period === 'monthly') {
+      startDate = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0, 0);
+    } else { // daily
+      startDate = new Date(today);
+      startDate.setHours(0, 0, 0, 0);
+    }
+
+    const dateRange = { gte: startDate, lte: endDate };
+    const taxRate = await this.getTaxRate();
+
+    const [transactions, paymentsList] = await Promise.all([
+      this.prisma.transaction.findMany({
+        where: { transactionDate: dateRange },
+      }),
+      this.prisma.payment.findMany({
+        where: { 
+          status: 'COMPLETED',
+          createdAt: dateRange 
+        }
+      })
+    ]);
+
+    let totalSales = 0;
+    let totalReturns = 0;
+    let cash = 0;
+    let creditCard = 0;
+    let other = 0;
+    let cashIn = 0;
+    let cashOut = 0;
+
+    // 1. İşlemler (Manuel Gelir/Giderler)
+    for (const t of transactions) {
+      const amount = Number(t.amount);
+      if (t.type === 'INCOME') {
+        // Eğer siparişe bağlı değilse manuel gelirdir, satışa ekleyelim mi?
+        // Genelde manuel gelirler de kasaya girer. Z-Raporunda gösterelim.
+        totalSales += amount;
+        cashIn += amount;
+        
+        if (t.paymentMethod === 'CASH') cash += amount;
+        else if (t.paymentMethod === 'CREDIT_CARD') creditCard += amount;
+        else other += amount;
+      } else if (t.type === 'EXPENSE') {
+        cashOut += amount;
+        if (t.category === 'Return' || t.description?.toLowerCase().includes('iade')) {
+            totalReturns += amount;
+        }
+      }
+    }
+
+    // 2. Ödemeler (Gerçek Sipariş / POS Satışları)
+    for (const p of paymentsList) {
+      const amount = Number(p.amount);
+      totalSales += amount;
+      cashIn += amount;
+      
+      if (p.method === 'CASH') cash += amount;
+      else if (p.method === 'CREDIT_CARD') creditCard += amount;
+      else other += amount;
+    }
+
+    const netSales = totalSales - totalReturns;
+    const totalTax = this.extractVat(totalSales, taxRate);
+
+    // Kasa başlangıç bakiyesi (Önceki günden devreden kasa)
+    const snapshots = await this.storage.getZReportSnapshots();
+    let startBalance = 0;
+    
+    if (period === 'daily') {
+      const todayDateStr = startDate.toISOString().split('T')[0];
+      // Bugün için kapanış alınmışsa, onu döndür!
+      const existingSnapshot = snapshots.find(s => s.date === todayDateStr);
+      if (existingSnapshot) {
+        return existingSnapshot;
+      }
+      
+      // Bugün kapanış alınmamışsa, en son kapanmış günün devreden kasasını al
+      if (snapshots.length > 0) {
+        // Zaten sırayla ekleniyor, en sonuncu son eleman.
+        const lastSnapshot = snapshots[snapshots.length - 1];
+        startBalance = lastSnapshot.cashFlow.safeBalance;
+      }
+    }
+
+    const safeBalance = startBalance + cashIn - cashOut;
+
+    let titlePrefix = 'Z';
+    if (period === 'weekly') titlePrefix = 'W';
+    if (period === 'monthly') titlePrefix = 'M';
+
+    return {
+      date: `${startDate.toLocaleDateString('tr-TR')} - ${endDate.toLocaleDateString('tr-TR')}`,
+      reportNo: `${titlePrefix}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`,
+      summary: {
+        totalSales,
+        totalReturns,
+        netSales,
+        totalTax: this.roundCurrency(totalTax),
+        transactionCount: transactions.length + paymentsList.length,
+      },
+      payments: {
+        cash,
+        creditCard,
+        other,
+      },
+      cashFlow: {
+        startBalance,
+        cashIn,
+        cashOut,
+        safeBalance,
+      }
+    };
+  }
+
+  async closeZReport() {
+    // 1. Oku (Günlük rapor)
+    const currentReport = await this.getZReport('daily');
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // 2. Snapshotlara ekle
+    const snapshots = await this.storage.getZReportSnapshots();
+    
+    // Zaten varsa bir daha kapatma
+    if (snapshots.some(s => s.date === todayStr)) {
+       return currentReport;
+    }
+    
+    const snapshot = {
+      ...currentReport,
+      date: todayStr, // Sadece YYYY-MM-DD olarak kaydet
+      closedAt: new Date().toISOString(),
+    };
+    
+    snapshots.push(snapshot);
+    await this.storage.saveZReportSnapshots(snapshots);
+    
+    return snapshot;
+  }
 
   async getVatReport(year: number) {
     const dateRange = this.getYearDateRange(year);
@@ -72,6 +227,20 @@ export class AccountingReportService {
     year: number,
     month: number,
   ): Promise<AccountingPeriodSummary> {
+    // 1. Önce bu dönemin kapatılıp kapatılmadığını kontrol et
+    const closedPeriods = await this.storage.getClosedPeriods();
+    const existingClosedPeriod = closedPeriods.find(
+      (period) => period.year === year && period.month === month,
+    );
+
+    if (existingClosedPeriod) {
+      // Eğer kapatılmışsa, dondurulmuş (snapshot) veriyi ve isClosed bayrağını dön
+      return {
+        ...existingClosedPeriod.summary,
+        isClosed: true,
+      };
+    }
+
     const dateRange = this.getMonthDateRange(year, month);
     const taxRate = await this.getTaxRate();
 
@@ -123,6 +292,7 @@ export class AccountingReportService {
       taxPayable: this.roundCurrency(
         Math.max(0, estimatedSalesVat - estimatedPurchaseVat),
       ),
+      isClosed: false,
     };
   }
 

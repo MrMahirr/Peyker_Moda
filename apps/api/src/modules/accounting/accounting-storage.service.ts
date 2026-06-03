@@ -8,7 +8,10 @@ import {
   AccountingBankAccount,
   AccountingCheck,
   AccountingClosedPeriod,
+  AccountingCurrentAccount,
+  AccountingDuePayment,
   AccountingRegister,
+  ZReportSnapshot,
 } from './accounting.types';
 
 @Injectable()
@@ -48,6 +51,14 @@ export class AccountingStorageService {
 
   async saveClosedPeriods(periods: AccountingClosedPeriod[]) {
     await this.writeJsonSetting(ACCOUNTING_STORAGE_KEYS.CLOSED_PERIODS, periods);
+  }
+
+  async getZReportSnapshots(): Promise<ZReportSnapshot[]> {
+    return this.readJsonSetting(ACCOUNTING_STORAGE_KEYS.CLOSED_DAYS, []);
+  }
+
+  async saveZReportSnapshots(snapshots: ZReportSnapshot[]) {
+    await this.writeJsonSetting(ACCOUNTING_STORAGE_KEYS.CLOSED_DAYS, snapshots);
   }
 
   private async readJsonSetting<T>(key: string, fallback: T): Promise<T> {

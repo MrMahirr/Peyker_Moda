@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -153,20 +153,21 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
                     {/* Receipt Preview Area (Scrollable) */}
                     <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-zinc-100/80 bg-blend-soft-light hide-scrollbar">
                         <div className="shadow-2xl rounded-sm overflow-hidden pointer-events-none select-none origin-top transition-transform scale-95 border border-zinc-200/50">
-                            <Receipt
-                                cart={receiptCart}
-                                total={total}
-                                paymentMethod={paymentMethod}
-                                date={new Date()}
-                                receiptNo={receiptNo}
-                                cashierName={user ? `${user.firstName} ${user.lastName}` : 'Kasiyer'}
-                                headerText={receiptSettings?.receiptHeader}
-                                address={receiptSettings?.receiptAddress}
-                                phone={receiptSettings?.receiptPhone}
-                                footerText={receiptSettings?.receiptFooter}
-                                taxRate={receiptSettings?.receiptTaxRate}
-                                showLogo={receiptSettings?.receiptShowLogo}
-                            />
+                                <Receipt
+                                    cart={receiptCart}
+                                    total={total}
+                                    paymentMethod={paymentMethod}
+                                    date={new Date()}
+                                    receiptNo={receiptNo}
+                                    cashierName={user ? `${user.firstName} ${user.lastName}` : 'Kasiyer'}
+                                    headerText={receiptSettings?.receiptHeader}
+                                    address={receiptSettings?.receiptAddress}
+                                    phone={receiptSettings?.receiptPhone}
+                                    footerText={receiptSettings?.receiptFooter}
+                                    taxRate={receiptSettings?.receiptTaxRate}
+                                    showLogo={receiptSettings?.receiptShowLogo}
+                                    logoUrl={receiptSettings?.storeLogo}
+                                />
                         </div>
                     </div>
 

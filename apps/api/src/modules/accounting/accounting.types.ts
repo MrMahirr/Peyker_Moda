@@ -106,6 +106,7 @@ export interface AccountingPeriodSummary {
   totalExpense: number;
   netProfit: number;
   taxPayable: number;
+  isClosed?: boolean;
 }
 
 export interface AccountingCurrentAccount {
@@ -127,4 +128,28 @@ export interface AccountingClosedPeriod {
   summary: AccountingPeriodSummary;
   closedAt: string;
   closedByUserId: string;
+}
+
+export interface ZReportSnapshot {
+  date: string; // YYYY-MM-DD
+  reportNo: string;
+  closedAt: string;
+  summary: {
+    totalSales: number;
+    totalReturns: number;
+    netSales: number;
+    totalTax: number;
+    transactionCount: number;
+  };
+  payments: {
+    cash: number;
+    creditCard: number;
+    other: number;
+  };
+  cashFlow: {
+    startBalance: number;
+    cashIn: number;
+    cashOut: number;
+    safeBalance: number;
+  };
 }

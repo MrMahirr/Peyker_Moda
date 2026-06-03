@@ -71,6 +71,11 @@ export class CreateCampaignDto {
     @IsUUID('4', { each: true })
     @IsOptional()
     productIds?: string[];
+
+    @ApiPropertyOptional({ example: true, description: 'Kampanya durumu' })
+    @IsBoolean()
+    @IsOptional()
+    isActive?: boolean;
 }
 
 export class UpdateCampaignDto {

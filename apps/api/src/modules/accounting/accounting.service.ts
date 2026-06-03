@@ -381,6 +381,14 @@ export class AccountingService {
     return duePayments;
   }
 
+  async getZReport(period?: string) {
+    return this.reportService.getZReport(period);
+  }
+
+  async closeZReport() {
+    return this.reportService.closeZReport();
+  }
+
   async getVatReport(query: VatReportQueryDto) {
     return this.reportService.getVatReport(query.year);
   }
@@ -390,6 +398,15 @@ export class AccountingService {
   }
 
   async closePeriod(dto: ClosePeriodDto, userId: string) {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1; // 1-12 (dto.month is 1-12)
+
+    // Geçmiş aylar mı kontrolü
+    if (dto.year > currentYear || (dto.year === currentYear && dto.month >= currentMonth)) {
+        throw new ConflictException('Sadece tamamlanmış (geçmiş) aylar kapatılabilir. Bu ay henüz bitmedi.');
+    }
+
     const closedPeriods = await this.storage.getClosedPeriods();
     const existingPeriod = closedPeriods.find(
       (period) => period.year === dto.year && period.month === dto.month,

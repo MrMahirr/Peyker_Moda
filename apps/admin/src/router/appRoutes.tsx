@@ -20,7 +20,7 @@ import { StoreSettings } from '@/features/settings/general/StoreSettings';
 import { ReceiptDesigner } from '@/features/settings/printer/ReceiptDesigner';
 import { UserProfile } from '@/features/settings/profile/UserProfile';
 import { CampaignList } from '@/features/marketing/campaigns/CampaignList';
-import { CampaignForm } from '@/features/marketing/campaigns/CampaignForm';
+
 import { PriceListManager } from '@/features/marketing/price-lists/PriceListManager';
 import { BulkMessageSender } from '@/features/marketing/messaging/BulkMessageSender';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
@@ -97,7 +97,7 @@ export const AppRoutes = () => {
                     path: 'marketing',
                     children: [
                         { path: 'campaigns', element: <RequireRole allowedRoles={['admin', 'manager']}><CampaignList /></RequireRole> },
-                        { path: 'campaigns/new', element: <RequireRole allowedRoles={['admin', 'manager']}><CampaignForm /></RequireRole> },
+
                         { path: 'price-lists', element: <RequireRole allowedRoles={['admin', 'manager']}><PriceListManager /></RequireRole> },
                         { path: 'bulk-messages', element: <RequireRole allowedRoles={['admin', 'manager']}><BulkMessageSender /></RequireRole> },
                     ]

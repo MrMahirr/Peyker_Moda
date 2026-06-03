@@ -2,11 +2,15 @@ import { useEffect, useState, useCallback } from 'react';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Search, Plus, Download, Loader2, CheckCircle } from 'lucide-react';
+import { Search, Plus, Download, Loader2, CheckCircle, Eye, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { invoicesService, Invoice, downloadInvoicePdf } from '../services/invoices.service';
 import { Badge } from '@/components/ui/Badge';
 import { InvoiceModal } from './InvoiceModal';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -68,6 +72,29 @@ export const InvoiceList = () => {
         }
     };
 
+    const handleDelete = (id: string) => {
+        MySwal.fire({
+            title: 'Faturayı Sil',
+            text: 'Bu işlemi (faturayı) silmek/iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#71717a',
+            confirmButtonText: 'Evet, Sil',
+            cancelButtonText: 'Vazgeç'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await invoicesService.cancel(id);
+                    toast.success('Fatura silindi/iptal edildi', { className: 'font-medium py-3 px-4 shadow-xl' });
+                    fetchInvoices();
+                } catch (err) {
+                    toast.error('Silme işlemi başarısız', { className: 'font-medium' });
+                }
+            }
+        });
+    };
+
     const columns = [
         {
             header: 'Fatura No',
@@ -123,13 +150,26 @@ export const InvoiceList = () => {
             cell: ({ row }: any) => {
                 const invoice = row.original;
                 return (
-                    <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-end gap-2 opacity-60 hover:opacity-100 transition-opacity duration-300">
+                        {/* Eye icon for Details */}
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50"
+                            className="h-8 w-8 p-0 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 hover:scale-110 transition-all duration-300 hover:rotate-3 shadow-sm hover:shadow"
+                            onClick={() => handleDownload(invoice)}
+                            title="Detay Görüntüle"
+                        >
+                            <Eye className="h-4 w-4" />
+                        </Button>
+                        
+                        {/* Download icon */}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 hover:scale-110 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow"
                             onClick={() => handleDownload(invoice)}
                             disabled={downloading === invoice.id}
+                            title="PDF İndir"
                         >
                             {downloading === invoice.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
@@ -137,14 +177,30 @@ export const InvoiceList = () => {
                                 <Download className="h-4 w-4" />
                             )}
                         </Button>
+
+                        {/* CheckCircle icon for Mark as Paid */}
                         {invoice.status === 'ISSUED' && (
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 w-8 p-0 text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50"
+                                className="h-8 w-8 p-0 text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 hover:scale-110 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow"
                                 onClick={() => handleMarkPaid(invoice.id)}
+                                title="Tahsil Edildi İşaretle"
                             >
                                 <CheckCircle className="h-4 w-4" />
+                            </Button>
+                        )}
+
+                        {/* Trash icon for Delete/Cancel */}
+                        {invoice.status !== 'CANCELLED' && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50 hover:scale-110 transition-all duration-300 hover:-rotate-3 shadow-sm hover:shadow"
+                                onClick={() => handleDelete(invoice.id)}
+                                title="Faturayı Sil"
+                            >
+                                <Trash2 className="h-4 w-4" />
                             </Button>
                         )}
                     </div>

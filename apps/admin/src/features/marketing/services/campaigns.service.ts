@@ -4,7 +4,7 @@ export interface Campaign {
     id: string;
     name: string;
     description?: string;
-    type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'BUY_X_GET_Y';
+    discountType: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'BUY_X_GET_Y';
     discountValue: number;
     code?: string;
     minOrderAmount?: number;
@@ -34,7 +34,7 @@ export interface Coupon {
 export interface CreateCampaignDto {
     name: string;
     description?: string;
-    type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'BUY_X_GET_Y';
+    discountType: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'BUY_X_GET_Y';
     discountValue: number;
     code?: string;
     minOrderAmount?: number;

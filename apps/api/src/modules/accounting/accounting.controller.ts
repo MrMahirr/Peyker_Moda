@@ -157,6 +157,20 @@ export class AccountingController {
     return this.accountingService.getDuePayments(query);
   }
 
+  @Get('reports/z-report')
+  @Roles('admin', 'manager')
+  @ApiOperation({ summary: 'Satış Raporunu getir (Z-Raporu, Haftalık, Aylık)' })
+  async getZReport(@Query('period') period?: string) {
+    return this.accountingService.getZReport(period);
+  }
+
+  @Post('reports/z-report/close')
+  @Roles('admin', 'manager')
+  @ApiOperation({ summary: 'Günlük Z-Raporunu Kes (Günü Kapat)' })
+  async closeZReport() {
+    return this.accountingService.closeZReport();
+  }
+
   @Get('reports/vat')
   @Roles('admin', 'manager')
   @ApiOperation({ summary: 'KDV raporunu getir' })

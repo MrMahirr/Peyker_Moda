@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Ticket, Printer } from 'lucide-react';
@@ -13,6 +13,7 @@ export const ReceiptDesigner = () => {
     const [phone, setPhone] = useState('(555) 123 45 67');
     const [taxRate, setTaxRate] = useState('10'); // Stored as string for input
     const [showLogo, setShowLogo] = useState(true);
+    const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -30,6 +31,7 @@ export const ReceiptDesigner = () => {
                 setPhone(data.receiptPhone || data.storePhone || '');
                 setTaxRate(String(data.receiptTaxRate ?? data.taxRate ?? 0));
                 setShowLogo(data.receiptShowLogo ?? true);
+                setLogoUrl(data.storeLogo || null);
             } catch (err) {
                 console.error('Receipt settings fetch error:', err);
                 toast.error('Yazici ayarlari yuklenemedi.', { className: 'font-medium' });
@@ -171,8 +173,12 @@ export const ReceiptDesigner = () => {
                     <div id="printable-receipt" className="bg-white w-[300px] shadow-sm p-4 text-xs font-mono space-y-4">
                         <div className="text-center space-y-2 border-b border-dashed border-zinc-300 pb-4">
                             {showLogo && (
-                                <div className="mx-auto h-12 w-12 bg-zinc-200 rounded-full flex items-center justify-center">
-                                    <Ticket className="w-6 h-6 text-zinc-400" />
+                                <div className="mx-auto h-16 w-16 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                                    {logoUrl ? (
+                                        <img src={logoUrl} alt="Store Logo" className="w-full h-full object-contain" />
+                                    ) : (
+                                        <Ticket className="w-6 h-6 text-zinc-400" />
+                                    )}
                                 </div>
                             )}
                             <h2 className="font-bold text-lg">{headerText}</h2>

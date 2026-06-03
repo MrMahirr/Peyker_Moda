@@ -9,11 +9,14 @@ import { showDeleteConfirm } from '@/utils/swal';
 import { campaignsService, Campaign } from '../services/campaigns.service';
 import { Badge } from '@/components/ui/Badge';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { CampaignModal } from './CampaignForm';
 
 export const CampaignList = () => {
     const navigate = useNavigate();
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         fetchCampaigns();
@@ -76,10 +79,10 @@ export const CampaignList = () => {
             )
         },
         {
-            accessorKey: 'type',
+            accessorKey: 'discountType',
             header: 'Tür',
             cell: ({ row }) => {
-                const type = row.original.type;
+                const type = row.original.discountType;
                 let variant: 'neutral' | 'info' | 'success' | 'warning' | 'error' = 'neutral';
                 let label: string = type;
                 
@@ -94,7 +97,7 @@ export const CampaignList = () => {
             accessorKey: 'discountValue',
             header: 'Değer',
             cell: ({ row }) => {
-                const type = row.original.type;
+                const type = row.original.discountType;
                 const value = row.original.discountValue;
                 return (
                     <span className="font-black text-[15px] font-mono text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">
@@ -172,7 +175,7 @@ export const CampaignList = () => {
                 title="Pazarlama Kampanyaları"
                 subtitle="İndirimleri, fırsatları ve kupon kodlarını yönetin."
                 actions={
-                    <Button onClick={() => navigate('new')} variant="primary" className="shadow-md" icon={<Plus className="w-4 h-4" />}>
+                    <Button onClick={() => setIsModalOpen(true)} variant="primary" className="shadow-md" icon={<Plus className="w-4 h-4" />}>
                         Yeni Kampanya
                     </Button>
                 }
@@ -185,6 +188,12 @@ export const CampaignList = () => {
                     searchKey="name"
                 />
             </div>
+            
+            <CampaignModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onSuccess={fetchCampaigns} 
+            />
         </div>
     );
 };

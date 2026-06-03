@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { TransactionList } from './cash-flow/TransactionList';
 import { InvoiceList } from './invoices/InvoiceList';
 import { ZReport } from './reports/ZReport';
+import { VatReport } from './reports/VatReport';
+import { PeriodClosing } from './reports/PeriodClosing';
 import { Wallet, PieChart, FileText, TrendingUp, TrendingDown, Loader2, CreditCard } from 'lucide-react';
 import { transactionsService } from './services/transactions.service';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -152,10 +154,57 @@ export const AccountingPage = () => {
             </div>
 
             {/* Content Area */}
-            <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm min-h-[400px] overflow-hidden">
+            <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm min-h-[400px] overflow-hidden flex flex-col">
                 {activeTab === 'transactions' && <TransactionList />}
                 {activeTab === 'invoices' && <InvoiceList />}
-                {activeTab === 'reports' && <ZReport />}
+                {activeTab === 'reports' && <ReportsContainer />}
+            </div>
+        </div>
+    );
+};
+
+// Alt Raporlar Container'ı
+const ReportsContainer = () => {
+    const [activeReport, setActiveReport] = useState<'z-report' | 'vat' | 'period'>('z-report');
+
+    return (
+        <div className="flex flex-col w-full h-full">
+            <div className="flex border-b border-zinc-200/80 bg-zinc-50/50 p-2 gap-2">
+                <button
+                    onClick={() => setActiveReport('z-report')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                        activeReport === 'z-report'
+                            ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/80'
+                            : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 border border-transparent'
+                    }`}
+                >
+                    Satış Raporları (Z-Raporu)
+                </button>
+                <button
+                    onClick={() => setActiveReport('vat')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                        activeReport === 'vat'
+                            ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/80'
+                            : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 border border-transparent'
+                    }`}
+                >
+                    KDV Raporu
+                </button>
+                <button
+                    onClick={() => setActiveReport('period')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                        activeReport === 'period'
+                            ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/80'
+                            : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 border border-transparent'
+                    }`}
+                >
+                    Dönem Sonu Kapanış
+                </button>
+            </div>
+            <div className="flex-1">
+                {activeReport === 'z-report' && <ZReport />}
+                {activeReport === 'vat' && <VatReport />}
+                {activeReport === 'period' && <PeriodClosing />}
             </div>
         </div>
     );

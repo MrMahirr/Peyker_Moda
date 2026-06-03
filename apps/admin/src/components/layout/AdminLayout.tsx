@@ -7,7 +7,7 @@ import {
   Package, UserCheck, Bell, Search, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { SidebarItem } from './SidebarItem';
 import { NotificationDropdown } from '../../features/notifications/components/NotificationDropdown';
 import { GlobalSearch } from '../shared/GlobalSearch';
@@ -26,10 +26,22 @@ const IconMap: Record<string, React.ElementType> = {
 };
 
 export const AdminLayout = () => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isUserMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -95,29 +107,17 @@ export const AdminLayout = () => {
           </ul>
         </nav>
 
-        <div className="p-4 border-t border-zinc-200 space-y-2 bg-sidebar-hover/50">
+        <div className="p-4 mt-auto">
           {/* POS Button */}
           <button
             onClick={() => navigate('/pos')}
             className={cn(
-              "flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-white text-zinc-800 text-[14px] font-bold shadow-sm border border-zinc-200 hover:bg-zinc-50 transition-all",
-              !isSidebarOpen && "justify-center"
+              "flex items-center gap-3 w-full px-3 py-3.5 rounded-xl bg-zinc-900 text-white text-[14px] font-bold shadow-lg shadow-zinc-900/20 hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] transition-all border border-zinc-800",
+              !isSidebarOpen && "justify-center px-0"
             )}
           >
-            <ShoppingCart className="h-5 w-5 shrink-0" />
-            {isSidebarOpen && <span>POS Ekranı</span>}
-          </button>
-
-          {/* Logout */}
-          <button
-            onClick={handleLogout}
-            className={cn(
-              "flex items-center gap-3 w-full px-3 py-3 rounded-xl text-zinc-500 text-[14px] font-bold hover:text-red-600 hover:bg-red-50 transition-all",
-              !isSidebarOpen && "justify-center"
-            )}
-          >
-            <LogOut className="h-5 w-5 shrink-0" />
-            {isSidebarOpen && <span>Çıkış Yap</span>}
+            <ShoppingCart className="h-5 w-5 shrink-0 text-zinc-100" />
+            {isSidebarOpen && <span className="tracking-wide">POS Ekranı</span>}
           </button>
         </div>
       </aside>
@@ -152,14 +152,50 @@ export const AdminLayout = () => {
             <div className="h-8 w-px bg-zinc-200 mx-1" />
 
             {/* User */}
-            <div className="flex items-center gap-3 pl-1">
-              <div className="text-right hidden lg:block">
-                <p className="text-[13px] font-bold text-zinc-900 leading-none">Admin</p>
-                <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Sistem Yöneticisi</p>
-              </div>
-              <div className="h-10 w-10 rounded-xl bg-zinc-800 flex items-center justify-center text-white text-sm font-black shadow-sm">
-                A
-              </div>
+            <div className="relative" ref={userMenuRef}>
+              <button 
+                onClick={() => setUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-3 pl-1 hover:bg-zinc-100 p-1.5 rounded-xl transition-colors text-left"
+              >
+                <div className="text-right hidden lg:block">
+                  <p className="text-[13px] font-bold text-zinc-900 leading-none">{user?.firstName} {user?.lastName}</p>
+                  <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mt-1">{user?.role === 'admin' ? 'Sistem Yöneticisi' : user?.role || 'Kullanıcı'}</p>
+                </div>
+                <div className="h-10 w-10 rounded-xl bg-zinc-800 flex items-center justify-center text-white text-sm font-black shadow-sm uppercase">
+                  {user?.firstName?.charAt(0) || 'U'}
+                </div>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-zinc-200 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="px-4 py-3 border-b border-zinc-100 mb-1 lg:hidden">
+                    <p className="text-sm font-bold text-zinc-900">{user?.firstName} {user?.lastName}</p>
+                    <p className="text-xs text-zinc-500 uppercase mt-0.5">{user?.role}</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                        setUserMenuOpen(false);
+                        navigate('/settings/profile');
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  >
+                    <UserCheck className="h-4 w-4" />
+                    Profilim
+                  </button>
+                  <div className="h-px bg-zinc-100 my-1"></div>
+                  <button 
+                    onClick={() => {
+                        setUserMenuOpen(false);
+                        handleLogout();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Çıkış Yap
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

@@ -5,10 +5,14 @@ import {
 } from './accounting.types';
 
 export const ACCOUNTING_STORAGE_KEYS = {
+  SETTINGS: 'accounting.settings',
+  TAX_RATE: 'accounting.taxRate',
   REGISTERS: 'accounting.registers',
   BANK_ACCOUNTS: 'accounting.bankAccounts',
   CHECKS: 'accounting.checks',
+  DUE_PAYMENTS: 'accounting.duePayments',
   CLOSED_PERIODS: 'accounting.closedPeriods',
+  CLOSED_DAYS: 'accounting.closedDays',
 } as const;
 
 export const DEFAULT_ACCOUNTING_REGISTERS: AccountingRegister[] = [

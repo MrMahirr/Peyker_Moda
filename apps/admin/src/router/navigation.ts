@@ -19,11 +19,7 @@ export const navigation = [
             { title: 'Yeni Ürün', path: '/catalog/new' }
         ]
     },
-    {
-        title: 'Satış Ekranı (POS)',
-        path: '/pos',
-        icon: 'shopping-cart',
-    },
+
     {
         title: 'Siparişler',
         path: '/sales/orders',

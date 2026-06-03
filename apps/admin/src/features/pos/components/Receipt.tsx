@@ -1,4 +1,4 @@
-﻿import { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { CartItem } from '@/context/PosContext';
 
 interface ReceiptProps {
@@ -14,6 +14,7 @@ interface ReceiptProps {
     footerText?: string;
     taxRate?: number;
     showLogo?: boolean;
+    logoUrl?: string;
 }
 
 export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
@@ -31,6 +32,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             footerText,
             taxRate,
             showLogo,
+            logoUrl,
         },
         ref
     ) => {
@@ -58,8 +60,12 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
                 {/* Header */}
                 <div className="text-center mb-2">
                     {showLogoResolved && (
-                        <div className="mx-auto mb-2 h-10 w-10 rounded-full border border-black/20 flex items-center justify-center text-[8px]">
-                            LOGO
+                        <div className="mx-auto mb-2 h-16 w-16 flex items-center justify-center overflow-hidden">
+                            {logoUrl ? (
+                                <img src={logoUrl} alt="Store Logo" className="w-full h-full object-contain grayscale" />
+                            ) : (
+                                <div className="h-10 w-10 rounded-full border border-black/20 flex items-center justify-center text-[8px]">LOGO</div>
+                            )}
                         </div>
                     )}
                     <h1 className="text-base font-bold text-black uppercase tracking-wider">{header}</h1>

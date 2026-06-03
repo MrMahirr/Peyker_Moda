@@ -10,7 +10,7 @@ const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz'
 export const PeriodClosing = () => {
     const [year, setYear] = useState(new Date().getFullYear());
     const [month, setMonth] = useState(new Date().getMonth());
-    const [summary, setSummary] = useState<{ totalIncome: number; totalExpense: number; netProfit: number; taxPayable: number } | null>(null);
+    const [summary, setSummary] = useState<{ totalIncome: number; totalExpense: number; netProfit: number; taxPayable: number; isClosed?: boolean } | null>(null);
     const [loading, setLoading] = useState(false);
     const [closing, setClosing] = useState(false);
 
@@ -31,6 +31,11 @@ export const PeriodClosing = () => {
         finally { setClosing(false); }
     };
 
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth();
+    const isPastPeriod = year < currentYear || (year === currentYear && month < currentMonth);
+
     return (
         <div className="space-y-6 p-6">
             <div className="flex items-center gap-3">
@@ -42,7 +47,7 @@ export const PeriodClosing = () => {
                 <div>
                     <label className="text-[12px] font-semibold text-zinc-600 block mb-1">Yıl</label>
                     <select value={year} onChange={e => setYear(Number(e.target.value))} className="h-10 px-3 bg-white border border-zinc-200/80 rounded-lg text-[13px] font-semibold">
-                        {[2024, 2025, 2026].map(y => <option key={y}>{y}</option>)}
+                        {[2024, 2025, 2026, 2027].map(y => <option key={y}>{y}</option>)}
                     </select>
                 </div>
                 <div>
@@ -77,9 +82,28 @@ export const PeriodClosing = () => {
                             <p className="text-xl font-black text-amber-600 mt-1">{formatCurrency(summary.taxPayable)}</p>
                         </div>
                     </div>
-                    <Button className="font-semibold shadow-md" icon={closing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />} onClick={handleClose} disabled={closing}>
-                        {closing ? 'Kapatılıyor...' : 'Dönemi Kapat'}
-                    </Button>
+                    <div className="flex justify-between items-center mt-6 pt-4 border-t border-zinc-100">
+                        {summary.isClosed ? (
+                            <div className="flex items-center gap-2 px-4 py-2.5 bg-zinc-100 text-zinc-600 rounded-lg font-semibold text-[14px]">
+                                <Lock className="w-4 h-4" />
+                                Bu Dönem Kapatıldı
+                            </div>
+                        ) : !isPastPeriod ? (
+                            <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 text-amber-600 border border-amber-100/50 rounded-lg font-semibold text-[14px] ml-auto">
+                                <Lock className="w-4 h-4" />
+                                Ay Henüz Tamamlanmadı
+                            </div>
+                        ) : (
+                            <Button 
+                                className="font-semibold shadow-md ml-auto" 
+                                icon={closing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />} 
+                                onClick={handleClose} 
+                                disabled={closing}
+                            >
+                                {closing ? 'Kapatılıyor...' : 'Dönemi Kapat'}
+                            </Button>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

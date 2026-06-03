@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
+import { showDeleteConfirm } from '@/utils/swal';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
+import { Modal } from '@/components/ui/Modal';
 import {
     Loader2,
     Pencil,
@@ -256,12 +258,15 @@ export const PriceListManager = () => {
     };
 
     const handleDelete = async (id: string) => {
-        try {
-            await priceListsService.delete(id);
-            setPriceLists((current) => current.filter((priceList) => priceList.id !== id));
-            toast.success('Fiyat listesi silindi');
-        } catch {
-            toast.error('Fiyat listesi silinemedi');
+        const result = await showDeleteConfirm('Fiyat Listesini Sil?', 'Bu fiyat listesi kalıcı olarak silinecektir.');
+        if (result.isConfirmed) {
+            try {
+                await priceListsService.delete(id);
+                setPriceLists((current) => current.filter((priceList) => priceList.id !== id));
+                toast.success('Fiyat listesi silindi');
+            } catch {
+                toast.error('Fiyat listesi silinemedi');
+            }
         }
     };
 
@@ -285,11 +290,14 @@ export const PriceListManager = () => {
                 </Button>
             </div>
 
-            {showForm ? (
-                <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm space-y-4">
-                    <h2 className="text-lg font-bold text-zinc-900">
-                        {editingId ? 'Fiyat Listesi Guncelle' : 'Yeni Fiyat Listesi'}
-                    </h2>
+            <Modal
+                isOpen={showForm}
+                onClose={resetForm}
+                title={editingId ? 'Fiyat Listesi Guncelle' : 'Yeni Fiyat Listesi'}
+                description={editingId ? 'Fiyat listesi detaylarini guncelleyin.' : 'Musterilerinize ozel fiyat ve indirimler tanimlayin.'}
+                size="lg"
+            >
+                <div className="space-y-4 pt-4">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <Input
                             label="Liste Adi"
@@ -418,7 +426,7 @@ export const PriceListManager = () => {
                         }
                     />
 
-                    <label className="flex items-center gap-2 text-[13px] font-medium text-zinc-600 cursor-pointer">
+                    <div className="flex items-center gap-2 pt-2 bg-zinc-50 p-4 rounded-xl border border-zinc-200/50">
                         <input
                             type="checkbox"
                             checked={formData.isActive ?? true}
@@ -428,21 +436,23 @@ export const PriceListManager = () => {
                                     isActive: event.target.checked,
                                 }))
                             }
-                            className="rounded border-zinc-300"
+                            className="w-5 h-5 text-blue-600 border-zinc-300 rounded focus:ring-blue-600 cursor-pointer"
                         />
-                        Liste aktif
-                    </label>
+                        <label className="text-[14px] font-semibold text-zinc-800 cursor-pointer" onClick={() => setFormData((c) => ({ ...c, isActive: !c.isActive }))}>
+                            Liste aktif
+                        </label>
+                    </div>
 
-                    <div className="flex gap-2">
-                        <Button onClick={handleSave} loading={saving}>
-                            {editingId ? 'Guncelle' : 'Kaydet'}
-                        </Button>
-                        <Button variant="ghost" onClick={resetForm}>
+                    <div className="pt-6 border-t border-zinc-100 flex justify-end gap-3">
+                        <Button variant="secondary" type="button" onClick={resetForm} disabled={saving} className="font-semibold">
                             Iptal
+                        </Button>
+                        <Button variant="primary" onClick={handleSave} loading={saving} className="font-bold min-w-[140px]">
+                            {editingId ? 'Guncelle' : 'Kaydet'}
                         </Button>
                     </div>
                 </div>
-            ) : null}
+            </Modal>
 
             {priceLists.length === 0 ? (
                 <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center">

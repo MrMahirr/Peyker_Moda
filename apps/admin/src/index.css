@@ -44,6 +44,25 @@ body {
   @apply outline-2 outline-offset-2 outline-zinc-900/40;
 }
 
+/* ── Global Cursors ─────────────────────────────── */
+button, 
+[role="button"],
+select,
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
+input[type="checkbox"],
+input[type="radio"],
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
 /* ── Scrollbar ──────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 4px;

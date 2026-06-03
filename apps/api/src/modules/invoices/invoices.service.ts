@@ -12,57 +12,77 @@ export class InvoicesService {
 
     constructor(private readonly prisma: PrismaService) { }
 
-    async createFromOrder(createInvoiceDto: CreateInvoiceDto) {
-        const { orderId } = createInvoiceDto;
+    async create(createInvoiceDto: CreateInvoiceDto) {
+        const { orderId, items, customerName, invoiceNumber, total, tax, status, taxId, taxOffice } = createInvoiceDto;
 
-        const order = await this.prisma.order.findUnique({
-            where: { id: orderId },
-            include: {
-                items: { include: { variant: { include: { product: true } } } },
-                customer: true,
-                user: true,
-                invoice: true
+        if (orderId) {
+            // SIPARİŞ ÜZERİNDEN FATURA
+            const order = await this.prisma.order.findUnique({
+                where: { id: orderId },
+                include: {
+                    items: { include: { variant: { include: { product: true } } } },
+                    customer: true,
+                    user: true,
+                    invoice: true
+                }
+            });
+
+            if (!order) {
+                throw new NotFoundException('Sipariş bulunamadı');
             }
-        });
 
-        if (!order) {
-            throw new NotFoundException('Sipariş bulunamadı');
-        }
-
-        if (order.invoice) {
-            throw new BadRequestException('Bu sipariş için zaten fatura oluşturulmuş');
-        }
-
-        // Fatura No oluştur (Örnek: INV-20240001)
-        const invoiceNo = `INV-${Date.now()}`;
-
-        // Vergi hesaplama (Basit mantık: İçinden %20 KDV ayırma veya üzerine ekleme - burada içinden ayırıyoruz varsayalım)
-        // Türkiye'de genelde fiyatlar KDV dahil olur perakendede.
-        // Tax Base = Total / 1.20
-        // Tax Amount = Total - Tax Base
-        const totalAmount = Number(order.totalAmount);
-        const taxRate = 20;
-        const taxBase = totalAmount / (1 + taxRate / 100);
-        const taxAmount = totalAmount - taxBase;
-
-        const invoice = await this.prisma.invoice.create({
-            data: {
-                invoiceNo,
-                orderId,
-                customerName: order.customer ? `${order.customer.firstName} ${order.customer.lastName}` : 'Misafir Müşteri',
-                taxId: createInvoiceDto.taxId,
-                taxOffice: createInvoiceDto.taxOffice,
-                amount: totalAmount,
-                taxRate,
-                taxAmount: Number(taxAmount.toFixed(2)),
-                status: 'DRAFT'
+            if (order.invoice) {
+                throw new BadRequestException('Bu sipariş için zaten fatura oluşturulmuş');
             }
-        });
 
-        // PDF Oluşturma (Asenkron yapılabilir)
-        this.generatePdf(invoice.id).catch(err => this.logger.error('PDF generation failed', err));
+            const invoiceNo = invoiceNumber || `INV-${Date.now()}`;
+            const totalAmount = Number(order.totalAmount);
+            const taxRate = 20;
+            const taxBase = totalAmount / (1 + taxRate / 100);
+            const taxAmount = totalAmount - taxBase;
 
-        return invoice;
+            const invoice = await this.prisma.invoice.create({
+                data: {
+                    invoiceNo,
+                    orderId,
+                    customerName: order.customer ? `${order.customer.firstName} ${order.customer.lastName}` : 'Misafir Müşteri',
+                    taxId: taxId || createInvoiceDto.taxId,
+                    taxOffice: taxOffice || createInvoiceDto.taxOffice,
+                    amount: totalAmount,
+                    taxRate,
+                    taxAmount: Number(taxAmount.toFixed(2)),
+                    status: (status as InvoiceStatus) || 'DRAFT'
+                }
+            });
+
+            this.generatePdf(invoice.id).catch(err => this.logger.error('PDF generation failed', err));
+
+            return invoice;
+        } else {
+            // MANUEL FATURA
+            if (!items || items.length === 0) {
+                throw new BadRequestException('Fatura oluşturmak için sipariş numarası veya satır kalemleri (items) gereklidir.');
+            }
+
+            const invoiceNo = invoiceNumber || `INV-${Date.now()}`;
+            const invoice = await this.prisma.invoice.create({
+                data: {
+                    invoiceNo,
+                    customerName: customerName || 'Bilinmeyen Müşteri',
+                    taxId,
+                    taxOffice,
+                    amount: total || 0,
+                    taxRate: items[0]?.taxRate || 20,
+                    taxAmount: tax || 0,
+                    status: (status as InvoiceStatus) || 'DRAFT',
+                    items: items as any
+                }
+            });
+
+            this.generatePdf(invoice.id).catch(err => this.logger.error('PDF generation failed', err));
+
+            return invoice;
+        }
     }
 
     async findAll(query: { page?: number; limit?: number; status?: InvoiceStatus; startDate?: string; endDate?: string }) {
@@ -182,10 +202,25 @@ export class InvoicesService {
 
         // Items
         doc.text('Ürünler:', { underline: true });
-        invoice.order?.items.forEach((item, index) => {
-            const productName = item.variant?.product?.name || 'Ürün';
-            doc.text(`${index + 1}. ${productName} x ${item.quantity} = ${item.total} TL`);
-        });
+        
+        const isManual = !invoice.orderId && invoice.items;
+        
+        if (isManual) {
+            const manualItems = invoice.items as any[];
+            manualItems.forEach((item, index) => {
+                const productName = item.productName || 'Ürün';
+                const quantity = Number(item.quantity) || 1;
+                const unitPrice = Number(item.unitPrice) || 0;
+                const total = quantity * unitPrice;
+                doc.text(`${index + 1}. ${productName} x ${quantity} = ${total.toFixed(2)} TL`);
+            });
+        } else if (invoice.order?.items) {
+            invoice.order.items.forEach((item, index) => {
+                const productName = item.variant?.product?.name || 'Ürün';
+                doc.text(`${index + 1}. ${productName} x ${item.quantity} = ${item.total} TL`);
+            });
+        }
+        
         doc.moveDown();
 
         // Totals

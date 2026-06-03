@@ -457,19 +457,21 @@ model Transaction {
 model Invoice {
   id           String        @id @default(uuid())
   invoiceNo    String        @unique
-  orderId      String        @unique
+  orderId      String?       @unique
   customerName String
   taxId        String?
   taxOffice    String?
   amount       Decimal       @db.Decimal(10, 2)
   taxRate      Int           @default(20)
   taxAmount    Decimal       @db.Decimal(10, 2)
+  items        Json?
   pdfUrl       String?
   status       InvoiceStatus @default(DRAFT)
   issueDate    DateTime      @default(now())
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  order        Order         @relation(fields: [orderId], references: [id])
+  order        Order?        @relation(fields: [orderId], references: [id])
+
 
   @@map("invoices")
 }

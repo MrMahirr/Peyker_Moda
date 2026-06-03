@@ -16,9 +16,9 @@ export class InvoicesController {
 
     @Post()
     @Roles('admin', 'manager')
-    @ApiOperation({ summary: 'Siparişten fatura oluştur' })
+    @ApiOperation({ summary: 'Fatura oluştur (Siparişten veya Manuel)' })
     async create(@Body() createInvoiceDto: CreateInvoiceDto) {
-        return this.invoicesService.createFromOrder(createInvoiceDto);
+        return this.invoicesService.create(createInvoiceDto);
     }
 
     @Post('return')

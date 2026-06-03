@@ -71,8 +71,21 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, onS
   const invoiceType = watch("type");
 
   const totals = useMemo(() => {
-    const subtotal = watchItems.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
-    const taxTotal = watchItems.reduce((acc, item) => acc + (item.quantity * item.unitPrice * (item.taxRate / 100)), 0);
+    if (!watchItems) return { subtotal: 0, tax: 0, total: 0 };
+    
+    const subtotal = watchItems.reduce((acc, item) => {
+      const q = Number(item?.quantity) || 0;
+      const p = Number(item?.unitPrice) || 0;
+      return acc + (q * p);
+    }, 0);
+
+    const taxTotal = watchItems.reduce((acc, item) => {
+      const q = Number(item?.quantity) || 0;
+      const p = Number(item?.unitPrice) || 0;
+      const t = Number(item?.taxRate) || 0;
+      return acc + (q * p * (t / 100));
+    }, 0);
+
     return {
       subtotal,
       tax: taxTotal,
@@ -215,7 +228,11 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, onS
                     />
                   </td>
                   <td className="px-4 py-2 text-right font-mono font-bold text-zinc-700">
-                    {formatCurrency(watchItems[index]?.quantity * watchItems[index]?.unitPrice * (1 + watchItems[index]?.taxRate / 100) || 0)}
+                    {formatCurrency(
+                      (Number(watchItems[index]?.quantity) || 0) * 
+                      (Number(watchItems[index]?.unitPrice) || 0) * 
+                      (1 + (Number(watchItems[index]?.taxRate) || 0) / 100)
+                    )}
                   </td>
                   <td className="px-2">
                     <button

@@ -75,5 +75,14 @@ export const transactionsService = {
     async getSummary(startDate: string, endDate: string): Promise<ReportSummary> {
         const response = await api.get(`/reports/summary?startDate=${startDate}&endDate=${endDate}`);
         return response.data?.data || response.data;
+    },
+
+    async getCashBankBalances(): Promise<{ cashBalance: number; bankBalance: number; totalBalance: number }> {
+        const response = await api.get('/transactions/reports/cash-bank-balances');
+        return response.data?.data || response.data;
+    },
+
+    async delete(id: string): Promise<void> {
+        await api.delete(`/transactions/${id}`);
     }
 };

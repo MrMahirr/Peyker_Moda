@@ -84,6 +84,13 @@ export class TransactionsController {
         return this.transactionsService.getFinancialReport(query);
     }
 
+    @Get('transactions/reports/cash-bank-balances')
+    @Roles('admin', 'manager')
+    @ApiOperation({ summary: 'Nakit ve Banka Gerçek Kasa Bakiyeleri' })
+    async getCashBankBalances() {
+        return this.transactionsService.getCashBankBalances();
+    }
+
     @Get('reports/summary')
     @Roles('admin', 'manager')
     @ApiOperation({ summary: 'Özet rapor (gelir/gider)' })

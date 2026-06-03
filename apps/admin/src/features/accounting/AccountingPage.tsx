@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { TransactionList } from './cash-flow/TransactionList';
 import { InvoiceList } from './invoices/InvoiceList';
 import { ZReport } from './reports/ZReport';
-import { Wallet, PieChart, FileText, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
-import { cashService } from './services/cash.service';
+import { Wallet, PieChart, FileText, TrendingUp, TrendingDown, Loader2, CreditCard } from 'lucide-react';
 import { transactionsService } from './services/transactions.service';
 import { PageHeader } from '@/components/shared/PageHeader';
 
 export const AccountingPage = () => {
     const [activeTab, setActiveTab] = useState<'transactions' | 'invoices' | 'reports'>('transactions');
     const [cashBalance, setCashBalance] = useState(0);
+    const [bankBalance, setBankBalance] = useState(0);
     const [monthlyIncome, setMonthlyIncome] = useState(0);
     const [monthlyExpense, setMonthlyExpense] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -17,10 +17,10 @@ export const AccountingPage = () => {
     useEffect(() => {
         const fetchDashboardStats = async () => {
             try {
-                // 1. Kasa bakiyesi: Tüm aktif kasaların bakiyelerinin toplamı
-                const registers = await cashService.getRegisters();
-                const totalBalance = registers.reduce((sum, reg) => sum + Number(reg.balance || 0), 0);
-                setCashBalance(totalBalance);
+                // Nakit ve Banka bakiyeleri (Gerçek işlem verilerinden)
+                const balances = await transactionsService.getCashBankBalances();
+                setCashBalance(balances.cashBalance || 0);
+                setBankBalance(balances.bankBalance || 0);
 
                 // 2. Aylık gelir / gider hesaplaması
                 const now = new Date();
@@ -89,18 +89,35 @@ export const AccountingPage = () => {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="bg-zinc-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                {/* Nakit Kasa Bakiyesi */}
+                <div className="bg-emerald-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-colors duration-500" />
                     <div className="relative z-10 flex justify-between items-start">
                         <div>
-                            <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">Kasa Bakiyesi</p>
-                            <h3 className="text-[32px] font-black mt-2 tracking-tight">
-                                {isLoading ? <Loader2 className="h-8 w-8 animate-spin mt-1 text-zinc-500" /> : formatCurrency(cashBalance)}
+                            <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-widest">Nakit Kasa</p>
+                            <h3 className="text-2xl font-black mt-2 tracking-tight flex items-center gap-1">
+                                {isLoading ? <Loader2 className="h-6 w-6 animate-spin mt-1 text-emerald-200/50" /> : formatCurrency(cashBalance)}
                             </h3>
                         </div>
-                        <div className="p-3 bg-zinc-800 rounded-xl shadow-inner border border-zinc-700/50">
-                            <Wallet className="h-6 w-6 text-zinc-300" />
+                        <div className="p-2.5 bg-emerald-800 rounded-xl shadow-inner border border-emerald-700/50">
+                            <Wallet className="h-5 w-5 text-emerald-100" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Banka Bakiyesi */}
+                <div className="bg-indigo-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-colors duration-500" />
+                    <div className="relative z-10 flex justify-between items-start">
+                        <div>
+                            <p className="text-indigo-100/70 text-xs font-bold uppercase tracking-widest">Banka Bakiyesi</p>
+                            <h3 className="text-2xl font-black mt-2 tracking-tight flex items-center gap-1">
+                                {isLoading ? <Loader2 className="h-6 w-6 animate-spin mt-1 text-indigo-200/50" /> : formatCurrency(bankBalance)}
+                            </h3>
+                        </div>
+                        <div className="p-2.5 bg-indigo-800 rounded-xl shadow-inner border border-indigo-700/50">
+                            <CreditCard className="h-5 w-5 text-indigo-100" />
                         </div>
                     </div>
                 </div>

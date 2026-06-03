@@ -15,6 +15,7 @@ import { ReturnRequests } from '@/features/sales/returns/ReturnRequests';
 import { OrderList } from '@/features/sales/orders/OrderList';
 import { OrderDetail } from '@/features/sales/orders/OrderDetail';
 import { AccountingPage } from '@/features/accounting/AccountingPage';
+import { TransactionDetail } from '@/features/accounting/cash-flow/TransactionDetail';
 import { StoreSettings } from '@/features/settings/general/StoreSettings';
 import { ReceiptDesigner } from '@/features/settings/printer/ReceiptDesigner';
 import { UserProfile } from '@/features/settings/profile/UserProfile';
@@ -91,6 +92,7 @@ export const AppRoutes = () => {
                 },
                 { path: 'returns', element: <RequireRole allowedRoles={['admin', 'manager', 'staff']}><ReturnRequests /></RequireRole> },
                 { path: 'accounting', element: <RequireRole allowedRoles={['admin', 'manager']}><AccountingPage /></RequireRole> },
+                { path: 'accounting/transactions/:id', element: <RequireRole allowedRoles={['admin', 'manager']}><TransactionDetail /></RequireRole> },
                 {
                     path: 'marketing',
                     children: [

@@ -186,6 +186,60 @@ export class TransactionsService {
     }
 
     /**
+     * Nakit ve Banka Bakiyeleri
+     * Gerçek işlem kayıtlarından (Payment ve Transaction) nakit ve banka bakiyelerini dinamik hesaplar.
+     */
+    async getCashBankBalances() {
+        // Nakit (CASH) giriş/çıkış hesaplamaları
+        const [cashTransactionsIncome, cashTransactionsExpense, cashPayments] = await Promise.all([
+            this.prisma.transaction.aggregate({
+                where: { type: TransactionType.INCOME, paymentMethod: 'CASH' },
+                _sum: { amount: true },
+            }),
+            this.prisma.transaction.aggregate({
+                where: { type: TransactionType.EXPENSE, paymentMethod: 'CASH' },
+                _sum: { amount: true },
+            }),
+            this.prisma.payment.aggregate({
+                where: { status: PaymentStatus.COMPLETED, method: 'CASH' },
+                _sum: { amount: true },
+            }),
+        ]);
+
+        // Banka (Kredi Kartı, Havale vb.) giriş/çıkış hesaplamaları
+        const bankMethods = ['CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER'];
+        
+        const [bankTransactionsIncome, bankTransactionsExpense, bankPayments] = await Promise.all([
+            this.prisma.transaction.aggregate({
+                where: { type: TransactionType.INCOME, paymentMethod: { in: bankMethods as any } },
+                _sum: { amount: true },
+            }),
+            this.prisma.transaction.aggregate({
+                where: { type: TransactionType.EXPENSE, paymentMethod: { in: bankMethods as any } },
+                _sum: { amount: true },
+            }),
+            this.prisma.payment.aggregate({
+                where: { status: PaymentStatus.COMPLETED, method: { in: bankMethods as any } },
+                _sum: { amount: true },
+            }),
+        ]);
+
+        const totalCashIncome = Number(cashTransactionsIncome._sum.amount || 0) + Number(cashPayments._sum.amount || 0);
+        const totalCashExpense = Number(cashTransactionsExpense._sum.amount || 0);
+        const cashBalance = totalCashIncome - totalCashExpense;
+
+        const totalBankIncome = Number(bankTransactionsIncome._sum.amount || 0) + Number(bankPayments._sum.amount || 0);
+        const totalBankExpense = Number(bankTransactionsExpense._sum.amount || 0);
+        const bankBalance = totalBankIncome - totalBankExpense;
+
+        return {
+            cashBalance,
+            bankBalance,
+            totalBalance: cashBalance + bankBalance
+        };
+    }
+
+    /**
      * Satış raporu
      */
     async getSalesReport(query: ReportQueryDto) {

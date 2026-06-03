@@ -13,7 +13,7 @@ import {
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { cn } from '../../lib/utils';
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface DataGridProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -70,13 +70,43 @@ export function DataGrid<TData, TValue>({
                             <tr key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <th key={header.id} className="px-4 py-3 align-middle [&:has([role=checkbox])]:pr-0">
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                )}
+                                        <th 
+                                            key={header.id} 
+                                            className="px-4 py-3 align-middle [&:has([role=checkbox])]:pr-0"
+                                        >
+                                            {header.isPlaceholder ? null : (
+                                                <div
+                                                    className={cn(
+                                                        "flex items-center gap-2",
+                                                        header.column.getCanSort() && "cursor-pointer select-none hover:text-zinc-900"
+                                                    )}
+                                                    onClick={header.column.getToggleSortingHandler()}
+                                                    title={
+                                                        header.column.getCanSort()
+                                                            ? header.column.getNextSortingOrder() === 'asc'
+                                                                ? 'Artan şekilde sırala'
+                                                                : header.column.getNextSortingOrder() === 'desc'
+                                                                    ? 'Azalan şekilde sırala'
+                                                                    : 'Sıralamayı temizle'
+                                                            : undefined
+                                                    }
+                                                >
+                                                    {flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext()
+                                                    )}
+                                                    {header.column.getCanSort() && (
+                                                        <span className="flex-shrink-0 text-zinc-400">
+                                                            {{
+                                                                asc: <ArrowUp className="h-3.5 w-3.5 text-zinc-900" />,
+                                                                desc: <ArrowDown className="h-3.5 w-3.5 text-zinc-900" />,
+                                                            }[header.column.getIsSorted() as string] ?? (
+                                                                <ArrowUpDown className="h-3.5 w-3.5 opacity-50" />
+                                                            )}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </th>
                                     );
                                 })}

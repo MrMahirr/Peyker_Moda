@@ -40,27 +40,27 @@ export class CreateCustomerDto {
     if (typeof value !== 'string' || !value.trim()) return value;
     let cleaned = value.trim();
     if (cleaned.startsWith('*')) cleaned = '+' + cleaned.substring(1);
-    
+
     const hasPlus = cleaned.startsWith('+');
     cleaned = cleaned.replace(/\D/g, '');
     if (hasPlus) cleaned = '+' + cleaned;
-    
+
     if (cleaned.startsWith('00')) cleaned = '+' + cleaned.substring(2);
-    
+
     if (!cleaned.startsWith('+')) {
-        if (cleaned.startsWith('90')) cleaned = '+' + cleaned;
-        else if (cleaned.startsWith('0')) cleaned = '+90' + cleaned.substring(1);
-        else cleaned = '+90' + cleaned;
+      if (cleaned.startsWith('90')) cleaned = '+' + cleaned;
+      else if (cleaned.startsWith('0')) cleaned = '+90' + cleaned.substring(1);
+      else cleaned = '+90' + cleaned;
     }
-    
+
     if (cleaned.length === 13 && cleaned.startsWith('+90')) {
-        return `${cleaned.substring(0, 3)} ${cleaned.substring(3, 6)} ${cleaned.substring(6, 9)} ${cleaned.substring(9, 11)} ${cleaned.substring(11, 13)}`;
+      return `${cleaned.substring(0, 3)} ${cleaned.substring(3, 6)} ${cleaned.substring(6, 9)} ${cleaned.substring(9, 11)} ${cleaned.substring(11, 13)}`;
     }
-    
+
     if (cleaned.startsWith('+90') && cleaned.length > 3) {
-        return '+90 ' + cleaned.substring(3);
+      return '+90 ' + cleaned.substring(3);
     }
-    
+
     return cleaned;
   })
   @IsString()
@@ -124,27 +124,27 @@ export class UpdateCustomerDto {
     if (typeof value !== 'string' || !value.trim()) return value;
     let cleaned = value.trim();
     if (cleaned.startsWith('*')) cleaned = '+' + cleaned.substring(1);
-    
+
     const hasPlus = cleaned.startsWith('+');
     cleaned = cleaned.replace(/\D/g, '');
     if (hasPlus) cleaned = '+' + cleaned;
-    
+
     if (cleaned.startsWith('00')) cleaned = '+' + cleaned.substring(2);
-    
+
     if (!cleaned.startsWith('+')) {
-        if (cleaned.startsWith('90')) cleaned = '+' + cleaned;
-        else if (cleaned.startsWith('0')) cleaned = '+90' + cleaned.substring(1);
-        else cleaned = '+90' + cleaned;
+      if (cleaned.startsWith('90')) cleaned = '+' + cleaned;
+      else if (cleaned.startsWith('0')) cleaned = '+90' + cleaned.substring(1);
+      else cleaned = '+90' + cleaned;
     }
-    
+
     if (cleaned.length === 13 && cleaned.startsWith('+90')) {
-        return `${cleaned.substring(0, 3)} ${cleaned.substring(3, 6)} ${cleaned.substring(6, 9)} ${cleaned.substring(9, 11)} ${cleaned.substring(11, 13)}`;
+      return `${cleaned.substring(0, 3)} ${cleaned.substring(3, 6)} ${cleaned.substring(6, 9)} ${cleaned.substring(9, 11)} ${cleaned.substring(11, 13)}`;
     }
-    
+
     if (cleaned.startsWith('+90') && cleaned.length > 3) {
-        return '+90 ' + cleaned.substring(3);
+      return '+90 ' + cleaned.substring(3);
     }
-    
+
     return cleaned;
   })
   @IsString()

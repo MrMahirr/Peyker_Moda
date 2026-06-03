@@ -53,13 +53,16 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, on
             return;
         }
 
+        const submitData = { ...formData };
+        if (submitData.email === '') submitData.email = undefined;
+
         setLoading(true);
         try {
             if (customerToEdit) {
-                await customersService.update(customerToEdit.id, formData);
+                await customersService.update(customerToEdit.id, submitData);
                 toast.success('Müşteri başarıyla güncellendi');
             } else {
-                await customersService.create(formData);
+                await customersService.create(submitData);
                 toast.success('Yeni müşteri başarıyla eklendi');
             }
             onSuccess();

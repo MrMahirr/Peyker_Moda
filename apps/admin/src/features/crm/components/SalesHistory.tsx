@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
 import { Eye, FileText, Loader2 } from 'lucide-react';
@@ -30,16 +31,21 @@ export const SalesHistory = ({ customerId }: SalesHistoryProps) => {
     const [sales, setSales] = useState<SaleRecord[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         const fetchSales = async () => {
             try {
-                const response = await api.get(`/orders?customerId=${customerId}&limit=20`);
-                const orders = response.data?.data?.data || response.data?.data || [];
+                // Backend'deki customers controller'a istek at
+                const response = await api.get(`/customers/${customerId}/orders?limit=20`);
+                const result = response.data?.data || response.data;
+                const orders = result.data || result || [];
                 setSales(orders.map((order: any) => ({
                     id: order.orderNumber || order.id,
+                    orderId: order.id, // Gerçek ID'yi sakla
                     date: new Date(order.createdAt).toLocaleString('tr-TR'),
-                    total: order.total || 0,
-                    items: order.items?.length || 0,
+                    total: order.totalAmount || order.total || 0,
+                    items: order._count?.items || order.items?.length || 0,
                     status: order.status || 'PENDING',
                 })));
             } catch (err) {
@@ -53,6 +59,24 @@ export const SalesHistory = ({ customerId }: SalesHistoryProps) => {
             fetchSales();
         }
     }, [customerId]);
+
+    const handlePrintReceipt = async (orderId: string) => {
+        try {
+            // Fiş yazdırma için backend customers modülündeki yeni endpoint'e istek at
+            const response = await api.get(`/customers/${customerId}/orders/${orderId}/receipt`, {
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `receipt-${orderId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Receipt download error:', error);
+        }
+    };
 
     const columns = [
         {
@@ -89,12 +113,23 @@ export const SalesHistory = ({ customerId }: SalesHistoryProps) => {
         {
             header: 'İşlemler',
             id: 'actions',
-            cell: () => (
+            cell: ({ row }: { row: { original: any } }) => (
                 <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-500 hover:text-indigo-600">
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 text-zinc-500 hover:text-indigo-600"
+                        onClick={() => navigate(`/sales/orders/${row.original.orderId}`)}
+                    >
                         <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-500 hover:text-zinc-900" title="Fiş Görüntüle">
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 text-zinc-500 hover:text-zinc-900" 
+                        title="Fiş Görüntüle"
+                        onClick={() => handlePrintReceipt(row.original.orderId)}
+                    >
                         <FileText className="h-4 w-4" />
                     </Button>
                 </div>

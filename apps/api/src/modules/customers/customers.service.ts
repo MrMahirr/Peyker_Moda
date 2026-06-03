@@ -75,7 +75,21 @@ export class CustomersService {
             this.prisma.customer.count({ where }),
         ]);
 
-        return createPaginatedResult(customers, total, page, limit);
+        const mappedCustomers = await Promise.all(
+            customers.map(async (c) => {
+                const stats = await this.prisma.order.aggregate({
+                    where: { customerId: c.id },
+                    _sum: { totalAmount: true },
+                });
+                return {
+                    ...c,
+                    totalSpent: Number(stats._sum.totalAmount || 0),
+                    orderCount: c._count?.orders || 0,
+                };
+            })
+        );
+
+        return createPaginatedResult(mappedCustomers, total, page, limit);
     }
 
     /**
@@ -98,7 +112,17 @@ export class CustomersService {
             throw new NotFoundException('Müşteri bulunamadı');
         }
 
-        return customer;
+        // Toplam harcamayı dinamik olarak siparişlerden hesapla
+        const orderStats = await this.prisma.order.aggregate({
+            where: { customerId: id },
+            _sum: { totalAmount: true },
+        });
+
+        return {
+            ...customer,
+            totalSpent: Number(orderStats._sum.totalAmount || 0),
+            orderCount: customer._count?.orders || 0,
+        };
     }
 
     /**
@@ -113,7 +137,7 @@ export class CustomersService {
             this.prisma.order.findMany({
                 where: { customerId: id },
                 skip,
-                take: limit,
+                take: Number(limit),
                 orderBy: { createdAt: 'desc' },
                 select: {
                     id: true,
@@ -130,6 +154,24 @@ export class CustomersService {
         ]);
 
         return createPaginatedResult(orders, total, page, limit);
+    }
+
+    /**
+     * Sipariş fişi getir (örnek implementasyon, gerçekte PDF generate edilebilir veya order data dönülüp FE'de generate edilebilir)
+     */
+    async getOrderReceipt(customerId: string, orderId: string) {
+        // Müşteri ve siparişin doğruluğunu kontrol et
+        const order = await this.prisma.order.findFirst({
+            where: { id: orderId, customerId: customerId },
+        });
+
+        if (!order) {
+            throw new NotFoundException('Sipariş bulunamadı');
+        }
+
+        // Fiş yazdırma için gerekli PDF veya belge oluşturma işlemleri
+        // Şimdilik string veya buffer döndüreceğiz
+        return `Receipt for Order ${order.orderNumber}`;
     }
 
     /**

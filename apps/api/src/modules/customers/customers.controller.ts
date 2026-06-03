@@ -82,6 +82,16 @@ export class CustomersController {
         return this.customersService.findOrders(id, page, limit);
     }
 
+    @Get(':id/orders/:orderId/receipt')
+    @Roles('admin', 'manager', 'staff')
+    @ApiOperation({ summary: 'Musteri siparis fisi' })
+    async getOrderReceipt(
+        @Param('id') customerId: string,
+        @Param('orderId') orderId: string,
+    ) {
+        return this.customersService.getOrderReceipt(customerId, orderId);
+    }
+
     @Get(':id/stats')
     @Roles('admin', 'manager', 'staff')
     @ApiOperation({ summary: 'Musteri istatistikleri' })

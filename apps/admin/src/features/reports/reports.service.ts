@@ -26,12 +26,12 @@ export type ReportPeriod = 'this_month' | 'last_month' | 'last_3_months' | 'this
 class ReportsService {
     async getSalesStats(period: ReportPeriod = 'this_month'): Promise<SalesStats> {
         const response = await axiosInstance.get(`/reports/sales`, { params: { period } });
-        return response.data;
+        return response.data?.data || response.data;
     }
 
     async getProductPerformance(period: ReportPeriod = 'this_month'): Promise<ProductPerformance> {
         const response = await axiosInstance.get(`/reports/products/performance`, { params: { period } });
-        return response.data;
+        return response.data?.data || response.data;
     }
 }
 

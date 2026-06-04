@@ -9,17 +9,17 @@ import { GetReportQueryDto } from './dto/reports.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('reports')
 export class ReportsController {
-    constructor(private readonly reportsService: ReportsService) {}
+  constructor(private readonly reportsService: ReportsService) {}
 
-    @Get('sales')
-    @ApiOperation({ summary: 'Satış ve ciro istatistiklerini getirir' })
-    async getSalesStats(@Query() query: GetReportQueryDto) {
-        return this.reportsService.getSalesStats(query.period);
-    }
+  @Get('sales')
+  @ApiOperation({ summary: 'Satış ve ciro istatistiklerini getirir' })
+  async getSalesStats(@Query() query: GetReportQueryDto) {
+    return this.reportsService.getSalesStats(query.period);
+  }
 
-    @Get('products/performance')
-    @ApiOperation({ summary: 'Ürün ve kategori performansını getirir' })
-    async getProductPerformance(@Query() query: GetReportQueryDto) {
-        return this.reportsService.getProductPerformance(query.period);
-    }
+  @Get('products/performance')
+  @ApiOperation({ summary: 'Ürün ve kategori performansını getirir' })
+  async getProductPerformance(@Query() query: GetReportQueryDto) {
+    return this.reportsService.getProductPerformance(query.period);
+  }
 }

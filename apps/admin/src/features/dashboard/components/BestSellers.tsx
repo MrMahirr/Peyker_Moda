@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { dashboardService, TopProduct } from '../services/dashboard.service';
 
 const formatCurrency = (value: number) => {
@@ -19,6 +20,7 @@ export const BestSellers = () => {
             } catch (err) {
                 setError('Veri yüklenemedi');
                 console.error('Top products fetch error:', err);
+                toast.error('En çok satanlar verisi yüklenemedi');
             } finally {
                 setLoading(false);
             }

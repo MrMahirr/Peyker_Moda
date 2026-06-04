@@ -4,6 +4,7 @@ import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
 import { CalendarCheck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { swal } from '@/utils/swal';
 import { cashService } from '../services/cash.service';
 
 type PeriodSummary = {
@@ -74,6 +75,17 @@ export const DailyClosing = () => {
     }, [year, month]);
 
     const handleClose = async () => {
+        const { isConfirmed } = await swal.fire({
+            title: 'Dönemi Kapat',
+            text: `${month}/${year} dönemi kapatılacak. Bu işlemden sonra bu döneme ait kayıtlar kilitlenecektir. Emin misiniz?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Evet, Kapat',
+            cancelButtonText: 'İptal',
+        });
+        
+        if (!isConfirmed) return;
+
         try {
             setClosing(true);
             await cashService.closePeriod(Number(year), Number(month));

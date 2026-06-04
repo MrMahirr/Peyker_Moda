@@ -6,6 +6,7 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { ChevronLeft, Image as ImageIcon, Loader2, Package, Boxes } from 'lucide-react';
 import { productsService, Product, ProductVariant } from './services/products.service';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const formatCurrency = (value: number, currency = 'TRY') => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(value);
@@ -51,6 +52,7 @@ export const ProductDetailPage = () => {
                 setProduct(data);
             } catch (err) {
                 console.error('Product fetch error:', err);
+                toast.error('Ürün bilgileri yüklenemedi');
             } finally {
                 setLoading(false);
             }

@@ -4,6 +4,7 @@ import { MoreVertical, Edit, Trash2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 import { productsService, Product } from '../services/products.service';
+import { toast } from 'sonner';
 
 const calculateStatus = (stock: number = 0) => {
     if (stock <= 0) return 'OUT_OF_STOCK';
@@ -25,6 +26,7 @@ export const InventoryTable = () => {
                 setTotal(res.meta.total);
             } catch (err) {
                 console.error('Failed to fetch products', err);
+                toast.error('Envanter tablosu yüklenemedi');
             } finally {
                 setLoading(false);
             }

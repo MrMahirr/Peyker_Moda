@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, ArrowRight, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { dashboardService, LowStockProduct } from '../services/dashboard.service';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +17,7 @@ export const InventoryAlerts = () => {
                 setAlerts(data);
             } catch (err) {
                 console.error('Failed to fetch inventory alerts', err);
+                toast.error('Stok uyarıları yüklenemedi');
             } finally {
                 setLoading(false);
             }

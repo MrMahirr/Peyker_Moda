@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { Plus, Edit, Trash, Eye, Loader2 } from 'lucide-react';
 import { productsService, Product } from '../services/products.service';
 import { Badge } from '@/components/ui/Badge';
+import { toast } from 'sonner';
+import { showDeleteConfirm } from '@/utils/swal';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -27,6 +29,7 @@ export const ProductList = () => {
         } catch (err) {
             setError('Ürünler yüklenemedi');
             console.error('Products fetch error:', err);
+            toast.error('Ürünler yüklenirken bir hata oluştu');
         } finally {
             setLoading(false);
         }
@@ -37,12 +40,15 @@ export const ProductList = () => {
     }, []);
 
     const handleDelete = async (id: string) => {
-        if (confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
+        const result = await showDeleteConfirm('Bu ürünü silmek istediğinize emin misiniz?', 'Bu işlem geri alınamaz.');
+        if (result.isConfirmed) {
             try {
                 await productsService.delete(id);
                 setProducts(products.filter(p => p.id !== id));
+                toast.success('Ürün başarıyla silindi');
             } catch (err) {
                 console.error('Delete error:', err);
+                toast.error('Ürün silinirken bir hata oluştu');
             }
         }
     };
@@ -52,8 +58,10 @@ export const ProductList = () => {
         try {
             const updated = await productsService.update(id, { isActive: !isActive });
             setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...updated } : p)));
+            toast.success('Ürün durumu güncellendi');
         } catch (err) {
             console.error('Publish toggle error:', err);
+            toast.error('Durum güncellenirken hata oluştu');
         } finally {
             setUpdatingId(null);
         }

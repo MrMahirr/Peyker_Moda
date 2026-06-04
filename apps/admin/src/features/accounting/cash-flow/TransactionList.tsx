@@ -35,6 +35,7 @@ export const TransactionList = () => {
             setTransactions(response.data || []);
         } catch (err) {
             console.error('Failed to fetch transactions:', err);
+            toast.error('İşlemler yüklenirken bir hata oluştu');
         } finally {
             setLoading(false);
         }

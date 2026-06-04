@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { ArrowLeft, User, ShoppingBag, Calendar, Phone, Mail, MapPin, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { customersService, Customer } from '../api/customerService';
+import { toast } from 'sonner';
 import { SalesHistory } from './SalesHistory';
 
 const formatCurrency = (value: number) => {
@@ -28,6 +29,7 @@ export const CustomerDetail = () => {
                 setCustomer(data);
             } catch (err) {
                 console.error('Customer fetch error:', err);
+                toast.error('Müşteri bilgileri yüklenemedi');
             } finally {
                 setLoading(false);
             }

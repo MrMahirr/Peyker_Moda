@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Eye, Loader2 } from 'lucide-react';
 import { ordersService, Order } from '../services/orders.service';
 import { Badge } from '@/components/ui/Badge';
+import { toast } from 'sonner';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -49,6 +50,7 @@ export const OrderList = () => {
             } catch (err) {
                 setError('Siparişler yüklenemedi');
                 console.error('Orders fetch error:', err);
+                toast.error('Siparişler yüklenirken bir hata oluştu');
             } finally {
                 setLoading(false);
             }

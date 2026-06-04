@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { CreateSupplierDto, UpdateSupplierDto } from '../suppliers.service';
 import { Supplier } from '../types';
 import { Button } from '@/components/ui/Button';
+import { toast } from 'sonner';
 
 interface SupplierModalProps {
     isOpen: boolean;
@@ -66,9 +67,11 @@ export const SupplierModal = ({ isOpen, onClose, onSave, supplier }: SupplierMod
             }
             
             await onSave(cleanData as CreateSupplierDto);
+            toast.success(supplier ? 'Tedarikçi başarıyla güncellendi' : 'Tedarikçi başarıyla eklendi');
             onClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to save supplier", error);
+            toast.error(error.response?.data?.message || 'Tedarikçi kaydedilirken bir hata oluştu');
         } finally {
             setLoading(false);
         }

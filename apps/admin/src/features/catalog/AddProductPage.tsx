@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { productsService } from './services/products.service';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { toast } from 'sonner';
 
 const productSchema = z.object({
     name: z.string().min(3, 'Ürün adı en az 3 karakter olmalıdır'),
@@ -111,6 +112,7 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
                 });
             } catch (err) {
                 console.error("Failed to load product", err);
+                toast.error('Ürün bilgileri yüklenemedi');
             } finally {
                 setIsLoading(false);
             }
@@ -163,14 +165,17 @@ export const AddProductPage = ({ onClose, onSuccess, isModal }: AddProductPagePr
 
             if (id) {
                 await productsService.update(id, productData);
+                toast.success('Ürün başarıyla güncellendi');
             } else {
                 await productsService.create(productData);
+                toast.success('Ürün başarıyla eklendi');
             }
             onSuccess?.();
             handleClose();
         } catch (err: any) {
             setSubmitError(err.response?.data?.message || 'Ürün kaydedilirken sunucu hatası oluştu');
             console.error('Product create error:', err);
+            toast.error(err.response?.data?.message || 'Ürün kaydedilirken sunucu hatası oluştu');
         } finally {
             setIsSubmitting(false);
         }

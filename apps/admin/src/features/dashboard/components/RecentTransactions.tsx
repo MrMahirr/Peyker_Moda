@@ -3,6 +3,7 @@ import { ArrowRight, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { dashboardService } from '../services/dashboard.service';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { tr } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 
@@ -58,6 +59,7 @@ export const RecentTransactions = () => {
                 setTransactions(data);
             } catch (err) {
                 console.error('Failed to fetch recent transactions', err);
+                toast.error('Son işlemler yüklenemedi');
             } finally {
                 setLoading(false);
             }

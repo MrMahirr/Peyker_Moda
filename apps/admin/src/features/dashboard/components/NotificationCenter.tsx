@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Bell, CheckCircle, AlertTriangle, Info, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { notificationService, AppNotification } from '../services/notification.service';
 import { socket } from '@/lib/socket';
@@ -17,6 +18,7 @@ export const NotificationCenter = () => {
             setNotifications(data);
         } catch (error) {
             console.error('Fetch notifications error:', error);
+            toast.error('Bildirimler yüklenemedi');
         } finally {
             setLoading(false);
         }

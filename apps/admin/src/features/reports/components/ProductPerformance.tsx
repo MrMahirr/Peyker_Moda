@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PackageSearch, TrendingUp } from 'lucide-react';
 import { reportsService, ReportPeriod, ProductPerformance as ProductPerformanceData } from '../reports.service';
+import { toast } from 'sonner';
 
 export const ProductPerformance = () => {
     const [period, setPeriod] = useState<ReportPeriod>('this_month');
@@ -15,6 +16,7 @@ export const ProductPerformance = () => {
                 setData(result);
             } catch (error) {
                 console.error("Failed to fetch product performance", error);
+                toast.error("Ürün performansı yüklenemedi");
             } finally {
                 setLoading(false);
             }

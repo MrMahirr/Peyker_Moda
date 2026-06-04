@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Calendar, Tag, CreditCard, Wallet, User, AlignLeft, Loader2 } from 'lucide-react';
 import { transactionsService, Transaction } from '../services/transactions.service';
+import { toast } from 'sonner';
 
 export const TransactionDetail = () => {
     const { id } = useParams<{ id: string }>();
@@ -19,6 +20,7 @@ export const TransactionDetail = () => {
                 setTransaction(data);
             } catch (err) {
                 console.error('İşlem detayı getirilirken hata:', err);
+                toast.error('İşlem detayı yüklenirken bir hata oluştu');
             } finally {
                 setLoading(false);
             }

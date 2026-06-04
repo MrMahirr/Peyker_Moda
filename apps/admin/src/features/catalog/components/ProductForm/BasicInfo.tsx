@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { categoriesService } from '../../services/categories.service';
 import { StockAdjuster } from './StockAdjuster';
+import { toast } from 'sonner';
 
 interface BasicInfoProps {
     form: UseFormReturn<any>;
@@ -23,6 +24,7 @@ export const BasicInfo = ({ form }: BasicInfoProps) => {
                 setCategories(data.map(c => ({ label: c.name, value: c.id })));
             } catch (err) {
                 console.error("Failed to fetch categories", err);
+                toast.error('Kategoriler yüklenemedi');
             }
         }
         fetchCategories();

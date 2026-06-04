@@ -22,6 +22,7 @@ export const ZReport = () => {
                 setReportData(data);
             } catch (error) {
                 console.error('Failed to fetch Z report:', error);
+                toast.error('Z-Raporu yüklenirken bir hata oluştu');
             } finally {
                 setLoading(false);
             }

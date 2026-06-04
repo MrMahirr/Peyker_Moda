@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { dashboardService } from '../services/dashboard.service';
+import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, endDate: string } }) => {
@@ -24,6 +25,7 @@ export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, end
                 setData(chartData);
             } catch (err) {
                 console.error('Failed to fetch sales chart', err);
+                toast.error('Satış grafiği verileri yüklenemedi');
             } finally {
                 setLoading(false);
             }

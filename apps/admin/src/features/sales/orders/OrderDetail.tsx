@@ -8,6 +8,7 @@ import { ordersService, Order } from '../services/orders.service';
 import Swal from 'sweetalert2';
 
 import { shippingService } from '../../shipping/services/shipping.service';
+import { toast } from 'sonner';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
@@ -46,6 +47,7 @@ export const OrderDetail = () => {
                 setCarriers(carriersData);
             } catch (err) {
                 console.error('Fetch error:', err);
+                toast.error('Sipariş bilgileri yüklenemedi');
             } finally {
                 setLoading(false);
             }
@@ -59,8 +61,10 @@ export const OrderDetail = () => {
         try {
             const updated = await ordersService.updateStatus(id, newStatus);
             setOrder(updated);
+            toast.success('Sipariş durumu güncellendi');
         } catch (err) {
             console.error('Status update error:', err);
+            toast.error('Durum güncellenirken bir hata oluştu');
         } finally {
             setUpdating(false);
         }

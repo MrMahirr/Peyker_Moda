@@ -4,6 +4,7 @@ import { DataGrid } from '@/components/shared/DataGrid';
 import { Button } from '@/components/ui/Button';
 import { Eye, FileText, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
+import { toast } from 'sonner';
 import api from '../../../lib/axios';
 
 interface SaleRecord {
@@ -50,6 +51,7 @@ export const SalesHistory = ({ customerId }: SalesHistoryProps) => {
                 })));
             } catch (err) {
                 console.error('Sales history fetch error:', err);
+                toast.error('Satış geçmişi yüklenemedi');
             } finally {
                 setLoading(false);
             }
@@ -75,6 +77,7 @@ export const SalesHistory = ({ customerId }: SalesHistoryProps) => {
             document.body.removeChild(link);
         } catch (error) {
             console.error('Receipt download error:', error);
+            toast.error('Fiş indirilemedi');
         }
     };
 

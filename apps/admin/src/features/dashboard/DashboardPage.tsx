@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 import { StatCard } from './components/StatCard';
 import { SalesChart } from './components/SalesChart';
 import { InventoryAlerts } from './components/InventoryAlerts';
@@ -47,6 +48,7 @@ export const DashboardPage = () => {
             setLastUpdate(new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }));
         } catch (err) {
             console.error('Dashboard summary error:', err);
+            toast.error('Dashboard özeti yüklenemedi');
         } finally {
             setLoading(false);
         }

@@ -11,6 +11,7 @@ import {
     Legend
 } from 'recharts';
 import { reportsService, ReportPeriod, SalesStats } from '../reports.service';
+import { toast } from 'sonner';
 
 export const SalesReport = () => {
     const [period, setPeriod] = useState<ReportPeriod>('this_month');
@@ -25,6 +26,7 @@ export const SalesReport = () => {
                 setStats(data);
             } catch (error) {
                 console.error("Failed to fetch sales stats", error);
+                toast.error("Satış istatistikleri yüklenemedi");
             } finally {
                 setLoading(false);
             }

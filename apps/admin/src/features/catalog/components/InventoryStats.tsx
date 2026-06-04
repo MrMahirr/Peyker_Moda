@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, AlertTriangle, PackageX, Loader2 } from 'lucide-react';
 import { dashboardService, LowStockProduct } from '../../dashboard/services/dashboard.service';
+import { toast } from 'sonner';
 
 export const InventoryStats = () => {
     const [stats, setStats] = useState({ low: 0, out: 0, value: 0 });
@@ -24,6 +25,7 @@ export const InventoryStats = () => {
                 });
             } catch (err) {
                 console.error('Failed to fetch inventory stats', err);
+                toast.error('Envanter istatistikleri yüklenemedi');
             } finally {
                 setLoading(false);
             }

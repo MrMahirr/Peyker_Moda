@@ -4,6 +4,8 @@ import { Plus, Building, Edit2, Trash2 } from 'lucide-react';
 import { suppliersService } from '../suppliers.service';
 import { Supplier } from '../types';
 import { SupplierModal } from './SupplierModal';
+import { toast } from 'sonner';
+import { showDeleteConfirm } from '@/utils/swal';
 
 export const SupplierList = () => {
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -18,6 +20,7 @@ export const SupplierList = () => {
             setSuppliers(data);
         } catch (error) {
             console.error("Failed to fetch suppliers", error);
+            toast.error('Tedarikçiler yüklenirken bir hata oluştu');
         } finally {
             setLoading(false);
         }
@@ -38,13 +41,16 @@ export const SupplierList = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bu tedarikçiyi silmek istediğinizden emin misiniz?')) return;
+        const { isConfirmed } = await showDeleteConfirm('Tedarikçiyi Sil', 'Bu tedarikçiyi kalıcı olarak silmek istediğinizden emin misiniz?');
+        if (!isConfirmed) return;
+        
         try {
             await suppliersService.remove(id);
+            toast.success('Tedarikçi başarıyla silindi');
             fetchSuppliers();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to delete supplier", error);
-            alert("Silme işlemi başarısız.");
+            toast.error(error.response?.data?.message || 'Tedarikçi silinirken bir hata oluştu');
         }
     };
 

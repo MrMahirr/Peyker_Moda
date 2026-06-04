@@ -5,6 +5,7 @@ import { ZReport } from './reports/ZReport';
 import { VatReport } from './reports/VatReport';
 import { PeriodClosing } from './reports/PeriodClosing';
 import { Wallet, PieChart, FileText, TrendingUp, TrendingDown, Loader2, CreditCard } from 'lucide-react';
+import { toast } from 'sonner';
 import { transactionsService } from './services/transactions.service';
 import { PageHeader } from '@/components/shared/PageHeader';
 
@@ -34,6 +35,7 @@ export const AccountingPage = () => {
                 setMonthlyExpense(summary.expense?.total || 0);
             } catch (error) {
                 console.error("Ön muhasebe verileri çekilirken hata oluştu:", error);
+                toast.error("Ön muhasebe verileri yüklenirken bir hata oluştu");
             } finally {
                 setIsLoading(false);
             }

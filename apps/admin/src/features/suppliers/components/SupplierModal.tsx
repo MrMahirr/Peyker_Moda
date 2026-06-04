@@ -56,7 +56,16 @@ export const SupplierModal = ({ isOpen, onClose, onSave, supplier }: SupplierMod
         e.preventDefault();
         setLoading(true);
         try {
-            await onSave(formData);
+            // Boş stringleri tamamen objeden çıkar
+            const cleanData: Partial<CreateSupplierDto> = {};
+            for (const [key, value] of Object.entries(formData)) {
+                if (value !== '') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (cleanData as any)[key] = value;
+                }
+            }
+            
+            await onSave(cleanData as CreateSupplierDto);
             onClose();
         } catch (error) {
             console.error("Failed to save supplier", error);

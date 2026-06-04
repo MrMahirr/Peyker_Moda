@@ -9,7 +9,14 @@ export class SuppliersService {
 
     async create(createSupplierDto: CreateSupplierDto) {
         return this.prisma.supplier.create({
-            data: createSupplierDto,
+            data: {
+                ...createSupplierDto,
+                account: {
+                    create: {
+                        balance: 0,
+                    }
+                }
+            },
         });
     }
 

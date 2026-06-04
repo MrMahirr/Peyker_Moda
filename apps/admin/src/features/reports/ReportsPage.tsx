@@ -18,7 +18,7 @@ export const ReportsPage = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
                 <div>
-                    <PageHeader title="Raporlar & Analizler" subtitle="Satış ve performans raporları." />
+                    <PageHeader title="Analiz & İstatistik" subtitle="Mağaza performansı ve detaylı analizler." />
                     <p className="text-sm font-medium text-zinc-500 mt-1">Mağazanızın satış, ürün ve müşteri istatistiklerini inceleyin.</p>
                 </div>
                 <div className="flex bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50 shadow-inner">

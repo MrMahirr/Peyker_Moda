@@ -71,7 +71,7 @@ export const navigation = [
         icon: 'building',
     },
     {
-        title: 'Raporlar',
+        title: 'Analiz & İstatistik',
         path: '/reports',
         icon: 'bar-chart-2',
     },

@@ -17,22 +17,22 @@ export interface UpdateSupplierDto extends Partial<CreateSupplierDto> {}
 class SuppliersService {
     async findAll(): Promise<Supplier[]> {
         const response = await axiosInstance.get('/suppliers');
-        return response.data;
+        return response.data.data;
     }
 
     async findOne(id: string): Promise<Supplier> {
         const response = await axiosInstance.get(`/suppliers/${id}`);
-        return response.data;
+        return response.data.data;
     }
 
     async create(data: CreateSupplierDto): Promise<Supplier> {
         const response = await axiosInstance.post('/suppliers', data);
-        return response.data;
+        return response.data.data;
     }
 
     async update(id: string, data: UpdateSupplierDto): Promise<Supplier> {
         const response = await axiosInstance.put(`/suppliers/${id}`, data);
-        return response.data;
+        return response.data.data;
     }
 
     async remove(id: string): Promise<void> {

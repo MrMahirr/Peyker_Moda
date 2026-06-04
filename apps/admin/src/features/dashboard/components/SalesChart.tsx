@@ -6,6 +6,8 @@ import { Loader2 } from 'lucide-react';
 export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, endDate: string } }) => {
     const [data, setData] = useState<{ name: string; gelir: number; gider: number }[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showGelir, setShowGelir] = useState(true);
+    const [showGider, setShowGider] = useState(true);
 
     useEffect(() => {
         const fetchChart = async () => {
@@ -16,7 +18,7 @@ export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, end
                     return {
                         name: day ? `${day}/${month}` : item.date,
                         gelir: item.amount,
-                        gider: 0, // Gider verisi backend'den gelmediği takdirde 0
+                        gider: item.expense || 0,
                     };
                 });
                 setData(chartData);
@@ -37,14 +39,20 @@ export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, end
                     <p className="text-xs text-zinc-400 mt-0.5">Seçili dönem gelir ve gider</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5">
+                    <button 
+                        onClick={() => setShowGelir(!showGelir)}
+                        className={`flex items-center gap-1.5 transition-opacity hover:opacity-80 active:scale-95 ${!showGelir ? 'opacity-40 grayscale' : 'opacity-100'}`}
+                    >
                         <span className="w-2 h-2 rounded-full bg-primary" />
-                        <span className="text-xs text-zinc-500">Gelir</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-semibold text-zinc-600">Gelir</span>
+                    </button>
+                    <button 
+                        onClick={() => setShowGider(!showGider)}
+                        className={`flex items-center gap-1.5 transition-opacity hover:opacity-80 active:scale-95 ${!showGider ? 'opacity-40 grayscale' : 'opacity-100'}`}
+                    >
                         <span className="w-2 h-2 rounded-full bg-amber-400" />
-                        <span className="text-xs text-zinc-500">Gider</span>
-                    </div>
+                        <span className="text-xs font-semibold text-zinc-600">Gider</span>
+                    </button>
                 </div>
             </div>
 
@@ -94,26 +102,30 @@ export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, end
                             formatter={(value: any) => [`₺${Number(value).toLocaleString('tr-TR')}`, '']}
                             labelStyle={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}
                         />
-                        <Area
-                            type="monotone"
-                            dataKey="gelir"
-                            stroke="#7c3aed"
-                            fillOpacity={1}
-                            fill="url(#colorGelir)"
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 4, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="gider"
-                            stroke="#f59e0b"
-                            fillOpacity={1}
-                            fill="url(#colorGider)"
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 4, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
-                        />
+                        {showGelir && (
+                            <Area
+                                type="monotone"
+                                dataKey="gelir"
+                                stroke="#7c3aed"
+                                fillOpacity={1}
+                                fill="url(#colorGelir)"
+                                strokeWidth={2}
+                                dot={false}
+                                activeDot={{ r: 4, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }}
+                            />
+                        )}
+                        {showGider && (
+                            <Area
+                                type="monotone"
+                                dataKey="gider"
+                                stroke="#f59e0b"
+                                fillOpacity={1}
+                                fill="url(#colorGider)"
+                                strokeWidth={2}
+                                dot={false}
+                                activeDot={{ r: 4, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
+                            />
+                        )}
                     </AreaChart>
                 </ResponsiveContainer>
                 )}

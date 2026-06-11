@@ -393,7 +393,7 @@ export class StorefrontService {
                     basePrice: true,
                     salePrice: true,
                     images: true,
-                    category: { select: { name: true, slug: true } },
+                    category: { select: { id: true, name: true, slug: true } },
                     variants: {
                         where: { stock: { gt: 0 } },
                         select: { id: true, size: true, color: true, stock: true },
@@ -405,12 +405,11 @@ export class StorefrontService {
             this.prisma.product.count({ where }),
         ]);
 
-        // Aktif kampanyaları uygula
         const campaigns = await this.campaignsService.getActiveCampaigns();
         const productsWithDiscounts = products.map((product) => {
             const applicableCampaign = campaigns.find((c) =>
                 (c.productIds as string[])?.includes(product.id) ||
-                (c.categoryIds as string[])?.includes(product.category?.name || '')
+                (c.categoryIds as string[])?.includes(product.category?.id || '')
             );
 
             return {
@@ -692,13 +691,14 @@ export class StorefrontService {
     async calculateCart(items: CartItemDto[], couponCode?: string) {
         let subtotal = 0;
         const cartItems: any[] = [];
+        const campaigns = await this.campaignsService.getActiveCampaigns();
 
         for (const item of items) {
             const variant = await this.prisma.variant.findUnique({
                 where: { id: item.variantId },
                 include: {
                     product: {
-                        select: { id: true, name: true, slug: true, images: true, basePrice: true, salePrice: true },
+                        select: { id: true, name: true, slug: true, images: true, basePrice: true, salePrice: true, categoryId: true },
                     },
                 },
             });
@@ -713,7 +713,28 @@ export class StorefrontService {
                 );
             }
 
-            const price = variant.price || variant.product.salePrice || variant.product.basePrice;
+            let basePrice = Number(variant.price || variant.product.basePrice);
+            let price = Number(variant.price || variant.product.salePrice || variant.product.basePrice);
+
+            // Aktif kampanyaları al ve uygula
+            const applicableCampaign = campaigns.find((c) =>
+                (c.productIds as string[])?.includes(variant.product.id) ||
+                (c.categoryIds as string[])?.includes((variant.product as any).categoryId)
+            );
+
+            if (applicableCampaign) {
+                let campaignDiscount = 0;
+                if (applicableCampaign.discountType === 'PERCENTAGE') {
+                    campaignDiscount = basePrice * (Number(applicableCampaign.discountValue) / 100);
+                } else {
+                    campaignDiscount = Number(applicableCampaign.discountValue);
+                }
+                const campaignPrice = basePrice - campaignDiscount;
+                if (campaignPrice < price) {
+                    price = campaignPrice;
+                }
+            }
+
             const itemTotal = Number(price) * item.quantity;
             subtotal += itemTotal;
 
@@ -762,17 +783,27 @@ export class StorefrontService {
     /**
      * Checkout (sipariş oluştur)
      */
-    async checkout(checkoutDto: CheckoutDto) {
+    async checkout(checkoutDto: CheckoutDto, customerId?: string) {
         // Sepeti hesapla
         const cart = await this.calculateCart(checkoutDto.items, checkoutDto.couponCode);
 
         // Sipariş numarası
         const orderNumber = await this.generateUniqueOrderNumber();
 
-        // Müşteri oluştur veya bul
-        let customer = await this.prisma.customer.findFirst({
-            where: { phone: checkoutDto.shippingAddress.phone },
-        });
+        // Müşteri bul veya oluştur
+        let customer;
+
+        if (customerId) {
+            customer = await this.prisma.customer.findUnique({
+                where: { id: customerId }
+            });
+        }
+
+        if (!customer) {
+            customer = await this.prisma.customer.findFirst({
+                where: { phone: checkoutDto.shippingAddress.phone },
+            });
+        }
 
         if (!customer) {
             const [firstName, ...lastNameParts] = checkoutDto.shippingAddress.fullName.split(' ');
@@ -891,6 +922,7 @@ export class StorefrontService {
                         },
                     },
                 },
+                payments: true,
             },
             orderBy: { createdAt: 'desc' },
         });

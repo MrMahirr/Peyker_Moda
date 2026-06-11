@@ -7,3 +7,11 @@ export class CustomerJwtAuthGuard extends AuthGuard('jwt-customer') {
         return super.canActivate(context);
     }
 }
+
+@Injectable()
+export class OptionalCustomerJwtAuthGuard extends AuthGuard('jwt-customer') {
+    handleRequest(err: any, user: any, info: any) {
+        // Hata fırlatma, token yoksa veya geçersizse user tanımsız kalır
+        return user;
+    }
+}

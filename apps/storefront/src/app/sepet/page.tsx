@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ShieldCheck, Loader2, CheckCircle, XCircle, Tag } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ArrowLeft, ShoppingBag, ShieldCheck, Loader2, CheckCircle, XCircle, Tag } from 'lucide-react';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,17 +17,13 @@ import Swal from "sweetalert2";
 import { toast } from "sonner";
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, subtotal, itemCount } = useCart();
+  const router = useRouter();
+  const { items, updateQuantity, removeItem, subtotal, itemCount, coupon, applyCoupon } = useCart();
 
   // Coupon state
-  const [couponCode, setCouponCode] = useState("");
+  const [couponCode, setCouponCode] = useState(coupon?.code || "");
   const [couponLoading, setCouponLoading] = useState(false);
-  const [couponResult, setCouponResult] = useState<{
-    valid: boolean;
-    discount: number;
-    discountType: 'percentage' | 'fixed';
-    message: string;
-  } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
 
   // Apply coupon
   const handleRemoveItem = (id: string, name: string) => {
@@ -51,21 +48,24 @@ export default function CartPage() {
     if (!couponCode.trim()) return;
 
     setCouponLoading(true);
+    setCouponError(null);
     try {
       const result = await storeApi.validateCoupon(couponCode, subtotal);
-      setCouponResult(result);
       if (result.valid) {
+        applyCoupon({
+          code: couponCode,
+          valid: true,
+          discount: result.discount,
+          discountType: result.discountType,
+          message: result.message
+        });
         toast.success(result.message || 'Kupon uygulandı!');
       } else {
+        setCouponError(result.message || 'Geçersiz kupon kodu');
         toast.error(result.message || 'Geçersiz kupon kodu');
       }
     } catch (error) {
-      setCouponResult({
-        valid: false,
-        discount: 0,
-        discountType: 'percentage',
-        message: 'Kupon doğrulanamadı'
-      });
+      setCouponError('Kupon doğrulanamadı');
       toast.error('Kupon doğrulanamadı');
     } finally {
       setCouponLoading(false);
@@ -75,14 +75,15 @@ export default function CartPage() {
   // Remove coupon
   const handleRemoveCoupon = () => {
     setCouponCode("");
-    setCouponResult(null);
+    applyCoupon(null);
+    setCouponError(null);
   };
 
   // Calculate discount
-  const discountAmount = couponResult?.valid
-    ? couponResult.discountType === 'percentage'
-      ? Math.round(subtotal * (couponResult.discount / 100))
-      : couponResult.discount
+  const discountAmount = coupon?.valid
+    ? coupon.discountType === 'percentage'
+      ? Math.round(subtotal * (coupon.discount / 100))
+      : coupon.discount
     : 0;
 
   // Calculate totals
@@ -173,7 +174,7 @@ export default function CartPage() {
                   </div>
 
                   {/* Discount Row */}
-                  {couponResult?.valid && (
+                  {coupon?.valid && (
                     <div className="flex justify-between text-green-600">
                       <span className="flex items-center gap-1">
                         <Tag className="w-4 h-4" />
@@ -199,7 +200,7 @@ export default function CartPage() {
 
                 {/* İndirim Kodu Alanı */}
                 <div className="mb-6">
-                  {!couponResult?.valid ? (
+                  {!coupon?.valid ? (
                     <div className="flex gap-2">
                       <Input
                         placeholder="İndirim kodu"
@@ -221,7 +222,7 @@ export default function CartPage() {
                     <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-4 py-3">
                       <span className="flex items-center gap-2 text-green-700 font-medium">
                         <CheckCircle className="w-4 h-4" />
-                        {couponCode} uygulandı
+                        {coupon.code} uygulandı
                       </span>
                       <button
                         onClick={handleRemoveCoupon}
@@ -232,19 +233,28 @@ export default function CartPage() {
                     </div>
                   )}
 
-                  {couponResult && !couponResult.valid && (
+                  {couponError && (
                     <p className="text-sm text-rose-500 mt-2 flex items-center gap-1">
                       <XCircle className="w-4 h-4" />
-                      {couponResult.message}
+                      {couponError}
                     </p>
                   )}
                 </div>
 
-                <Link href="/odeme">
-                  <Button className="w-full bg-stone-900 hover:bg-amber-600 text-white h-14 text-lg font-medium shadow-lg hover:shadow-xl transition-all mb-4">
-                    Ödemeye Geç <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={() => {
+                    const token = localStorage.getItem('accessToken');
+                    if (!token) {
+                      toast.info("Ödeme adımına geçmek için lütfen giriş yapın.");
+                      router.push('/giris?returnUrl=/odeme');
+                    } else {
+                      router.push('/odeme');
+                    }
+                  }}
+                  className="w-full bg-stone-900 hover:bg-amber-600 text-white h-14 text-lg font-medium shadow-lg hover:shadow-xl transition-all mb-4"
+                >
+                  Ödemeye Geç <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
 
                 <div className="flex items-center justify-center gap-2 text-stone-400 text-xs">
                   <ShieldCheck className="w-4 h-4" />

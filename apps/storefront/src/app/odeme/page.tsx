@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CreditCard, Truck, MapPin, User, Phone, Mail, CheckCircle, Loader2, Lock, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, MapPin, User, Phone, Mail, CheckCircle, Loader2, ShieldCheck } from 'lucide-react';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useCart } from "@/lib/CartContext";
 import { storeApi } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
@@ -17,11 +18,19 @@ import { toast } from "sonner";
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const { items, subtotal, clearCart } = useCart();
+    const { items, subtotal, clearCart, coupon } = useCart();
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState<'info' | 'payment' | 'success'>('info');
     const [orderNumber, setOrderNumber] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+    // Address & Auth State
+    const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<string | 'new'>('new');
+    const [saveNewAddress, setSaveNewAddress] = useState(false);
+    const [newAddressTitle, setNewAddressTitle] = useState('Ev');
+    const [isPageLoading, setIsPageLoading] = useState(true);
 
     const [form, setForm] = useState({
         firstName: '',
@@ -44,11 +53,91 @@ export default function CheckoutPage() {
         cvc: ''
     });
 
+    const discountAmount = coupon?.valid
+        ? coupon.discountType === 'percentage'
+            ? Math.round(subtotal * (coupon.discount / 100))
+            : coupon.discount
+        : 0;
+
     const shipping = subtotal > 1500 ? 0 : 50;
-    const total = subtotal + shipping;
+    const total = subtotal - discountAmount + shipping;
+
+    useEffect(() => {
+        const checkAuthAndLoadData = async () => {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.info('Ödeme sayfasına erişmek için giriş yapmalısınız.');
+                router.push('/giris?returnUrl=/odeme');
+                return;
+            }
+
+            try {
+                // Load User
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    setForm(prev => ({
+                        ...prev,
+                        firstName: user.firstName || '',
+                        lastName: user.lastName || '',
+                        email: user.email || '',
+                        phone: user.phone || ''
+                    }));
+                }
+
+                // Load Addresses
+                const addresses = await storeApi.getAddresses();
+                setSavedAddresses(addresses);
+                if (addresses.length > 0) {
+                    setSelectedAddressId(addresses[0].id);
+                    const addr = addresses[0];
+                    setForm(prev => ({
+                        ...prev,
+                        street: addr.address || '',
+                        city: addr.city || '',
+                        district: addr.district || '',
+                        postalCode: addr.postalCode || ''
+                    }));
+                }
+            } catch (err) {
+                console.error("Bilgiler yüklenirken hata:", err);
+            } finally {
+                setIsPageLoading(false);
+            }
+        };
+
+        checkAuthAndLoadData();
+    }, [router]);
+
+    const handleAddressSelect = (id: string | 'new') => {
+        setSelectedAddressId(id);
+        if (id !== 'new') {
+            const addr = savedAddresses.find(a => a.id === id);
+            if (addr) {
+                setForm(prev => ({
+                    ...prev,
+                    street: addr.address || '',
+                    city: addr.city || '',
+                    district: addr.district || '',
+                    postalCode: addr.postalCode || ''
+                }));
+            }
+        } else {
+            setForm(prev => ({
+                ...prev,
+                street: '',
+                city: '',
+                district: '',
+                postalCode: ''
+            }));
+        }
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
+        if (validationErrors[e.target.name]) {
+            setValidationErrors(prev => ({ ...prev, [e.target.name]: '' }));
+        }
     };
 
     const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,31 +153,64 @@ export default function CheckoutPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        setValidationErrors({});
+        
+        // Manual validation
+        const errors: Record<string, string> = {};
+        if (!form.firstName.trim()) errors.firstName = "Ad zorunludur";
+        if (!form.lastName.trim()) errors.lastName = "Soyad zorunludur";
+        if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) errors.email = "Geçerli bir e-posta adresi giriniz";
+        if (!form.phone.trim()) errors.phone = "Telefon numarası zorunludur";
+        
+        if (!form.street.trim()) errors.street = "Adres detayları zorunludur";
+        if (!form.district.trim()) errors.district = "İlçe zorunludur";
+        if (!form.city.trim()) errors.city = "Şehir zorunludur";
+        
+        if (selectedAddressId === 'new' && saveNewAddress && !newAddressTitle.trim()) {
+            errors.newAddressTitle = "Adres başlığı zorunludur";
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            toast.error("Lütfen formu kontrol edip eksik alanları doldurunuz.");
+            return;
+        }
+
         setLoading(true);
 
         try {
-            // 1. Create Order (Pending Payment)
+            // 1. Save new address if requested
+            if (selectedAddressId === 'new' && saveNewAddress) {
+                await storeApi.addAddress({
+                    title: newAddressTitle || 'Yeni Adres',
+                    fullName: `${form.firstName} ${form.lastName}`,
+                    phone: form.phone,
+                    address: form.street,
+                    city: form.city,
+                    district: form.district,
+                    postalCode: form.postalCode,
+                    type: 'home'
+                });
+            }
+
+            // 2. Create Order (Pending Payment)
             const orderResult = await storeApi.createOrder({
                 items: items.map(item => ({
-                    productId: item.productId || item.id,
-                    variantId: item.variantId || undefined,
-                    quantity: item.quantity,
-                    price: item.price
+                    variantId: item.variantId || item.id,
+                    quantity: item.quantity
                 })),
-                customer: {
-                    firstName: form.firstName,
-                    lastName: form.lastName,
-                    email: form.email,
-                    phone: form.phone
-                },
                 shippingAddress: {
-                    street: form.street,
+                    fullName: `${form.firstName} ${form.lastName}`,
+                    phone: form.phone,
+                    email: form.email,
+                    address: form.street,
                     city: form.city,
                     district: form.district,
                     postalCode: form.postalCode
                 },
                 paymentMethod: form.paymentMethod,
-                notes: form.notes
+                notes: form.notes,
+                couponCode: coupon?.valid ? coupon.code : undefined
             });
 
             if (form.paymentMethod === 'CASH') {
@@ -105,10 +227,21 @@ export default function CheckoutPage() {
             }
 
         } catch (error: unknown) {
+            setError(error instanceof Error ? error.message : "Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyiniz.");
+            toast.error("Sipariş oluşturulurken bir hata oluştu.");
         } finally {
             setLoading(false);
         }
     };
+
+    if (isPageLoading) {
+        return (
+            <div className="min-h-screen bg-stone-50 font-sans text-stone-900 flex flex-col items-center justify-center">
+                <Loader2 className="w-10 h-10 text-amber-600 animate-spin mb-4" />
+                <p className="text-stone-500">Bilgileriniz yükleniyor...</p>
+            </div>
+        );
+    }
 
     if (items.length === 0 && step !== 'success') {
         return (
@@ -194,15 +327,27 @@ export default function CheckoutPage() {
                                 Kişisel Bilgiler
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Input name="firstName" placeholder="Ad" value={form.firstName} onChange={handleChange} required />
-                                <Input name="lastName" placeholder="Soyad" value={form.lastName} onChange={handleChange} required />
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-                                    <Input name="email" type="email" placeholder="E-posta" className="pl-10" value={form.email} onChange={handleChange} required />
+                                <div>
+                                    <Input name="firstName" placeholder="Ad" value={form.firstName} onChange={handleChange} className={validationErrors.firstName ? "border-rose-500" : ""} />
+                                    {validationErrors.firstName && <span className="text-xs text-rose-500 mt-1 block">{validationErrors.firstName}</span>}
                                 </div>
-                                <div className="relative">
-                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-                                    <Input name="phone" placeholder="Telefon" className="pl-10" value={form.phone} onChange={handleChange} required />
+                                <div>
+                                    <Input name="lastName" placeholder="Soyad" value={form.lastName} onChange={handleChange} className={validationErrors.lastName ? "border-rose-500" : ""} />
+                                    {validationErrors.lastName && <span className="text-xs text-rose-500 mt-1 block">{validationErrors.lastName}</span>}
+                                </div>
+                                <div>
+                                    <div className="relative">
+                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                                        <Input name="email" type="email" placeholder="E-posta" className={`pl-10 ${validationErrors.email ? "border-rose-500" : ""}`} value={form.email} onChange={handleChange} />
+                                    </div>
+                                    {validationErrors.email && <span className="text-xs text-rose-500 mt-1 block">{validationErrors.email}</span>}
+                                </div>
+                                <div>
+                                    <div className="relative">
+                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                                        <Input name="phone" placeholder="Telefon" className={`pl-10 ${validationErrors.phone ? "border-rose-500" : ""}`} value={form.phone} onChange={handleChange} />
+                                    </div>
+                                    {validationErrors.phone && <span className="text-xs text-rose-500 mt-1 block">{validationErrors.phone}</span>}
                                 </div>
                             </div>
                         </div>
@@ -213,14 +358,86 @@ export default function CheckoutPage() {
                                 <MapPin className="w-5 h-5 text-amber-600" />
                                 Teslimat Adresi
                             </h2>
+
+                            {savedAddresses.length > 0 && (
+                                <div className="mb-6 space-y-3">
+                                    <Label className="text-stone-500">Kayıtlı Adreslerinizden Seçin</Label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {savedAddresses.map(addr => (
+                                            <div 
+                                                key={addr.id}
+                                                onClick={() => handleAddressSelect(addr.id)}
+                                                className={`p-3 border rounded-lg cursor-pointer transition-all ${selectedAddressId === addr.id ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500' : 'border-stone-200 hover:border-stone-300'}`}
+                                            >
+                                                <div className="font-medium flex justify-between items-center mb-1">
+                                                    <span>{addr.title}</span>
+                                                    {selectedAddressId === addr.id && <CheckCircle className="w-4 h-4 text-amber-600" />}
+                                                </div>
+                                                <p className="text-sm text-stone-500 line-clamp-2">{addr.address}, {addr.district}/{addr.city}</p>
+                                            </div>
+                                        ))}
+                                        <div 
+                                            onClick={() => handleAddressSelect('new')}
+                                            className={`p-3 border rounded-lg cursor-pointer transition-all flex items-center justify-center ${selectedAddressId === 'new' ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500' : 'border-stone-200 hover:border-stone-300'}`}
+                                        >
+                                            <span className="font-medium">+ Yeni Adres Ekle</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="space-y-4">
-                                <Input name="street" placeholder="Adres (Sokak, Kapı No)" value={form.street} onChange={handleChange} required />
+                                <div>
+                                    <Input name="street" placeholder="Adres (Sokak, Kapı No)" value={form.street} onChange={handleChange} disabled={selectedAddressId !== 'new' && savedAddresses.length > 0} className={validationErrors.street ? "border-rose-500" : ""} />
+                                    {validationErrors.street && <span className="text-xs text-rose-500 mt-1 block">{validationErrors.street}</span>}
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <Input name="district" placeholder="İlçe" value={form.district} onChange={handleChange} required />
-                                    <Input name="city" placeholder="Şehir" value={form.city} onChange={handleChange} required />
-                                    <Input name="postalCode" placeholder="Posta Kodu" value={form.postalCode} onChange={handleChange} />
+                                    <div>
+                                        <Input name="district" placeholder="İlçe" value={form.district} onChange={handleChange} disabled={selectedAddressId !== 'new' && savedAddresses.length > 0} className={validationErrors.district ? "border-rose-500" : ""} />
+                                        {validationErrors.district && <span className="text-xs text-rose-500 mt-1 block">{validationErrors.district}</span>}
+                                    </div>
+                                    <div>
+                                        <Input name="city" placeholder="Şehir" value={form.city} onChange={handleChange} disabled={selectedAddressId !== 'new' && savedAddresses.length > 0} className={validationErrors.city ? "border-rose-500" : ""} />
+                                        {validationErrors.city && <span className="text-xs text-rose-500 mt-1 block">{validationErrors.city}</span>}
+                                    </div>
+                                    <div>
+                                        <Input name="postalCode" placeholder="Posta Kodu" value={form.postalCode} onChange={handleChange} disabled={selectedAddressId !== 'new' && savedAddresses.length > 0} />
+                                    </div>
                                 </div>
                             </div>
+
+                            {selectedAddressId === 'new' && (
+                                <div className="mt-6 pt-4 border-t border-stone-100">
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSaveNewAddress(!saveNewAddress)}
+                                            className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${saveNewAddress ? "bg-amber-600 border-amber-600" : "border-stone-300"}`}
+                                        >
+                                            {saveNewAddress && <CheckCircle className="w-3 h-3 text-white" />}
+                                        </button>
+                                        <Label className="cursor-pointer" onClick={() => setSaveNewAddress(!saveNewAddress)}>
+                                            Bu adresi sonraki alışverişlerim için kaydet
+                                        </Label>
+                                    </div>
+                                    {saveNewAddress && (
+                                        <div className="mt-3 ml-8">
+                                            <Input 
+                                                placeholder="Adres Başlığı (örn: Ev, İş)" 
+                                                value={newAddressTitle} 
+                                                onChange={(e) => {
+                                                    setNewAddressTitle(e.target.value);
+                                                    if (validationErrors.newAddressTitle) {
+                                                        setValidationErrors(prev => ({ ...prev, newAddressTitle: '' }));
+                                                    }
+                                                }}
+                                                className={`max-w-xs ${validationErrors.newAddressTitle ? "border-rose-500" : ""}`}
+                                            />
+                                            {validationErrors.newAddressTitle && <span className="text-xs text-rose-500 mt-1 block">{validationErrors.newAddressTitle}</span>}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Ödeme Yöntemi */}
@@ -261,7 +478,6 @@ export default function CheckoutPage() {
                             )}
                         </div>
 
-                        {/* ... diğer bölümler (Not) aynı ... */}
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
                             <h2 className="text-lg font-semibold mb-4">Sipariş Notu (Opsiyonel)</h2>
                             <textarea
@@ -317,6 +533,14 @@ export default function CheckoutPage() {
                                     <span>Ara Toplam</span>
                                     <span>{formatPrice(subtotal)}</span>
                                 </div>
+                                {coupon?.valid && (
+                                    <div className="flex justify-between text-green-600">
+                                        <span className="flex items-center gap-1">
+                                            İndirim ({coupon.code})
+                                        </span>
+                                        <span>-{formatPrice(discountAmount)}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between text-stone-600">
                                     <span>Kargo</span>
                                     {shipping === 0 ? (

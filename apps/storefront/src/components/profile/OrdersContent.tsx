@@ -83,7 +83,7 @@ const getStatusLabel = (status: string): string => {
 
 const transformOrder = (apiOrder: ApiOrder): Order => {
   return {
-    id: apiOrder.orderNumber || `SIP-${apiOrder.id.slice(0, 6)}`,
+    id: apiOrder.orderNumber || apiOrder.id?.toString() || `SIP-${apiOrder.id?.toString().slice(0, 6)}` || `order-${Math.random().toString(36).substr(2,9)}`,
     date: new Date(apiOrder.createdAt).toLocaleDateString('tr-TR', {
       day: 'numeric',
       month: 'long',
@@ -95,14 +95,27 @@ const transformOrder = (apiOrder: ApiOrder): Order => {
     statusCode: getStatusCode(apiOrder.status),
     stepIndex: getStepIndex(apiOrder.status),
     total: apiOrder.total,
-    address: apiOrder.shippingAddress || 'Adres bilgisi mevcut değil',
-    paymentMethod: apiOrder.paymentMethod || 'Belirtilmedi',
+    address: (() => {
+      const addr = apiOrder.shippingAddress as any;
+      if (!addr) return 'Adres bilgisi mevcut değil';
+      const parts = [addr.address, addr.district, addr.city].filter(Boolean);
+      return parts.join(', ');
+    })(),
+    paymentMethod: (() => {
+      const method = apiOrder.payments?.[0]?.method || apiOrder.paymentMethod;
+      const labels: Record<string, string> = {
+        CASH: 'Kapıda Ödeme',
+        CREDIT_CARD: 'Kredi Kartı',
+        BANK_TRANSFER: 'Banka Transferi',
+      };
+      return method ? (labels[method] || method) : 'Belirtilmedi';
+    })(),
     cargoTrackingCode: apiOrder.cargoTrackingCode,
     cargoProvider: apiOrder.cargoProvider,
     items: apiOrder.items?.map((item: NonNullable<ApiOrder["items"]>[number], idx: number) => ({
       id: idx,
       name: item.productName || item.variant?.product?.name || 'Ürün',
-      image: item.variant?.product?.images?.[0] || '/placeholder.svg',
+      image: item.variant?.product?.images?.[0] || 'https://via.placeholder.com/300',
       price: item.unitPrice || 0,
       quantity: item.quantity || 1,
       size: item.variant?.size || '-',
@@ -227,7 +240,7 @@ const OrderCard = ({ order }: { order: Order }) => {
 
         <div className="space-y-6">
           {order.items.map((item) => (
-            <div key={item.id} className="flex gap-4 items-start">
+            <div key={`${order.id}-${item.id}`} className="flex gap-4 items-start">
               <div className="relative w-20 h-24 bg-stone-100 rounded-md overflow-hidden flex-shrink-0 border border-stone-100">
                 <Image src={item.image} alt={item.name} fill className="object-cover" />
               </div>

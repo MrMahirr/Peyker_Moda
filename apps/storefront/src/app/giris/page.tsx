@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Script from "next/script";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
@@ -33,8 +33,13 @@ const getErrorMessage = (error: unknown, fallback: string) => {
     return error instanceof Error ? error.message : fallback;
 };
 
-export default function LoginPage() {
+import { Suspense } from "react";
+
+function LoginPageContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const returnUrl = searchParams.get('returnUrl');
+    
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -108,7 +113,7 @@ export default function LoginPage() {
                 localStorage.setItem("user", JSON.stringify(result.user));
                 toast.success("Başarıyla giriş yapıldı!");
                 setTimeout(() => {
-                    window.location.href = "/profil";
+                    window.location.href = returnUrl || "/profil";
                 }, 1000);
             }
         } catch (err: unknown) {
@@ -236,5 +241,13 @@ export default function LoginPage() {
                 strategy="lazyOnload"
             />
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-stone-50 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-amber-600" /></div>}>
+            <LoginPageContent />
+        </Suspense>
     );
 }

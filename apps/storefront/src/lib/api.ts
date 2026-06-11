@@ -59,18 +59,15 @@ export interface CartCalculation {
 }
 
 export interface CheckoutData {
-    items: CartItem[];
-    customer: {
-        firstName: string;
-        lastName: string;
-        email: string;
-        phone: string;
-    };
+    items: { variantId: string; quantity: number }[];
     shippingAddress: {
-        street: string;
+        fullName: string;
+        phone: string;
+        email?: string;
+        address: string;
         city: string;
-        district: string;
-        postalCode: string;
+        district?: string;
+        postalCode?: string;
     };
     paymentMethod: 'CASH' | 'CREDIT_CARD' | 'BANK_TRANSFER';
     couponCode?: string;
@@ -109,6 +106,11 @@ export interface Order {
     }>;
     createdAt: string;
     updatedAt: string;
+    payments?: Array<{
+        method: string;
+        status: string;
+        amount: number;
+    }>;
 }
 
 export interface StoreUser {
@@ -152,12 +154,33 @@ export interface CardInfo {
 // Helper to map backend product fields
 const mapProduct = (p: any): Product => {
     if (!p || p.price !== undefined) return p as Product;
-    const salePrice = p.salePrice ? parseFloat(p.salePrice) : undefined;
+    
+    // Uygulanabilir kampanya indirimi hesaplama
+    let campaignDiscount = 0;
     const basePrice = p.basePrice ? parseFloat(p.basePrice) : 0;
+    
+    if (p.campaign) {
+        if (p.campaign.discountType === 'PERCENTAGE') {
+            campaignDiscount = basePrice * (parseFloat(p.campaign.discountValue) / 100);
+        } else if (p.campaign.discountType === 'FIXED_AMOUNT') {
+            campaignDiscount = parseFloat(p.campaign.discountValue);
+        }
+    }
+
+    const salePrice = p.salePrice ? parseFloat(p.salePrice) : undefined;
+    let finalPrice = salePrice || basePrice;
+    
+    if (campaignDiscount > 0) {
+        const calculatedCampaignPrice = basePrice - campaignDiscount;
+        if (calculatedCampaignPrice < finalPrice) {
+            finalPrice = calculatedCampaignPrice;
+        }
+    }
+
     return {
         ...p,
-        price: salePrice || basePrice,
-        compareAtPrice: salePrice ? basePrice : undefined,
+        price: finalPrice,
+        compareAtPrice: finalPrice < basePrice ? basePrice : undefined,
     };
 };
 
@@ -285,9 +308,15 @@ export const storeApi = {
     // Checkout
     async createOrder(checkoutData: CheckoutData): Promise<OrderResult> {
         try {
+            const token = localStorage.getItem('accessToken');
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_BASE_URL}/store/checkout`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify(checkoutData)
             });
             const data = await response.json();
@@ -338,7 +367,12 @@ export const storeApi = {
     // Get user orders
     async getOrders(): Promise<Order[]> {
         try {
-            const response = await fetch(`${API_BASE_URL}/store/orders`);
+            const token = localStorage.getItem('accessToken');
+            if (!token) return [];
+
+            const response = await fetch(`${API_BASE_URL}/store/orders`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             const data = await response.json();
             return data.data || [];
         } catch (error) {
@@ -464,10 +498,12 @@ export const storeApi = {
                 }
                 return { valid: false, discount: 0, discountType: 'percentage', message: errorMsg };
             }
+            
+            const result = data.data || data;
             return {
                 valid: true,
-                discount: data.discount || 0,
-                discountType: data.coupon?.discountType || 'percentage',
+                discount: result.coupon?.discountValue || result.discount || 0,
+                discountType: result.coupon?.discountType === 'PERCENTAGE' ? 'percentage' : 'fixed',
                 message: 'Kupon başarıyla uygulandı!'
             };
         } catch (error) {
@@ -505,6 +541,11 @@ export const storeApi = {
             if (!response.ok) {
                 const text = await response.text();
                 console.error('Failed to add favorite (Server Error):', text);
+                if (response.status === 401) {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('user');
+                    window.location.href = '/giris';
+                }
                 return false;
             }
             return true;
@@ -528,6 +569,11 @@ export const storeApi = {
             if (!response.ok) {
                 const text = await response.text();
                 console.error('Failed to remove favorite (Server Error):', text);
+                if (response.status === 401) {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('user');
+                    window.location.href = '/giris';
+                }
                 return false;
             }
             return true;

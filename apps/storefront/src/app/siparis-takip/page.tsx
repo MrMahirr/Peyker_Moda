@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Search, Package, Truck, CheckCircle, Clock, XCircle, Loader2 } from 'lucide-react';
 import Header from "@/components/layout/Header";
@@ -32,11 +33,29 @@ const STATUS_CONFIG = {
 const STEPS = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'] as const;
 
 export default function OrderTrackingPage() {
+    const router = useRouter();
     const [orderNumber, setOrderNumber] = useState('');
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [order, setOrder] = useState<OrderStatus | null>(null);
     const [error, setError] = useState('');
+    const [isPageLoading, setIsPageLoading] = useState(true);
+
+    useEffect(() => {
+        if (storeApi.isLoggedIn()) {
+            router.push('/profil?tab=orders');
+        } else {
+            setIsPageLoading(false);
+        }
+    }, [router]);
+
+    if (isPageLoading) {
+        return (
+            <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+            </div>
+        );
+    }
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();

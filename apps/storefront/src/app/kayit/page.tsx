@@ -17,7 +17,9 @@ const getErrorMessage = (error: unknown, fallback: string) => {
     return error instanceof Error ? error.message : fallback;
 };
 
-export default function RegisterPage() {
+import { Suspense } from "react";
+
+function RegisterPageContent() {
     const router = useRouter();
     const [formData, setFormData] = useState({
         firstName: "",
@@ -67,6 +69,9 @@ export default function RegisterPage() {
             }
         } catch (err: unknown) {
             setError(getErrorMessage(err, "Kayıt başarısız. Lütfen tekrar deneyin."));
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -247,5 +252,13 @@ export default function RegisterPage() {
 
             <Footer />
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-stone-50 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-amber-600" /></div>}>
+            <RegisterPageContent />
+        </Suspense>
     );
 }

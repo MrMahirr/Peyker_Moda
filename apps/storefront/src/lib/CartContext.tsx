@@ -14,6 +14,14 @@ export interface CartItem {
     variant?: string;
 }
 
+export interface CouponData {
+    code: string;
+    valid: boolean;
+    discount: number;
+    discountType: 'percentage' | 'fixed';
+    message: string;
+}
+
 interface CartContextType {
     items: CartItem[];
     addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
@@ -22,6 +30,8 @@ interface CartContextType {
     clearCart: () => void;
     itemCount: number;
     subtotal: number;
+    coupon: CouponData | null;
+    applyCoupon: (coupon: CouponData | null) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -41,9 +51,29 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
     });
 
+    const [coupon, setCoupon] = useState<CouponData | null>(() => {
+        if (typeof window === 'undefined') return null;
+        const saved = localStorage.getItem('peyker-coupon');
+        if (!saved) return null;
+        try {
+            return JSON.parse(saved) as CouponData;
+        } catch (e) {
+            console.error('Coupon parse error:', e);
+            return null;
+        }
+    });
+
     useEffect(() => {
         localStorage.setItem('peyker-cart', JSON.stringify(items));
     }, [items]);
+
+    useEffect(() => {
+        if (coupon) {
+            localStorage.setItem('peyker-coupon', JSON.stringify(coupon));
+        } else {
+            localStorage.removeItem('peyker-coupon');
+        }
+    }, [coupon]);
 
     const addItem = (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
         const qtyToAdd = item.quantity || 1;
@@ -71,13 +101,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setItems(prev => prev.map(i => i.id === id ? { ...i, quantity } : i));
     };
 
-    const clearCart = () => setItems([]);
+    const clearCart = () => {
+        setItems([]);
+        setCoupon(null);
+    };
+
+    const applyCoupon = (newCoupon: CouponData | null) => {
+        setCoupon(newCoupon);
+    };
 
     const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
     const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     return (
-        <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, itemCount, subtotal }}>
+        <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, itemCount, subtotal, coupon, applyCoupon }}>
             {children}
         </CartContext.Provider>
     );

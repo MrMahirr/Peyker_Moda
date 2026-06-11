@@ -20,7 +20,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { StorefrontService } from './storefront.service';
 import { StoreProductQueryDto, UpdateCartDto, CheckoutDto, CustomerLoginDto, CustomerRegisterDto, GoogleLoginDto, TrackOrderDto } from './dto';
-import { CustomerJwtAuthGuard } from '../../common/guards';
+import { CustomerJwtAuthGuard, OptionalCustomerJwtAuthGuard } from '../../common/guards';
 
 const PublicStoreReadThrottle = Throttle({
     default: { limit: 500, ttl: 60000 },
@@ -224,10 +224,11 @@ export class StorefrontController {
     // ========== CHECKOUT ==========
 
     @Post('checkout')
+    @UseGuards(OptionalCustomerJwtAuthGuard)
     @ApiOperation({ summary: 'Sipariş oluştur' })
     @ApiResponse({ status: 201, description: 'Sipariş oluşturuldu' })
-    async checkout(@Body() checkoutDto: CheckoutDto) {
-        return this.storefrontService.checkout(checkoutDto);
+    async checkout(@Req() req: any, @Body() checkoutDto: CheckoutDto) {
+        return this.storefrontService.checkout(checkoutDto, req.user?.id);
     }
 
     // ========== ORDER TRACKING ==========

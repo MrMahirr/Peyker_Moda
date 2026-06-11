@@ -1,233 +1,72 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { ShoppingBag, Search, Menu, User, ChevronDown, LogOut, Heart } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { motion } from "framer-motion";
+import { Menu } from "lucide-react";
 import SearchModal from "@/components/shared/SearchModal";
 import { useCart } from "@/lib/CartContext";
 import { useFavorites } from "@/lib/FavoritesContext";
-import { storeApi, StoreUser } from "@/lib/api";
-
-type CollectionLink = {
-  slug: string;
-  title: string;
-};
+import { DesktopNavigation } from "./header/DesktopNavigation";
+import { HeaderActions } from "./header/HeaderActions";
+import { HeaderLogo } from "./header/HeaderLogo";
+import { useHeaderState } from "./header/hooks/useHeaderState";
 
 export default function Header() {
-  const router = useRouter();
-  const pathname = usePathname();
   const { itemCount } = useCart();
   const { favorites } = useFavorites();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<StoreUser | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [collections, setCollections] = useState<CollectionLink[]>([]);
-
-  useEffect(() => {
-    setMounted(true);
-    setIsLoggedIn(storeApi.isLoggedIn());
-    setUser(storeApi.getUser());
-
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-
-    // Fetch collections
-    const fetchCollections = async () => {
-      try {
-        const apiCollections = await storeApi.getCollectionContent();
-        if (apiCollections && apiCollections.length > 0) {
-           setCollections(
-             apiCollections
-               .filter(c => c.isActive)
-               .sort((a, b) => a.position - b.position)
-               .map(c => ({ slug: c.slug || '', title: c.name }))
-           );
-        } else {
-           // Fallback to categories if no collections exist
-           const categories = await storeApi.getCategories();
-           setCollections(categories.map(c => ({ slug: c.slug, title: c.name })));
-        }
-      } catch (err) {
-        console.error('Header collections fetch failed', err);
-      }
-    };
-    fetchCollections();
-
-
-    // Keyboard shortcut for search
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsSearchOpen(true);
-      }
-      if (e.key === 'Escape') {
-        setIsSearchOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
-  const handleLogout = () => {
-    storeApi.logout();
-    setIsLoggedIn(false);
-    setUser(null);
-    router.push('/');
-  };
-
-  // Eğer ana sayfadaysak transparan başlar, değilse her zaman dolu/siyah yazı başlar
-  const isHomePage = pathname === '/';
-  const shouldApplyScrolledStyle = isScrolled || !isHomePage;
+  const {
+    mounted,
+    isLoggedIn,
+    user,
+    isSearchOpen,
+    openSearch,
+    closeSearch,
+    logout,
+    collections,
+    shouldApplyScrolledStyle,
+  } = useHeaderState();
 
   return (
     <motion.header
-      className={`fixed top-0 w-full z-50 transition-all duration-500 border-b ${shouldApplyScrolledStyle
-        ? 'bg-white/70 backdrop-blur-md shadow-sm border-stone-200 py-3'
-        : 'bg-transparent border-transparent py-5'
-        }`}
+      className={`fixed top-0 w-full z-50 transition-all duration-500 border-b ${
+        shouldApplyScrolledStyle
+          ? "bg-white/70 backdrop-blur-md shadow-sm border-stone-200 py-3"
+          : "bg-transparent border-transparent py-5"
+      }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
-        {/* Mobile Menu */}
-        <Menu className={`w-6 h-6 md:hidden cursor-pointer ${shouldApplyScrolledStyle ? 'text-stone-900' : 'text-white'}`} />
+        <button
+          type="button"
+          className={`md:hidden cursor-pointer ${
+            shouldApplyScrolledStyle ? "text-stone-900" : "text-white"
+          }`}
+          aria-label="Mobil menu"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
 
-        {/* Logo */}
-        <Link href="/" className="flex-shrink-0">
-          <h1 className={`text-2xl md:text-3xl font-serif font-bold tracking-tight bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent transition-opacity duration-300 ${shouldApplyScrolledStyle ? 'opacity-100' : 'opacity-90'}`}>
-            PEYKER MODA
-          </h1>
-        </Link>
+        <HeaderLogo shouldApplyScrolledStyle={shouldApplyScrolledStyle} />
 
-        {/* Desktop Nav */}
-        <nav className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide ${shouldApplyScrolledStyle ? 'text-stone-700' : 'text-white'}`}>
-          <Link href="/" className="hover:text-amber-500 transition-colors relative group">Ana Sayfa</Link>
+        <DesktopNavigation
+          collections={collections}
+          shouldApplyScrolledStyle={shouldApplyScrolledStyle}
+        />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger className="hover:text-amber-500 transition-colors flex items-center gap-1 focus:outline-none">
-              Koleksiyonlar <ChevronDown className="w-4 h-4 opacity-70" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-white/95 backdrop-blur-md border-stone-100">
-              <DropdownMenuItem asChild>
-                <Link href="/koleksiyonlar/cok-satanlar" className="cursor-pointer w-full font-semibold text-amber-600">
-                  ★ Çok Satanlar
-                </Link>
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
-              {collections.map((collection) => (
-                <DropdownMenuItem key={collection.slug} asChild>
-                  <Link href={`/koleksiyonlar/${collection.slug}`} className="cursor-pointer w-full">
-                    {collection.title}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Link href="/giyim" className="hover:text-amber-500 transition-colors relative group">Giyim</Link>
-          <Link href="/aksesuar" className="hover:text-amber-500 transition-colors relative group">Aksesuar</Link>
-          <Link href="/indirim" className="hover:text-amber-500 transition-colors relative group font-semibold text-rose-500 hover:text-rose-600">İndirim</Link>
-        </nav>
-
-        {/* Icons */}
-        <div className={`flex items-center gap-3 md:gap-5 ${shouldApplyScrolledStyle ? 'text-stone-900' : 'text-white'}`}>
-          <button onClick={() => setIsSearchOpen(true)} className="hover:text-amber-500 transition-colors hidden sm:block">
-            <Search className="w-5 h-5" />
-          </button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger className="hover:text-amber-500 transition-colors focus:outline-none flex items-center gap-2">
-              <User className="w-5 h-5" />
-              <span className="hidden lg:inline text-sm font-medium">
-                {mounted ? (isLoggedIn ? user?.firstName || 'Hesabım' : 'Giriş') : 'Giriş'}
-              </span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-md border-stone-850">
-              {mounted && isLoggedIn ? (
-                <>
-                  <DropdownMenuLabel>Merhaba, {user?.firstName || 'Kullanıcı'}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profil" className="cursor-pointer w-full font-semibold">
-                      Profilim
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profil?tab=orders" className="cursor-pointer w-full font-semibold">
-                      Siparişlerim
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/favoriler" className="cursor-pointer w-full font-semibold">
-                      Favorilerim
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="cursor-pointer text-rose-600 focus:text-rose-600"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Çıkış Yap
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <>
-                  <DropdownMenuLabel>Hesap</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/giris" className="cursor-pointer w-full font-semibold">
-                      Giriş Yap
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/kayit" className="cursor-pointer w-full">
-                      Kayıt Ol
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/siparis-takip" className="cursor-pointer w-full text-stone-500">
-                      Sipariş Takip
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Link href="/favoriler" className="relative cursor-pointer hover:text-amber-500 transition-colors">
-            <Heart className="w-5 h-5" />
-            {mounted && favorites.length > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                {favorites.length}
-              </span>
-            )}
-          </Link>
-
-          <Link href="/sepet" className="relative cursor-pointer hover:text-amber-500 transition-colors">
-            <ShoppingBag className="w-5 h-5" />
-            {mounted && itemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                {itemCount}
-              </span>
-            )}
-          </Link>
-        </div>
+        <HeaderActions
+          shouldApplyScrolledStyle={shouldApplyScrolledStyle}
+          mounted={mounted}
+          itemCount={itemCount}
+          favoriteCount={favorites.length}
+          isLoggedIn={isLoggedIn}
+          user={user}
+          onSearchClick={openSearch}
+          onLogout={logout}
+        />
       </div>
 
-      {/* Search Modal */}
-      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
     </motion.header>
   );
 }

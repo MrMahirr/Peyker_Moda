@@ -111,7 +111,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     setSelectedSize(firstSize || availableSizes[0] || "");
     setSelectedColor(firstColor || availableColors[0] || "");
     setQuantity(1);
-    openVariantPicker();
+    setIsPickerOpen(true);
   };
 
   const isSizeAvailable = (size: string) =>

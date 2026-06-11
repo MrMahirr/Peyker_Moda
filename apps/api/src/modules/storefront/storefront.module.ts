@@ -5,6 +5,9 @@ import { StorefrontController } from './storefront.controller';
 import { StorefrontService } from './storefront.service';
 import { CampaignsModule } from '../campaigns/campaigns.module';
 import { CustomerJwtStrategy } from './strategies/customer-jwt.strategy';
+import { PageHeaderStorageService } from '../banners/page-header.storage.service';
+import { CollectionContentStorageService } from '../banners/collection-content.storage.service';
+import { BannerStorageService } from '../banners/banner.storage.service';
 
 @Module({
     imports: [
@@ -19,7 +22,13 @@ import { CustomerJwtStrategy } from './strategies/customer-jwt.strategy';
         }),
     ],
     controllers: [StorefrontController],
-    providers: [StorefrontService, CustomerJwtStrategy],
+    providers: [
+        StorefrontService, 
+        CustomerJwtStrategy,
+        PageHeaderStorageService,
+        CollectionContentStorageService,
+        BannerStorageService
+    ],
     exports: [StorefrontService],
 })
 export class StorefrontModule { }

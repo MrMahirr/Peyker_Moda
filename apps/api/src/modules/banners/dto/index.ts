@@ -21,6 +21,11 @@ export class CreateBannerDto {
   @IsNotEmpty()
   title: string;
 
+  @ApiPropertyOptional({ example: 'Sezonun en trend parçaları' })
+  @IsString()
+  @IsOptional()
+  subtitle?: string;
+
   @ApiProperty({ example: 'https://cdn.example.com/banner.jpg' })
   @IsString()
   @IsNotEmpty()
@@ -30,6 +35,16 @@ export class CreateBannerDto {
   @IsString()
   @IsOptional()
   linkUrl?: string;
+
+  @ApiPropertyOptional({ example: 'Hemen Al' })
+  @IsString()
+  @IsOptional()
+  ctaText?: string;
+
+  @ApiPropertyOptional({ example: '/giyim' })
+  @IsString()
+  @IsOptional()
+  ctaLink?: string;
 
   @ApiPropertyOptional({ example: 1 })
   @IsInt()

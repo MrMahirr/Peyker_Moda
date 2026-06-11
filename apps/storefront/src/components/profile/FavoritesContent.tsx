@@ -6,9 +6,12 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, calculateDiscount } from "@/lib/utils";
 import { useCart } from "@/lib/CartContext";
+import { useFavorites } from "@/lib/FavoritesContext";
 import { storeApi } from "@/lib/api";
+import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 interface FavoriteItem {
     id: string;
@@ -24,15 +27,16 @@ interface FavoriteItem {
 // Removed mock favorites
 
 export default function FavoritesContent() {
-    const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+    const [favoritesList, setFavoritesList] = useState<FavoriteItem[]>([]);
     const [loading, setLoading] = useState(true);
     const { addItem } = useCart();
+    const { toggleFavorite, favorites: globalFavs } = useFavorites();
 
     const fetchFavorites = async () => {
         try {
             setLoading(true);
             const data = await storeApi.getFavorites();
-            setFavorites(data);
+            setFavoritesList(data);
         } catch (error) {
             console.error("Failed to fetch favorites:", error);
         } finally {
@@ -44,11 +48,27 @@ export default function FavoritesContent() {
         fetchFavorites();
     }, []);
 
-    const removeFromFavorites = async (id: string) => {
-        const success = await storeApi.removeFavorite(id);
-        if (success) {
-            setFavorites(prev => prev.filter(item => item.id !== id));
-        }
+    // Sync with global favorites state just in case it's removed elsewhere
+    useEffect(() => {
+        setFavoritesList(prev => prev.filter(item => globalFavs.includes(String(item.id))));
+    }, [globalFavs]);
+
+    const removeFromFavorites = async (id: string, name: string) => {
+        Swal.fire({
+            title: 'Emin misiniz?',
+            text: `${name} favorilerden silinecek!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, sil!',
+            cancelButtonText: 'İptal'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await toggleFavorite(id, name);
+                setFavoritesList(prev => prev.filter(item => item.id !== id));
+            }
+        });
     };
 
     const handleAddToCart = (item: FavoriteItem) => {
@@ -69,7 +89,7 @@ export default function FavoritesContent() {
         );
     }
 
-    if (favorites.length === 0) {
+    if (favoritesList.length === 0) {
         return (
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -101,12 +121,12 @@ export default function FavoritesContent() {
         >
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-serif font-bold text-stone-900">
-                    Favorilerim ({favorites.length})
+                    Favorilerim ({favoritesList.length})
                 </h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {favorites.map((item) => (
+                {favoritesList.map((item) => (
                     <motion.div
                         key={item.id}
                         layout
@@ -125,7 +145,7 @@ export default function FavoritesContent() {
                                 />
                                 {item.compareAtPrice && item.compareAtPrice > item.price && (
                                     <span className="absolute top-3 left-3 bg-rose-500 text-white text-xs px-2 py-1 rounded">
-                                        %{Math.round((1 - item.price / item.compareAtPrice) * 100)} İndirim
+                                        %{calculateDiscount(item.price, item.compareAtPrice)} İndirim
                                     </span>
                                 )}
                                 {!item.inStock && (
@@ -171,7 +191,7 @@ export default function FavoritesContent() {
                                     variant="outline"
                                     size="icon"
                                     className="border-stone-200 text-rose-500 hover:bg-rose-50 hover:border-rose-200"
-                                    onClick={() => removeFromFavorites(item.id)}
+                                    onClick={() => removeFromFavorites(item.id, item.name)}
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </Button>

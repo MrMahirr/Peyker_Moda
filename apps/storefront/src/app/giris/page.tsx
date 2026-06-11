@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { storeApi } from "@/lib/api";
+import { toast } from "sonner";
 
 interface GoogleCredentialResponse {
     credential: string;
@@ -83,7 +84,10 @@ export default function LoginPage() {
             if (result.accessToken) {
                 localStorage.setItem("accessToken", result.accessToken);
                 localStorage.setItem("user", JSON.stringify(result.user));
-                window.location.href = "/profil";
+                toast.success("Başarıyla giriş yapıldı!");
+                setTimeout(() => {
+                    window.location.href = "/profil";
+                }, 1000);
             }
         } catch (err: unknown) {
             setError(getErrorMessage(err, "Google ile giriş başarısız. Lütfen tekrar deneyin."));
@@ -102,7 +106,10 @@ export default function LoginPage() {
             if (result.accessToken) {
                 localStorage.setItem("accessToken", result.accessToken);
                 localStorage.setItem("user", JSON.stringify(result.user));
-                window.location.href = "/profil";
+                toast.success("Başarıyla giriş yapıldı!");
+                setTimeout(() => {
+                    window.location.href = "/profil";
+                }, 1000);
             }
         } catch (err: unknown) {
             setError(getErrorMessage(err, "Giriş başarısız. Lütfen bilgilerinizi kontrol edin."));

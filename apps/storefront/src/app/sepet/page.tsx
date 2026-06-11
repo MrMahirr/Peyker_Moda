@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ArrowLeft, ShieldCheck, Loader2, CheckCircle, XCircle, Tag } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ShieldCheck, Loader2, CheckCircle, XCircle, Tag } from 'lucide-react';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/lib/CartContext";
 import { storeApi } from "@/lib/api";
+import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, subtotal, itemCount } = useCart();
@@ -27,13 +29,36 @@ export default function CartPage() {
   } | null>(null);
 
   // Apply coupon
+  const handleRemoveItem = (id: string, name: string) => {
+    Swal.fire({
+      title: 'Emin misiniz?',
+      text: `${name} sepetten silinecek!`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Evet, sil!',
+      cancelButtonText: 'İptal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        removeItem(id);
+        toast.info(`${name} sepetten çıkarıldı.`);
+      }
+    });
+  };
+
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
 
     setCouponLoading(true);
     try {
-      const result = await storeApi.validateCoupon(couponCode);
+      const result = await storeApi.validateCoupon(couponCode, subtotal);
       setCouponResult(result);
+      if (result.valid) {
+        toast.success(result.message || 'Kupon uygulandı!');
+      } else {
+        toast.error(result.message || 'Geçersiz kupon kodu');
+      }
     } catch (error) {
       setCouponResult({
         valid: false,
@@ -41,6 +66,7 @@ export default function CartPage() {
         discountType: 'percentage',
         message: 'Kupon doğrulanamadı'
       });
+      toast.error('Kupon doğrulanamadı');
     } finally {
       setCouponLoading(false);
     }
@@ -125,7 +151,7 @@ export default function CartPage() {
 
                     {/* Silme Butonu */}
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => handleRemoveItem(item.id, item.name)}
                       className="absolute top-4 right-4 p-2 text-stone-400 hover:text-rose-600 transition-colors rounded-full hover:bg-rose-50"
                     >
                       <Trash2 className="w-5 h-5" />

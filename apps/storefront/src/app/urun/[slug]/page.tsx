@@ -6,17 +6,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ShoppingBag, Heart, ChevronLeft, Loader2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { storeApi, Product } from "@/lib/api";
 import { useCart } from "@/lib/CartContext";
-import { formatPrice, resolveProductImages } from "@/lib/utils";
+import { useFavorites } from "@/lib/FavoritesContext";
+import { formatPrice, resolveProductImages, calculateDiscount } from "@/lib/utils";
 
 export default function ProductDetailPage() {
     const params = useParams();
     const slug = params.slug as string;
     const { addItem } = useCart();
+    const { toggleFavorite, isFavorite } = useFavorites();
 
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
@@ -82,14 +85,9 @@ export default function ProductDetailPage() {
         setTimeout(() => setAdded(false), 2000);
     };
 
-    const handleAddFavorite = async () => {
+    const handleToggleFavorite = async () => {
         if (!product) return;
-        const success = await storeApi.addFavorite(product.id);
-        if (success) {
-            alert('Favorilere eklendi!');
-        } else {
-            alert('Favorilere eklemek için giriş yapmalısınız.');
-        }
+        await toggleFavorite(product.id, product.name);
     };
 
     if (loading) {
@@ -121,12 +119,22 @@ export default function ProductDetailPage() {
 
     const resolvedImages = resolveProductImages(product.images);
 
-    const discountPercent = product.compareAtPrice
-        ? Math.round((1 - product.price / product.compareAtPrice) * 100)
-        : 0;
+    const discountPercent = calculateDiscount(product.price, product.compareAtPrice);
 
     const availableSizes = Array.from(new Set(product.variants?.map(v => v.attributes?.size || v.attributes?.beden || v.attributes?.Beden || v.attributes?.Size || (v as any).size).filter(Boolean))) as string[];
     const availableColors = Array.from(new Set(product.variants?.map(v => v.attributes?.color || v.attributes?.renk || v.attributes?.Renk || v.attributes?.Color || (v as any).color).filter(Boolean))) as string[];
+
+    const selectedVariant = product.variants?.find(v => {
+        const sizeAttr = v.attributes?.size || v.attributes?.beden || v.attributes?.Beden || v.attributes?.Size || (v as any).size;
+        const colorAttr = v.attributes?.color || v.attributes?.renk || v.attributes?.Renk || v.attributes?.Color || (v as any).color;
+        
+        const sizeMatch = availableSizes.length === 0 || sizeAttr === selectedSize;
+        const colorMatch = availableColors.length === 0 || colorAttr === selectedColor;
+        
+        return sizeMatch && colorMatch;
+    });
+
+    const currentStock = selectedVariant ? selectedVariant.stock : product.stock;
 
     return (
         <div className="min-h-screen bg-stone-50 font-sans text-stone-900">
@@ -278,8 +286,8 @@ export default function ProductDetailPage() {
                         </div>
 
                         {/* Stock */}
-                        {product.stock > 0 ? (
-                            <p className="text-green-600 text-sm">✓ Stokta mevcut ({product.stock} adet)</p>
+                        {currentStock > 0 ? (
+                            <p className="text-green-600 text-sm">✓ Stokta mevcut ({currentStock} adet)</p>
                         ) : (
                             <p className="text-red-600 text-sm">✗ Stokta yok</p>
                         )}
@@ -293,13 +301,13 @@ export default function ProductDetailPage() {
                                         : 'bg-stone-900 hover:bg-amber-600'
                                     }`}
                                 onClick={handleAddToCart}
-                                disabled={product.stock === 0}
+                                disabled={currentStock === 0}
                             >
                                 <ShoppingBag className="w-5 h-5 mr-2" />
                                 {added ? 'Sepete Eklendi!' : 'Sepete Ekle'}
                             </Button>
-                            <Button variant="outline" size="lg" className="h-14 px-4 border-stone-300" onClick={handleAddFavorite}>
-                                <Heart className="w-5 h-5" />
+                            <Button variant="outline" size="lg" className="h-14 px-4 border-stone-300" onClick={handleToggleFavorite}>
+                                <Heart className={`w-5 h-5 ${product && isFavorite(product.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
                             </Button>
                         </div>
 

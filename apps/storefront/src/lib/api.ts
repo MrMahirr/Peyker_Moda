@@ -149,6 +149,18 @@ export interface CardInfo {
     cvc: string;
 }
 
+// Helper to map backend product fields
+const mapProduct = (p: any): Product => {
+    if (!p || p.price !== undefined) return p as Product;
+    const salePrice = p.salePrice ? parseFloat(p.salePrice) : undefined;
+    const basePrice = p.basePrice ? parseFloat(p.basePrice) : 0;
+    return {
+        ...p,
+        price: salePrice || basePrice,
+        compareAtPrice: salePrice ? basePrice : undefined,
+    };
+};
+
 // API Service
 export const storeApi = {
     // Categories
@@ -210,7 +222,7 @@ export const storeApi = {
             const response = await fetch(`${API_BASE_URL}/store/products?${searchParams}`);
             const data = await response.json();
             return {
-                products: data.data || [],
+                products: (data.data || []).map(mapProduct),
                 total: data.meta?.total || 0,
                 page: data.meta?.page || 1,
                 totalPages: data.meta?.totalPages || 1
@@ -225,7 +237,7 @@ export const storeApi = {
         try {
             const response = await fetch(`${API_BASE_URL}/store/products/${slug}`);
             const data = await response.json();
-            return data.data || null;
+            return data.data ? mapProduct(data.data) : null;
         } catch (error) {
             console.error('Failed to fetch product:', error);
             return null;
@@ -236,7 +248,7 @@ export const storeApi = {
         try {
             const response = await fetch(`${API_BASE_URL}/store/products?featured=true&limit=8`);
             const data = await response.json();
-            return data.data || [];
+            return (data.data || []).map(mapProduct);
         } catch (error) {
             console.error('Failed to fetch featured products:', error);
             return [];
@@ -247,7 +259,7 @@ export const storeApi = {
         try {
             const response = await fetch(`${API_BASE_URL}/store/products?onSale=true&limit=8`);
             const data = await response.json();
-            return data.data || [];
+            return (data.data || []).map(mapProduct);
         } catch (error) {
             console.error('Failed to fetch sale products:', error);
             return [];
@@ -437,22 +449,26 @@ export const storeApi = {
     },
 
     // Coupon validation
-    async validateCoupon(code: string): Promise<{ valid: boolean; discount: number; discountType: 'percentage' | 'fixed'; message: string }> {
+    async validateCoupon(code: string, cartTotal: number = 0): Promise<{ valid: boolean; discount: number; discountType: 'percentage' | 'fixed'; message: string }> {
         try {
             const response = await fetch(`${API_BASE_URL}/coupons/validate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code })
+                body: JSON.stringify({ code, cartTotal })
             });
             const data = await response.json();
             if (!response.ok) {
-                return { valid: false, discount: 0, discountType: 'percentage', message: data.message || 'Geçersiz kupon kodu' };
+                let errorMsg = 'Geçersiz kupon kodu';
+                if (data.message) {
+                    errorMsg = Array.isArray(data.message) ? data.message[0] : data.message;
+                }
+                return { valid: false, discount: 0, discountType: 'percentage', message: errorMsg };
             }
             return {
                 valid: true,
-                discount: data.data.discount,
-                discountType: data.data.discountType || 'percentage',
-                message: 'Kupon uygulandı!'
+                discount: data.discount || 0,
+                discountType: data.coupon?.discountType || 'percentage',
+                message: 'Kupon başarıyla uygulandı!'
             };
         } catch (error) {
             return { valid: false, discount: 0, discountType: 'percentage', message: 'Kupon doğrulanamadı' };
@@ -481,9 +497,17 @@ export const storeApi = {
         try {
             const response = await fetch(`${API_BASE_URL}/store/favorites/${productId}`, {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
-            return response.ok;
+            if (!response.ok) {
+                const text = await response.text();
+                console.error('Failed to add favorite (Server Error):', text);
+                return false;
+            }
+            return true;
         } catch (error) {
             console.error('Failed to add favorite:', error);
             return false;
@@ -496,9 +520,17 @@ export const storeApi = {
         try {
             const response = await fetch(`${API_BASE_URL}/store/favorites/${productId}`, {
                 method: 'DELETE',
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
-            return response.ok;
+            if (!response.ok) {
+                const text = await response.text();
+                console.error('Failed to remove favorite (Server Error):', text);
+                return false;
+            }
+            return true;
         } catch (error) {
             console.error('Failed to remove favorite:', error);
             return false;
@@ -600,7 +632,7 @@ export const storeApi = {
     },
 
     // Banners / Hero Slides
-    async getBanners(position?: string): Promise<Array<{ id: string; title: string; imageUrl: string; link?: string; order: number }>> {
+    async getBanners(position?: string): Promise<Array<{ id: string; title: string; subtitle?: string; ctaText?: string; ctaLink?: string; imageUrl: string; link?: string; order: number; position?: number }>> {
         try {
             const params = position ? `?position=${position}` : '';
             const response = await fetch(`${API_BASE_URL}/store/banners${params}`);
@@ -612,12 +644,34 @@ export const storeApi = {
         }
     },
 
+    async getPageHeader(slug: string): Promise<{ id: string; title: string; subtitle?: string; imageUrl?: string; isActive: boolean; } | null> {
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/page-headers/${slug}`);
+            const data = await response.json();
+            return data.data || null;
+        } catch (error) {
+            console.error('Failed to fetch page header:', error);
+            return null;
+        }
+    },
+
+    async getCollectionContent(): Promise<Array<{ id: string; name: string; imageUrl: string; slug?: string; position: number; isActive: boolean; }>> {
+        try {
+            const response = await fetch(`${API_BASE_URL}/store/collection-content`);
+            const data = await response.json();
+            return data.data || [];
+        } catch (error) {
+            console.error('Failed to fetch collection content:', error);
+            return [];
+        }
+    },
+
     // Top Products (Best Sellers)
     async getTopProducts(limit = 10): Promise<Product[]> {
         try {
-            const response = await fetch(`${API_BASE_URL}/store/products?sortBy=bestselling&limit=${limit}`);
+            const response = await fetch(`${API_BASE_URL}/store/products?sort=popular&limit=${limit}`);
             const data = await response.json();
-            return data.data || [];
+            return (data.data || []).map(mapProduct);
         } catch (error) {
             console.error('Failed to fetch top products:', error);
             return [];
@@ -627,9 +681,9 @@ export const storeApi = {
     // New Arrivals
     async getNewArrivals(limit = 8): Promise<Product[]> {
         try {
-            const response = await fetch(`${API_BASE_URL}/store/products?sortBy=newest&limit=${limit}`);
+            const response = await fetch(`${API_BASE_URL}/store/products?sort=newest&limit=${limit}`);
             const data = await response.json();
-            return data.data || [];
+            return (data.data || []).map(mapProduct);
         } catch (error) {
             console.error('Failed to fetch new arrivals:', error);
             return [];
@@ -640,6 +694,9 @@ export const storeApi = {
         try {
             const response = await fetch(`${API_BASE_URL}/store/collections/${slug}`);
             const data = await response.json();
+            if (data.data && data.data.products) {
+                data.data.products = data.data.products.map(mapProduct);
+            }
             return data.data || null;
         } catch (error) {
             console.error('Failed to fetch collection:', error);

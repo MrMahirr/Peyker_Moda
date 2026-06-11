@@ -7,7 +7,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/shared/ProductCard";
 import { storeApi, Product } from "@/lib/api";
-import { resolveProductImages } from "@/lib/utils";
+import { formatPrice, resolveProductImages, calculateDiscount } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,10 +22,23 @@ export default function SalePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("discount");
+  const [headerData, setHeaderData] = useState<{title: string, subtitle?: string, imageUrl?: string} | null>(null);
 
   useEffect(() => {
     fetchSaleProducts();
+    fetchHeader();
   }, [sortBy]);
+
+  const fetchHeader = async () => {
+    try {
+      const data = await storeApi.getPageHeader('indirim');
+      if (data && data.isActive) {
+        setHeaderData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch header:', error);
+    }
+  };
 
   const fetchSaleProducts = async () => {
     setLoading(true);
@@ -48,7 +61,11 @@ export default function SalePage() {
       <Header />
 
       {/* --- SALE BANNER --- */}
-      <div className="relative h-[40vh] bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center overflow-hidden">
+      <div 
+        className="relative h-[40vh] bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center overflow-hidden transition-all duration-700"
+        style={headerData?.imageUrl ? { backgroundImage: `url('${headerData.imageUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+      >
+        <div className="absolute inset-0 bg-stone-900/30" />
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-10 left-10 text-white/30 text-9xl font-bold">%</div>
           <div className="absolute bottom-10 right-10 text-white/30 text-9xl font-bold">%</div>
@@ -64,10 +81,10 @@ export default function SalePage() {
             <Percent className="w-8 h-8" />
           </div>
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            Sezon İndirimleri
+            {headerData?.title || 'Sezon İndirimleri'}
           </h1>
           <p className="text-white/90 text-lg md:text-xl font-light max-w-xl mx-auto">
-            %50&apos;ye varan indirimlerle favori parçalarınızı yakalayın!
+            {headerData?.subtitle || "%50'ye varan indirimlerle favori parçalarınızı yakalayın!"}
           </p>
         </motion.div>
       </div>
@@ -114,7 +131,7 @@ export default function SalePage() {
                     oldPrice: product.compareAtPrice || null,
                     image: resolveProductImages(product.images)[0] || '/placeholder.svg',
                     tag: product.compareAtPrice
-                      ? `%${Math.round((1 - product.price / product.compareAtPrice) * 100)} İndirim`
+                      ? `%${calculateDiscount(product.price, product.compareAtPrice)} İndirim`
                       : '',
                     slug: product.slug,
                   }}

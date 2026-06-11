@@ -11,7 +11,7 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { storeApi, Product } from "@/lib/api";
-import { formatPrice, resolveProductImages } from "@/lib/utils";
+import { formatPrice, resolveProductImages, calculateDiscount } from "@/lib/utils";
 import { useCart } from "@/lib/CartContext";
 
 export default function SearchPageContent() {
@@ -189,7 +189,7 @@ export default function SearchPageContent() {
                                                 />
                                                 {product.compareAtPrice && product.compareAtPrice > product.price && (
                                                     <span className="absolute left-2 top-2 rounded bg-rose-500 px-2 py-1 text-xs text-white">
-                                                        %{Math.round((1 - product.price / product.compareAtPrice) * 100)} Indirim
+                                                        %{calculateDiscount(product.price, product.compareAtPrice)} Indirim
                                                     </span>
                                                 )}
                                             </div>

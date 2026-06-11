@@ -21,13 +21,18 @@ export default function CategoriesSection() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const apiCategories = await storeApi.getCategories();
-        if (apiCategories.length > 0) {
-          setCategories(apiCategories.map(c => ({
-            name: c.name,
-            image: c.image || fallbackCategories[0]?.image || '',
-            slug: c.slug,
-          })));
+        const apiCollections = await storeApi.getCollectionContent();
+        if (apiCollections && apiCollections.length > 0) {
+          setCategories(
+            apiCollections
+              .filter(c => c.isActive)
+              .sort((a, b) => a.position - b.position)
+              .map(c => ({
+                name: c.name,
+                image: c.imageUrl,
+                slug: c.slug || '',
+              }))
+          );
         }
       } catch {
         // Fallback data.ts categories remain

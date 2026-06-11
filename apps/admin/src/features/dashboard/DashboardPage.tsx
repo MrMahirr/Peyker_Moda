@@ -107,7 +107,7 @@ export const DashboardPage = () => {
     const customerTrend = getTrendData(summary?.trends?.newCustomers, 'geçen haftaya göre');
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6" onClick={() => fetchData()}>
             <PageHeader
                 title="Genel Bakış"
                 subtitle={`Mağazanızın bugünkü performansı. Son güncellenme: ${lastUpdate}`}

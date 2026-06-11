@@ -23,6 +23,9 @@ import { CampaignsService } from '../campaigns/campaigns.service';
 import { EmailService } from '../email/email.service';
 import { getPaginationParams, createPaginatedResult, generateOrderNumber } from '../../common/utils';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
+import { PageHeaderStorageService } from '../banners/page-header.storage.service';
+import { CollectionContentStorageService } from '../banners/collection-content.storage.service';
+import { BannerStorageService } from '../banners/banner.storage.service';
 
 @Injectable()
 export class StorefrontService {
@@ -34,6 +37,9 @@ export class StorefrontService {
         private emailService: EmailService,
         private jwtService: JwtService,
         private configService: ConfigService,
+        private pageHeaderStorage: PageHeaderStorageService,
+        private collectionContentStorage: CollectionContentStorageService,
+        private bannerStorage: BannerStorageService,
     ) { }
 
     // ========== AUTHENTICATION ==========
@@ -181,19 +187,19 @@ export class StorefrontService {
     // ========== HOME / SETTINGS ==========
 
     async getBanners(position?: string) {
-        // Bu endpoint için yeni bir Banner tablosu veya Marketing tablosu kullanılabilir.
-        // Mevcut mimaride Marketing tablosu olduğunu varsayalım veya simüle edelim.
-        // Şimdilik Kampanyaları banner olarak döndürebiliriz.
-        const campaigns = await this.campaignsService.getActiveCampaigns();
-        return campaigns.map(c => ({
-            id: c.id,
-            slug: (c as any).slug || c.id,
-            title: c.name,
-            subtitle: c.description,
-            image: (c as any).imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
-            link: `/koleksiyonlar/${(c as any).slug || c.id}`,
-            position: position || 'hero'
-        }));
+        const banners = await this.bannerStorage.getBanners();
+        return banners
+            .filter(b => b.isActive)
+            .sort((a, b) => a.position - b.position)
+            .map(b => ({
+                id: b.id,
+                title: b.title,
+                subtitle: b.subtitle,
+                imageUrl: b.imageUrl,
+                ctaText: b.ctaText,
+                ctaLink: b.ctaLink,
+                position: b.position
+            }));
     }
 
     async getAttributes() {
@@ -210,6 +216,17 @@ export class StorefrontService {
             sizes,
             colors: colors.map(c => ({ name: c, value: c }))
         };
+    }
+
+    async getPageHeader(pageSlug: string) {
+        const headers = await this.pageHeaderStorage.getPageHeaders();
+        const header = headers.find(h => h.pageSlug === pageSlug && h.isActive);
+        return header || null;
+    }
+
+    async getCollectionContent() {
+        const contents = await this.collectionContentStorage.getCollectionContents();
+        return contents.filter(c => c.isActive).sort((a, b) => a.position - b.position);
     }
 
     // ========== CATEGORIES ==========
@@ -268,22 +285,21 @@ export class StorefrontService {
     }
 
     async getCollectionBySlug(slug: string) {
-        // Kampanyaları koleksiyon olarak kullanıyoruz
-        const campaigns = await this.campaignsService.findAllCampaigns();
-        const campaign = campaigns.find((c: any) => c.slug === slug || c.id === slug);
+        const contents = await this.collectionContentStorage.getCollectionContents();
+        const collection = contents.find(c => c.slug === slug || c.id === slug);
 
-        if (!campaign) {
+        if (!collection || !collection.isActive) {
             throw new NotFoundException('Koleksiyon bulunamadı');
         }
 
         return {
-            id: campaign.id,
-            title: campaign.name,
-            subtitle: campaign.description,
-            description: campaign.description,
-            coverImage: (campaign as any).imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
+            id: collection.id,
+            title: collection.name,
+            subtitle: "Yeni Sezon Koleksiyonu",
+            description: "Modern ve şık tasarımlarla tarzınızı yansıtın.",
+            coverImage: collection.imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
             accentColor: 'bg-amber-500',
-            categorySlug: 'giyim' // Default
+            categorySlug: collection.slug || 'giyim'
         };
     }
 

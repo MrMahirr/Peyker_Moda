@@ -33,9 +33,9 @@ export default function HeroSection() {
             id: b.id || idx,
             image: b.imageUrl,
             title: b.title,
-            subtitle: '',
-            cta: 'Keşfet',
-            link: b.link || '/giyim',
+            subtitle: b.subtitle || '',
+            cta: b.ctaText || 'Keşfet',
+            link: b.ctaLink || b.link || '/giyim',
           })));
         }
       } catch {

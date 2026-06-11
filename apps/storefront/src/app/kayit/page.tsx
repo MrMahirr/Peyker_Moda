@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { storeApi } from "@/lib/api";
+import { toast } from "sonner";
 
 const getErrorMessage = (error: unknown, fallback: string) => {
     return error instanceof Error ? error.message : fallback;
@@ -61,13 +62,11 @@ export default function RegisterPage() {
             });
 
             if (result.success) {
+                toast.success("Kayıt başarılı! Giriş yapabilirsiniz.");
                 router.push("/giris?registered=true");
             }
         } catch (err: unknown) {
             setError(getErrorMessage(err, "Kayıt başarısız. Lütfen tekrar deneyin."));
-        } finally {
-            setLoading(false);
-        }
     };
 
     return (

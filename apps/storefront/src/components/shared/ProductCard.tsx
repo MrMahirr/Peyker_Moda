@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, fadeInUp } from "@/lib/utils";
 import { useCart } from "@/lib/CartContext";
+import { useFavorites } from "@/lib/FavoritesContext";
 import { storeApi } from "@/lib/api";
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   product: {
@@ -24,8 +26,10 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { toggleFavorite, isFavorite } = useFavorites();
   const isSale = product.oldPrice !== null && product.oldPrice !== undefined;
   const productSlug = product.slug || `product-${product.id}`;
+  const favorited = isFavorite(String(product.id));
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,15 +43,10 @@ export default function ProductCard({ product }: ProductCardProps) {
     });
   };
 
-  const handleAddFavorite = async (e: React.MouseEvent) => {
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const success = await storeApi.addFavorite(String(product.id));
-    if (success) {
-      alert('Favorilere eklendi!');
-    } else {
-      alert('Favorilere eklemek için giriş yapmalısınız.');
-    }
+    await toggleFavorite(String(product.id), product.name);
   };
 
   return (
@@ -69,9 +68,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
           <button
             className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20 hover:text-rose-500"
-            onClick={handleAddFavorite}
+            onClick={handleToggleFavorite}
           >
-            <Heart className="w-5 h-5" />
+            <Heart className={`w-5 h-5 ${favorited ? 'fill-rose-500 text-rose-500' : ''}`} />
           </button>
           <Image
             src={product.image}

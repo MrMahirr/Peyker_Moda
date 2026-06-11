@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/lib/CartContext";
 import { storeApi } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -94,16 +95,16 @@ export default function CheckoutPage() {
                 // If cash, finish immediately
                 setOrderNumber(orderResult.orderNumber);
                 clearCart();
+                toast.success('Siparişiniz başarıyla oluşturuldu!');
                 setStep('success');
             } else {
                 setOrderNumber(orderResult.orderNumber);
                 clearCart();
+                toast.success('Siparişiniz başarıyla oluşturuldu!');
                 setStep('success');
             }
 
         } catch (error: unknown) {
-            console.error('Checkout error:', error);
-            setError('Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
         } finally {
             setLoading(false);
         }

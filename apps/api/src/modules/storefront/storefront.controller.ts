@@ -87,6 +87,22 @@ export class StorefrontController {
         return this.storefrontService.getAttributes();
     }
 
+    // ========== PUBLIC CONTENT ==========
+
+    @Get('page-headers/:pageSlug')
+    @PublicStoreReadThrottle
+    @ApiOperation({ summary: 'Kategori sayfası banner detayı' })
+    async getPageHeader(@Param('pageSlug') pageSlug: string) {
+        return this.storefrontService.getPageHeader(pageSlug);
+    }
+
+    @Get('collection-content')
+    @PublicStoreReadThrottle
+    @ApiOperation({ summary: 'Koleksiyonları keşfet içeriği' })
+    async getCollectionContent() {
+        return this.storefrontService.getCollectionContent();
+    }
+
     // ========== CATEGORIES ==========
 
     @Get('categories')

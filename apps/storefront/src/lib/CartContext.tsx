@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { toast } from 'sonner';
 
 export interface CartItem {
     id: string;
@@ -39,7 +40,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             return [];
         }
     });
-    // LocalStorage'a kaydet
+
     useEffect(() => {
         localStorage.setItem('peyker-cart', JSON.stringify(items));
     }, [items]);
@@ -52,6 +53,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + qtyToAdd } : i);
             }
             return [...prev, { ...item, quantity: qtyToAdd }];
+        });
+        toast.success(`${item.name} sepete eklendi`, {
+            description: item.variant ? `Varyant: ${item.variant}` : undefined,
         });
     };
 
@@ -84,5 +88,3 @@ export const useCart = () => {
     if (!context) throw new Error('useCart must be used within CartProvider');
     return context;
 };
-
-

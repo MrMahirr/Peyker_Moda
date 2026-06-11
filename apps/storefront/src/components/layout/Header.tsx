@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Search, Menu, User, ChevronDown, LogOut } from 'lucide-react';
+import { ShoppingBag, Search, Menu, User, ChevronDown, LogOut, Heart } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import SearchModal from "@/components/shared/SearchModal";
 import { useCart } from "@/lib/CartContext";
+import { useFavorites } from "@/lib/FavoritesContext";
 import { storeApi, StoreUser } from "@/lib/api";
 
 type CollectionLink = {
@@ -19,6 +20,7 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { itemCount } = useCart();
+  const { favorites } = useFavorites();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -37,13 +39,17 @@ export default function Header() {
     // Fetch collections
     const fetchCollections = async () => {
       try {
-        const categories = await storeApi.getCategories();
-        // Here we can use categories as collections or fetch separate collections if needed
-        // For now, let's treat top-level categories as "collections" or fetch real campaigns
-        const banners = await storeApi.getBanners();
-        if (banners.length > 0) {
-           setCollections(banners.map((b: any) => ({ slug: b.slug || b.id, title: b.title })));
+        const apiCollections = await storeApi.getCollectionContent();
+        if (apiCollections && apiCollections.length > 0) {
+           setCollections(
+             apiCollections
+               .filter(c => c.isActive)
+               .sort((a, b) => a.position - b.position)
+               .map(c => ({ slug: c.slug || '', title: c.name }))
+           );
         } else {
+           // Fallback to categories if no collections exist
+           const categories = await storeApi.getCategories();
            setCollections(categories.map(c => ({ slug: c.slug, title: c.name })));
         }
       } catch (err) {
@@ -162,7 +168,11 @@ export default function Header() {
                       Siparişlerim
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">Favorilerim</DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/favoriler" className="cursor-pointer w-full font-semibold">
+                      Favorilerim
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleLogout}
@@ -196,6 +206,14 @@ export default function Header() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          <Link href="/favoriler" className="relative cursor-pointer hover:text-amber-500 transition-colors">
+            <Heart className="w-5 h-5" />
+            {mounted && favorites.length > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                {favorites.length}
+              </span>
+            )}
+          </Link>
 
           <Link href="/sepet" className="relative cursor-pointer hover:text-amber-500 transition-colors">
             <ShoppingBag className="w-5 h-5" />

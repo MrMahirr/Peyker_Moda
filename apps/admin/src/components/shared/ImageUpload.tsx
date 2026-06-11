@@ -9,6 +9,7 @@ interface ImageUploadProps {
     value?: any[];
     onChange?: (items: any[]) => void;
     maxFiles?: number;
+    folder?: string;
     className?: string;
 }
 
@@ -16,6 +17,7 @@ export function ImageUpload({
     value = [],
     onChange,
     maxFiles = 5,
+    folder = 'products',
     className,
 }: ImageUploadProps) {
     const [loading, setLoading] = useState(false);
@@ -33,7 +35,7 @@ export function ImageUpload({
         setLoading(true);
         try {
             // Upload files to backend
-            const results = await uploadService.uploadMultipleFiles(acceptedFiles, 'products');
+            const results = await uploadService.uploadMultipleFiles(acceptedFiles, folder);
 
             // Get items from response safely
             const newItems = Array.isArray(results) 
@@ -67,7 +69,7 @@ export function ImageUpload({
             if (typeof urlString === 'string') {
                 const filename = urlString.split('/').pop();
                 if (filename) {
-                    await uploadService.deleteFile(filename, 'products');
+                    await uploadService.deleteFile(filename, folder);
                 }
             }
         } catch (error) {
@@ -153,7 +155,7 @@ export function ImageUpload({
                                 {index > 0 && maxFiles > 1 && (
                                     <Button
                                         type="button"
-                                        variant="outline"
+                                        variant="secondary"
                                         size="sm"
                                         className="h-7 w-7 p-0 rounded-full shadow-sm bg-white/90 hover:bg-white text-indigo-600 border-indigo-100"
                                         title="Vitrin Görseli Yap"

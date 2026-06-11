@@ -33,10 +33,23 @@ export default function AccessoriesPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [headerData, setHeaderData] = useState<{title: string, subtitle?: string, imageUrl?: string} | null>(null);
 
   useEffect(() => {
     fetchProducts();
+    fetchHeader();
   }, [sortBy, page]);
+
+  const fetchHeader = async () => {
+    try {
+      const data = await storeApi.getPageHeader('aksesuar');
+      if (data && data.isActive) {
+        setHeaderData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch header:', error);
+    }
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -63,7 +76,10 @@ export default function AccessoriesPage() {
 
       {/* --- HEADER BANNER --- */}
       <div className="relative h-[35vh] bg-stone-900 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-40" />
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-40 transition-all duration-700" 
+          style={{ backgroundImage: `url('${headerData?.imageUrl || 'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=2000&auto=format&fit=crop'}')` }}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-900 to-transparent" />
 
         <motion.div
@@ -75,10 +91,10 @@ export default function AccessoriesPage() {
             <Sparkles className="w-6 h-6 text-amber-400" />
           </div>
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            Aksesuarlar
+            {headerData?.title || 'Aksesuarlar'}
           </h1>
           <p className="text-stone-300 text-lg md:text-xl font-light max-w-xl mx-auto">
-            Stilinizi tamamlayan özel parçalar.
+            {headerData?.subtitle || 'Stilinizi tamamlayan özel parçalar.'}
           </p>
         </motion.div>
       </div>

@@ -34,6 +34,7 @@ export default function ClothingPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [headerData, setHeaderData] = useState<{title: string, subtitle?: string, imageUrl?: string} | null>(null);
 
   // Filter State
   const [filters, setFilters] = useState<{
@@ -69,8 +70,20 @@ export default function ClothingPage() {
     }
   }, [sortBy, page, filters]);
 
+  const fetchHeader = async () => {
+    try {
+      const data = await storeApi.getPageHeader('giyim');
+      if (data && data.isActive) {
+        setHeaderData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch header:', error);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchHeader();
   }, [fetchProducts]);
 
   const handleFilterChange = (newFilters: typeof filters) => {
@@ -90,7 +103,10 @@ export default function ClothingPage() {
 
       {/* --- HEADER BANNER --- */}
       <div className="relative h-[35vh] bg-stone-900 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-40" />
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-40 transition-all duration-700" 
+          style={{ backgroundImage: `url('${headerData?.imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000&auto=format&fit=crop'}')` }}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-900 to-transparent" />
 
         <motion.div
@@ -99,10 +115,10 @@ export default function ClothingPage() {
           className="relative z-10 text-center text-white px-4"
         >
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            Giyim Koleksiyonu
+            {headerData?.title || 'Giyim Koleksiyonu'}
           </h1>
           <p className="text-stone-300 text-lg md:text-xl font-light max-w-xl mx-auto">
-            Sezonun en trend parçalarını ve zamansız tasarımlarını keşfedin.
+            {headerData?.subtitle || 'Sezonun en trend parçalarını ve zamansız tasarımlarını keşfedin.'}
           </p>
         </motion.div>
       </div>

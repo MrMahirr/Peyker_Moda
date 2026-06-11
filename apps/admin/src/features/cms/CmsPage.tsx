@@ -1,30 +1,36 @@
 import { useState } from 'react';
-import { FileText, HelpCircle, Rss } from 'lucide-react';
+import { FileText, HelpCircle, Rss, Image, Layers, LayoutTemplate } from 'lucide-react';
 import { BlogManager } from './components/BlogManager';
 import { FaqManager } from './components/FaqManager';
 import { PageManager } from './components/PageManager';
+import { SliderManager } from '../crm/components/SliderManager';
+import { CollectionManager } from '../crm/components/CollectionManager';
+import { PageHeaderManager } from '../crm/components/PageHeaderManager';
 import { PageHeader } from '@/components/shared/PageHeader';
 
-type Tab = 'blog' | 'pages' | 'faq';
+type Tab = 'slider' | 'collections' | 'page-headers' | 'blog' | 'pages' | 'faq';
 
 export const CmsPage = () => {
-    const [activeTab, setActiveTab] = useState<Tab>('blog');
+    const [activeTab, setActiveTab] = useState<Tab>('slider');
     const tabs = [
-        { key: 'blog' as Tab, label: 'Blog & Haberler', icon: Rss },
-        { key: 'pages' as Tab, label: 'Sabit Sayfalar', icon: FileText },
+        { key: 'slider' as Tab, label: 'Slider', icon: Image },
+        { key: 'collections' as Tab, label: 'Koleksiyonlar', icon: Layers },
+        { key: 'page-headers' as Tab, label: 'Kategori Banner', icon: LayoutTemplate },
+        { key: 'blog' as Tab, label: 'Blog', icon: Rss },
+        { key: 'pages' as Tab, label: 'Sayfalar', icon: FileText },
         { key: 'faq' as Tab, label: 'S.S.S.', icon: HelpCircle },
     ];
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-5">
                 <div>
-                    <PageHeader title="İçerik Yönetimi (CMS)" subtitle="Blog, sayfa ve banner yönetimi." />
+                    <PageHeader title="İçerik Yönetimi (CMS)" subtitle="Vitrin, blog, sayfa ve banner yönetimi." />
                     <p className="text-sm font-medium text-zinc-500 mt-1">
-                        Blog yazilari, kurumsal sayfalar ve sikca sorulan sorular.
+                        Ana sayfa slider, koleksiyonlar, blog yazıları ve kurumsal sayfalar.
                     </p>
                 </div>
-                <div className="flex bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50 shadow-inner">
+                <div className="flex flex-wrap bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50 shadow-inner">
                     {tabs.map((tab) => (
                         <button
                             key={tab.key}
@@ -36,13 +42,16 @@ export const CmsPage = () => {
                             }`}
                         >
                             <tab.icon className="w-4 h-4" />
-                            {tab.label}
+                            <span className="hidden sm:inline">{tab.label}</span>
                         </button>
                     ))}
                 </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm min-h-[400px]">
+                {activeTab === 'slider' && <div className="p-6"><SliderManager /></div>}
+                {activeTab === 'collections' && <div className="p-6"><CollectionManager /></div>}
+                {activeTab === 'page-headers' && <div className="p-6"><PageHeaderManager /></div>}
                 {activeTab === 'blog' && <BlogManager />}
                 {activeTab === 'pages' && <PageManager />}
                 {activeTab === 'faq' && <FaqManager />}

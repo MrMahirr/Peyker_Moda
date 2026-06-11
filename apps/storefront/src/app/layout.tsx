@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/lib/CartContext";
+import { FavoritesProvider } from "@/lib/FavoritesContext";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -93,8 +94,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <CartProvider>
-          {children}
-          <Toaster position="top-right" richColors />
+          <FavoritesProvider>
+            {children}
+            <Toaster position="top-right" richColors />
+          </FavoritesProvider>
         </CartProvider>
       </body>
     </html>

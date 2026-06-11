@@ -5,8 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(price);
+export const formatPrice = (price: any) => {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : Number(price);
+  if (isNaN(numPrice)) return '0,00 ₺';
+  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(numPrice);
+};
+
+export const calculateDiscount = (price: any, compareAtPrice: any) => {
+  const p = typeof price === 'string' ? parseFloat(price) : Number(price);
+  const c = typeof compareAtPrice === 'string' ? parseFloat(compareAtPrice) : Number(compareAtPrice);
+  if (isNaN(p) || isNaN(c) || c <= 0 || p >= c) return 0;
+  return Math.round((1 - p / c) * 100);
 };
 
 export const fadeInUp = {

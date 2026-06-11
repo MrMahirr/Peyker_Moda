@@ -36,8 +36,11 @@ export class BannersService {
     const banner: BannerRecord = {
       id: randomUUID(),
       title: dto.title.trim(),
+      subtitle: dto.subtitle?.trim(),
       imageUrl: dto.imageUrl.trim(),
       linkUrl: dto.linkUrl?.trim() || undefined,
+      ctaText: dto.ctaText?.trim(),
+      ctaLink: dto.ctaLink?.trim(),
       position,
       isActive: dto.isActive ?? true,
       createdAt: now,
@@ -75,9 +78,12 @@ export class BannersService {
       ...banners[index],
       ...dto,
       title: nextTitle ?? banners[index].title,
+      subtitle: dto.subtitle !== undefined ? dto.subtitle?.trim() : banners[index].subtitle,
       imageUrl: dto.imageUrl?.trim() ?? banners[index].imageUrl,
       linkUrl:
         dto.linkUrl !== undefined ? dto.linkUrl.trim() || undefined : banners[index].linkUrl,
+      ctaText: dto.ctaText !== undefined ? dto.ctaText?.trim() : banners[index].ctaText,
+      ctaLink: dto.ctaLink !== undefined ? dto.ctaLink?.trim() : banners[index].ctaLink,
       updatedAt: new Date().toISOString(),
     };
 

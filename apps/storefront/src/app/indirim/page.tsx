@@ -7,7 +7,11 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/shared/ProductCard";
 import { storeApi, Product } from "@/lib/api";
-import { formatPrice, resolveProductImages, calculateDiscount } from "@/lib/utils";
+import {
+  formatPrice,
+  resolveProductImages,
+  calculateDiscount,
+} from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +26,11 @@ export default function SalePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("discount");
-  const [headerData, setHeaderData] = useState<{title: string, subtitle?: string, imageUrl?: string} | null>(null);
+  const [headerData, setHeaderData] = useState<{
+    title: string;
+    subtitle?: string;
+    imageUrl?: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchSaleProducts();
@@ -31,12 +39,12 @@ export default function SalePage() {
 
   const fetchHeader = async () => {
     try {
-      const data = await storeApi.getPageHeader('indirim');
+      const data = await storeApi.getPageHeader("indirim");
       if (data && data.isActive) {
         setHeaderData(data);
       }
     } catch (error) {
-      console.error('Failed to fetch header:', error);
+      console.error("Failed to fetch header:", error);
     }
   };
 
@@ -50,7 +58,7 @@ export default function SalePage() {
       });
       setProducts(result.products);
     } catch (error) {
-      console.error('Failed to fetch sale products:', error);
+      console.error("Failed to fetch sale products:", error);
     } finally {
       setLoading(false);
     }
@@ -61,14 +69,26 @@ export default function SalePage() {
       <Header />
 
       {/* --- SALE BANNER --- */}
-      <div 
+      <div
         className="relative h-[40vh] bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center overflow-hidden transition-all duration-700"
-        style={headerData?.imageUrl ? { backgroundImage: `url('${headerData.imageUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+        style={
+          headerData?.imageUrl
+            ? {
+                backgroundImage: `url('${headerData.imageUrl}')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : {}
+        }
       >
         <div className="absolute inset-0 bg-stone-900/30" />
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 text-white/30 text-9xl font-bold">%</div>
-          <div className="absolute bottom-10 right-10 text-white/30 text-9xl font-bold">%</div>
+          <div className="absolute top-10 left-10 text-white/30 text-9xl font-bold">
+            %
+          </div>
+          <div className="absolute bottom-10 right-10 text-white/30 text-9xl font-bold">
+            %
+          </div>
         </div>
 
         <motion.div
@@ -81,10 +101,11 @@ export default function SalePage() {
             <Percent className="w-8 h-8" />
           </div>
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            {headerData?.title || 'Sezon İndirimleri'}
+            {headerData?.title || "Sezon İndirimleri"}
           </h1>
           <p className="text-white/90 text-lg md:text-xl font-light max-w-xl mx-auto">
-            {headerData?.subtitle || "%50'ye varan indirimlerle favori parçalarınızı yakalayın!"}
+            {headerData?.subtitle ||
+              "%50'ye varan indirimlerle favori parçalarınızı yakalayın!"}
           </p>
         </motion.div>
       </div>
@@ -93,7 +114,10 @@ export default function SalePage() {
         {/* --- TOOLBAR --- */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-2 text-stone-500 text-sm">
-            <span className="font-semibold text-stone-900">{products.length}</span> indirimli ürün
+            <span className="font-semibold text-stone-900">
+              {products.length}
+            </span>{" "}
+            indirimli ürün
           </div>
 
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -102,8 +126,8 @@ export default function SalePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="discount">En Yüksek İndirim</SelectItem>
-              <SelectItem value="price-asc">Fiyat: Artan</SelectItem>
-              <SelectItem value="price-desc">Fiyat: Azalan</SelectItem>
+              <SelectItem value="price_asc">Fiyat: Artan</SelectItem>
+              <SelectItem value="price_desc">Fiyat: Azalan</SelectItem>
               <SelectItem value="newest">En Yeniler</SelectItem>
             </SelectContent>
           </Select>
@@ -129,11 +153,15 @@ export default function SalePage() {
                     name: product.name,
                     price: product.price,
                     oldPrice: product.compareAtPrice || null,
-                    image: resolveProductImages(product.images)[0] || '/placeholder.svg',
+                    image:
+                      resolveProductImages(product.images)[0] ||
+                      "/placeholder.svg",
                     tag: product.compareAtPrice
                       ? `%${calculateDiscount(product.price, product.compareAtPrice)} İndirim`
-                      : '',
+                      : "",
                     slug: product.slug,
+                    stock: product.stock,
+                    variants: product.variants,
                   }}
                 />
               ))}

@@ -33,21 +33,36 @@ export default function AccessoriesPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [headerData, setHeaderData] = useState<{title: string, subtitle?: string, imageUrl?: string} | null>(null);
+  const [headerData, setHeaderData] = useState<{
+    title: string;
+    subtitle?: string;
+    imageUrl?: string;
+  } | null>(null);
+
+  // Filter State
+  const [filters, setFilters] = useState<{
+    sizes: string[];
+    colors: string[];
+    priceRange: [number, number];
+  }>({
+    sizes: [],
+    colors: [],
+    priceRange: [0, 5000],
+  });
 
   useEffect(() => {
     fetchProducts();
     fetchHeader();
-  }, [sortBy, page]);
+  }, [sortBy, page, filters]);
 
   const fetchHeader = async () => {
     try {
-      const data = await storeApi.getPageHeader('aksesuar');
+      const data = await storeApi.getPageHeader("aksesuar");
       if (data && data.isActive) {
         setHeaderData(data);
       }
     } catch (error) {
-      console.error('Failed to fetch header:', error);
+      console.error("Failed to fetch header:", error);
     }
   };
 
@@ -55,19 +70,28 @@ export default function AccessoriesPage() {
     setLoading(true);
     try {
       const result = await storeApi.getProducts({
-        categorySlug: 'aksesuar',
+        categorySlug: "aksesuar",
         page,
         limit: 12,
         sortBy,
+        sizes: filters.sizes,
+        colors: filters.colors,
+        minPrice: filters.priceRange[0],
+        maxPrice: filters.priceRange[1],
       });
       setProducts(result.products);
       setTotalPages(result.totalPages);
       setTotal(result.total);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      console.error("Failed to fetch products:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFilterChange = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+    setPage(1); // Reset to first page on filter change
   };
 
   return (
@@ -76,9 +100,11 @@ export default function AccessoriesPage() {
 
       {/* --- HEADER BANNER --- */}
       <div className="relative h-[35vh] bg-stone-900 flex items-center justify-center overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-40 transition-all duration-700" 
-          style={{ backgroundImage: `url('${headerData?.imageUrl || 'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=2000&auto=format&fit=crop'}')` }}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-40 transition-all duration-700"
+          style={{
+            backgroundImage: `url('${headerData?.imageUrl || "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=2000&auto=format&fit=crop"}')`,
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-900 to-transparent" />
 
@@ -91,10 +117,10 @@ export default function AccessoriesPage() {
             <Sparkles className="w-6 h-6 text-amber-400" />
           </div>
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            {headerData?.title || 'Aksesuarlar'}
+            {headerData?.title || "Aksesuarlar"}
           </h1>
           <p className="text-stone-300 text-lg md:text-xl font-light max-w-xl mx-auto">
-            {headerData?.subtitle || 'Stilinizi tamamlayan özel parçalar.'}
+            {headerData?.subtitle || "Stilinizi tamamlayan özel parçalar."}
           </p>
         </motion.div>
       </div>
@@ -103,21 +129,35 @@ export default function AccessoriesPage() {
         {/* --- TOOLBAR --- */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <div className="flex items-center gap-2 text-stone-500 text-sm">
-            <span className="font-semibold text-stone-900">{total}</span> ürün listeleniyor
+            <span className="font-semibold text-stone-900">{total}</span> ürün
+            listeleniyor
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="md:hidden flex-1 border-stone-300">
+                <Button
+                  variant="outline"
+                  className="md:hidden flex-1 border-stone-300"
+                >
                   <Filter className="w-4 h-4 mr-2" /> Filtrele
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[300px] overflow-y-auto">
                 <SheetHeader className="mb-6">
-                  <SheetTitle className="font-serif text-2xl">Filtreler</SheetTitle>
+                  <SheetTitle className="font-serif text-2xl">
+                    Filtreler
+                  </SheetTitle>
                 </SheetHeader>
-                <FilterSidebar />
+                <FilterSidebar
+                  categorySlug="aksesuar"
+                  onFilterChange={handleFilterChange}
+                />
+                <div className="mt-8 pt-4 border-t border-stone-100">
+                  <Button className="w-full bg-stone-900 hover:bg-amber-600 text-white">
+                    Sonuçları Göster
+                  </Button>
+                </div>
               </SheetContent>
             </Sheet>
 
@@ -127,8 +167,8 @@ export default function AccessoriesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="newest">En Yeniler</SelectItem>
-                <SelectItem value="price-asc">Fiyat: Artan</SelectItem>
-                <SelectItem value="price-desc">Fiyat: Azalan</SelectItem>
+                <SelectItem value="price_asc">Fiyat: Artan</SelectItem>
+                <SelectItem value="price_desc">Fiyat: Azalan</SelectItem>
                 <SelectItem value="bestseller">Çok Satanlar</SelectItem>
               </SelectContent>
             </Select>
@@ -138,7 +178,10 @@ export default function AccessoriesPage() {
         <div className="flex gap-10">
           <aside className="hidden md:block w-64 flex-shrink-0">
             <div className="sticky top-32">
-              <FilterSidebar />
+              <FilterSidebar
+                categorySlug="aksesuar"
+                onFilterChange={handleFilterChange}
+              />
             </div>
           </aside>
 
@@ -163,9 +206,13 @@ export default function AccessoriesPage() {
                           name: product.name,
                           price: product.price,
                           oldPrice: product.compareAtPrice || null,
-                          image: resolveProductImages(product.images)[0] || '/placeholder.svg',
-                          tag: product.tags?.[0] || '',
+                          image:
+                            resolveProductImages(product.images)[0] ||
+                            "/placeholder.svg",
+                          tag: product.tags?.[0] || "",
                           slug: product.slug,
+                          stock: product.stock,
+                          variants: product.variants,
                         }}
                       />
                     ))}
@@ -177,7 +224,7 @@ export default function AccessoriesPage() {
                     <Button
                       variant="outline"
                       className="border-stone-300 hover:border-amber-500 px-8"
-                      onClick={() => setPage(p => p + 1)}
+                      onClick={() => setPage((p) => p + 1)}
                     >
                       Daha Fazla Göster
                     </Button>

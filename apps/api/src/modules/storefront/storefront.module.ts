@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { StorefrontController } from './storefront.controller';
 import { StorefrontService } from './storefront.service';
 import { CampaignsModule } from '../campaigns/campaigns.module';
+import { InvoicesModule } from '../invoices/invoices.module';
 import { CustomerJwtStrategy } from './strategies/customer-jwt.strategy';
 import { PageHeaderStorageService } from '../banners/page-header.storage.service';
 import { CollectionContentStorageService } from '../banners/collection-content.storage.service';
@@ -12,6 +13,7 @@ import { BannerStorageService } from '../banners/banner.storage.service';
 @Module({
     imports: [
         CampaignsModule,
+        InvoicesModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],

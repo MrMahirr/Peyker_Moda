@@ -86,7 +86,13 @@ export interface Order {
     id: string;
     orderNumber?: string;
     status: string;
-    total: number;
+    paymentStatus?: string;
+    subtotal?: number | string;
+    discountAmount?: number | string;
+    shippingCost?: number | string;
+    total?: number | string;
+    totalAmount?: number | string;
+    paidAmount?: number | string;
     shippingAddress?: string;
     paymentMethod?: string;
     cargoTrackingCode?: string;
@@ -94,7 +100,7 @@ export interface Order {
     items?: Array<{
         productName?: string;
         quantity: number;
-        unitPrice: number;
+        unitPrice: number | string;
         variant?: {
             size?: string;
             color?: string;
@@ -109,7 +115,7 @@ export interface Order {
     payments?: Array<{
         method: string;
         status: string;
-        amount: number;
+        amount: number | string;
     }>;
 }
 
@@ -622,7 +628,21 @@ export const storeApi = {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}` }
         });
-        return response.json();
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Fatura alinamadi');
+        }
+
+        if (data.url && data.url.startsWith('/')) {
+            const apiOrigin = API_BASE_URL.replace(/\/api\/?$/, '');
+            return {
+                ...data,
+                url: `${apiOrigin}${data.url}`,
+            };
+        }
+
+        return data;
     },
 
     async addAddress(addressData: any): Promise<any> {
@@ -750,9 +770,10 @@ export const storeApi = {
         }
     },
 
-    async getAttributes(): Promise<{ sizes: string[]; colors: Array<{ name: string; value: string }> }> {
+    async getAttributes(categorySlug?: string): Promise<{ sizes: string[]; colors: Array<{ name: string; value: string }> }> {
         try {
-            const response = await fetch(`${API_BASE_URL}/store/attributes`);
+            const url = categorySlug ? `${API_BASE_URL}/store/attributes?categorySlug=${categorySlug}` : `${API_BASE_URL}/store/attributes`;
+            const response = await fetch(url);
             const data = await response.json();
             return data.data || { sizes: [], colors: [] };
         } catch (error) {

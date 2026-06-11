@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Filter, Loader2 } from "lucide-react";
 import Header from "@/components/layout/Header";
@@ -27,14 +27,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const DEFAULT_PRICE_RANGE: [number, number] = [0, 5000];
+
+const getFilterPriceRange = (products: Product[]): [number, number] => {
+  const maxPrice = products.reduce((max, product) => {
+    const price = Number(product.price || 0);
+    return Number.isFinite(price) ? Math.max(max, price) : max;
+  }, 0);
+
+  return [
+    0,
+    maxPrice > 0 ? Math.ceil(maxPrice / 100) * 100 : DEFAULT_PRICE_RANGE[1],
+  ];
+};
+
 export default function ClothingPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filterSourceProducts, setFilterSourceProducts] = useState<Product[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("newest");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [headerData, setHeaderData] = useState<{title: string, subtitle?: string, imageUrl?: string} | null>(null);
+  const [headerData, setHeaderData] = useState<{
+    title: string;
+    subtitle?: string;
+    imageUrl?: string;
+  } | null>(null);
 
   // Filter State
   const [filters, setFilters] = useState<{
@@ -44,47 +65,98 @@ export default function ClothingPage() {
   }>({
     sizes: [],
     colors: [],
-    priceRange: [0, 5000],
+    priceRange: DEFAULT_PRICE_RANGE,
   });
+
+  const filterPriceRange = useMemo(
+    () => getFilterPriceRange(filterSourceProducts),
+    [filterSourceProducts],
+  );
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
+      const hasFilterSource = filterSourceProducts.length > 0;
+      const minPrice =
+        hasFilterSource && filters.priceRange[0] > filterPriceRange[0]
+          ? filters.priceRange[0]
+          : undefined;
+      const maxPrice =
+        hasFilterSource && filters.priceRange[1] < filterPriceRange[1]
+          ? filters.priceRange[1]
+          : undefined;
+
       const result = await storeApi.getProducts({
-        categorySlug: 'giyim',
+        categorySlug: "giyim",
         page,
         limit: 12,
         sortBy,
         sizes: filters.sizes,
         colors: filters.colors,
-        minPrice: filters.priceRange[0],
-        maxPrice: filters.priceRange[1],
+        minPrice,
+        maxPrice,
       });
       setProducts(result.products);
       setTotalPages(result.totalPages);
       setTotal(result.total);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      console.error("Failed to fetch products:", error);
     } finally {
       setLoading(false);
     }
-  }, [sortBy, page, filters]);
+  }, [sortBy, page, filters, filterPriceRange, filterSourceProducts.length]);
+
+  const fetchFilterSourceProducts = useCallback(async () => {
+    try {
+      const result = await storeApi.getProducts({
+        categorySlug: "giyim",
+        limit: 1000,
+        sortBy: "newest",
+      });
+      setFilterSourceProducts(result.products);
+    } catch (error) {
+      console.error("Failed to fetch filter source products:", error);
+    }
+  }, []);
 
   const fetchHeader = async () => {
     try {
-      const data = await storeApi.getPageHeader('giyim');
+      const data = await storeApi.getPageHeader("giyim");
       if (data && data.isActive) {
         setHeaderData(data);
       }
     } catch (error) {
-      console.error('Failed to fetch header:', error);
+      console.error("Failed to fetch header:", error);
     }
   };
 
   useEffect(() => {
     fetchProducts();
-    fetchHeader();
   }, [fetchProducts]);
+
+  useEffect(() => {
+    fetchHeader();
+    fetchFilterSourceProducts();
+  }, [fetchFilterSourceProducts]);
+
+  useEffect(() => {
+    if (filterSourceProducts.length === 0) return;
+
+    setFilters((currentFilters) => {
+      const isDefaultPriceRange =
+        currentFilters.priceRange[0] === DEFAULT_PRICE_RANGE[0] &&
+        currentFilters.priceRange[1] === DEFAULT_PRICE_RANGE[1];
+
+      if (!isDefaultPriceRange) {
+        return currentFilters;
+      }
+
+      return {
+        ...currentFilters,
+        priceRange: filterPriceRange,
+      };
+    });
+  }, [filterPriceRange, filterSourceProducts.length]);
 
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
@@ -93,7 +165,7 @@ export default function ClothingPage() {
 
   const handleLoadMore = () => {
     if (page < totalPages) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
@@ -103,9 +175,11 @@ export default function ClothingPage() {
 
       {/* --- HEADER BANNER --- */}
       <div className="relative h-[35vh] bg-stone-900 flex items-center justify-center overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-40 transition-all duration-700" 
-          style={{ backgroundImage: `url('${headerData?.imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000&auto=format&fit=crop'}')` }}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-40 transition-all duration-700"
+          style={{
+            backgroundImage: `url('${headerData?.imageUrl || "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000&auto=format&fit=crop"}')`,
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-900 to-transparent" />
 
@@ -115,10 +189,11 @@ export default function ClothingPage() {
           className="relative z-10 text-center text-white px-4"
         >
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            {headerData?.title || 'Giyim Koleksiyonu'}
+            {headerData?.title || "Giyim Koleksiyonu"}
           </h1>
           <p className="text-stone-300 text-lg md:text-xl font-light max-w-xl mx-auto">
-            {headerData?.subtitle || 'Sezonun en trend parçalarını ve zamansız tasarımlarını keşfedin.'}
+            {headerData?.subtitle ||
+              "Sezonun en trend parçalarını ve zamansız tasarımlarını keşfedin."}
           </p>
         </motion.div>
       </div>
@@ -127,22 +202,35 @@ export default function ClothingPage() {
         {/* --- TOOLBAR --- */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 sticky top-[80px] z-30 bg-stone-50/95 backdrop-blur-sm p-4 rounded-lg md:static md:bg-transparent md:p-0">
           <div className="flex items-center gap-2 text-stone-500 text-sm">
-            <span className="font-semibold text-stone-900">{total}</span> ürün listeleniyor
+            <span className="font-semibold text-stone-900">{total}</span> ürün
+            listeleniyor
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
             {/* Mobile Filter Trigger */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="md:hidden flex-1 border-stone-300 text-stone-700">
+                <Button
+                  variant="outline"
+                  className="md:hidden flex-1 border-stone-300 text-stone-700"
+                >
                   <Filter className="w-4 h-4 mr-2" /> Filtrele
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
+              <SheetContent
+                side="left"
+                className="w-[300px] sm:w-[400px] overflow-y-auto"
+              >
                 <SheetHeader className="mb-6">
-                  <SheetTitle className="font-serif text-2xl">Filtreler</SheetTitle>
+                  <SheetTitle className="font-serif text-2xl">
+                    Filtreler
+                  </SheetTitle>
                 </SheetHeader>
-                <FilterSidebar onFilterChange={handleFilterChange} />
+                <FilterSidebar
+                  onFilterChange={handleFilterChange}
+                  categorySlug="giyim"
+                  products={filterSourceProducts}
+                />
                 <div className="mt-8 pt-4 border-t border-stone-100">
                   <Button className="w-full bg-stone-900 hover:bg-amber-600 text-white">
                     Sonuçları Göster
@@ -158,8 +246,8 @@ export default function ClothingPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="newest">En Yeniler</SelectItem>
-                <SelectItem value="price-asc">Fiyat: Artan</SelectItem>
-                <SelectItem value="price-desc">Fiyat: Azalan</SelectItem>
+                <SelectItem value="price_asc">Fiyat: Artan</SelectItem>
+                <SelectItem value="price_desc">Fiyat: Azalan</SelectItem>
                 <SelectItem value="popular">Popüler</SelectItem>
               </SelectContent>
             </Select>
@@ -170,7 +258,11 @@ export default function ClothingPage() {
           {/* --- SIDEBAR (Desktop) --- */}
           <aside className="hidden md:block w-64 flex-shrink-0">
             <div className="sticky top-32">
-              <FilterSidebar onFilterChange={handleFilterChange} />
+              <FilterSidebar
+                onFilterChange={handleFilterChange}
+                categorySlug="giyim"
+                products={filterSourceProducts}
+              />
             </div>
           </aside>
 
@@ -196,9 +288,13 @@ export default function ClothingPage() {
                           name: product.name,
                           price: product.price,
                           oldPrice: product.compareAtPrice || null,
-                          image: resolveProductImages(product.images)[0] || '/placeholder.svg',
-                          tag: product.tags?.[0] || '',
+                          image:
+                            resolveProductImages(product.images)[0] ||
+                            "/placeholder.svg",
+                          tag: product.tags?.[0] || "",
                           slug: product.slug,
+                          stock: product.stock,
+                          variants: product.variants,
                         }}
                       />
                     ))}
@@ -214,7 +310,11 @@ export default function ClothingPage() {
                       onClick={handleLoadMore}
                       disabled={loading}
                     >
-                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Daha Fazla Göster"}
+                      {loading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Daha Fazla Göster"
+                      )}
                     </Button>
                   </div>
                 )}
@@ -228,4 +328,3 @@ export default function ClothingPage() {
     </div>
   );
 }
-

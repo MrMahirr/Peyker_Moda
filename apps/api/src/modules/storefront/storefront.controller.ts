@@ -83,8 +83,8 @@ export class StorefrontController {
     @Get('attributes')
     @PublicStoreReadThrottle
     @ApiOperation({ summary: 'Filtreleme özellikleri (beden, renk vb.)' })
-    async getAttributes() {
-        return this.storefrontService.getAttributes();
+    async getAttributes(@Query('categorySlug') categorySlug?: string) {
+        return this.storefrontService.getAttributes(categorySlug);
     }
 
     // ========== PUBLIC CONTENT ==========

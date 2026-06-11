@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { storeApi } from "@/lib/api";
+import { Product, storeApi } from "@/lib/api";
 
 type Filters = {
   sizes: string[];
@@ -12,28 +12,114 @@ type Filters = {
   priceRange: [number, number];
 };
 
+type FilterAttributes = {
+  sizes: string[];
+  colors: Array<{ name: string; value: string }>;
+  priceRange: [number, number];
+};
+
 interface FilterSidebarProps {
   onFilterChange?: (filters: Filters) => void;
+  categorySlug?: string;
+  products?: Product[];
 }
 
 type FilterOverrides = Partial<Filters>;
+type ProductVariantLike = NonNullable<Product["variants"]>[number] & Record<string, unknown>;
 
-export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
-  const [attributes, setAttributes] = useState<{ sizes: string[], colors: Array<{ name: string, value: string }> }>({
-    sizes: [],
-    colors: []
+const DEFAULT_PRICE_RANGE: [number, number] = [0, 5000];
+
+const getVariantValue = (variant: ProductVariantLike, keys: string[]) => {
+  const attributes = variant.attributes as Record<string, unknown> | undefined;
+
+  for (const key of keys) {
+    const value = attributes?.[key] ?? variant[key];
+
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return null;
+};
+
+const buildAttributesFromProducts = (products: Product[]): FilterAttributes => {
+  const sizes = new Set<string>();
+  const colors = new Set<string>();
+  let maxPrice = 0;
+
+  products.forEach((product) => {
+    const price = Number(product.price || 0);
+    if (Number.isFinite(price)) {
+      maxPrice = Math.max(maxPrice, price);
+    }
+
+    product.variants?.forEach((variant) => {
+      const variantLike = variant as ProductVariantLike;
+      const size = getVariantValue(variantLike, ["size", "beden", "Beden", "Size"]);
+      const color = getVariantValue(variantLike, ["color", "renk", "Renk", "Color"]);
+
+      if (size) sizes.add(size);
+      if (color) colors.add(color);
+    });
   });
+
+  const priceMax = maxPrice > 0 ? Math.ceil(maxPrice / 100) * 100 : DEFAULT_PRICE_RANGE[1];
+
+  return {
+    sizes: Array.from(sizes).sort(),
+    colors: Array.from(colors).sort().map((color) => ({ name: color, value: color })),
+    priceRange: [0, priceMax],
+  };
+};
+
+export default function FilterSidebar({ onFilterChange, categorySlug, products }: FilterSidebarProps) {
+  const dynamicAttributes = useMemo(
+    () => products ? buildAttributesFromProducts(products) : null,
+    [products]
+  );
+  const [fetchedAttributes, setFetchedAttributes] = useState<FilterAttributes>({
+    sizes: [],
+    colors: [],
+    priceRange: DEFAULT_PRICE_RANGE,
+  });
+  const attributes = dynamicAttributes ?? fetchedAttributes;
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>(DEFAULT_PRICE_RANGE);
+  const [isPriceRangeTouched, setIsPriceRangeTouched] = useState(false);
+
+  const activePriceRange = useMemo<[number, number]>(() => {
+    if (!isPriceRangeTouched) {
+      return attributes.priceRange;
+    }
+
+    return [
+      Math.max(attributes.priceRange[0], Math.min(priceRange[0], attributes.priceRange[1])),
+      Math.max(attributes.priceRange[0], Math.min(priceRange[1], attributes.priceRange[1])),
+    ];
+  }, [attributes.priceRange, isPriceRangeTouched, priceRange]);
 
   useEffect(() => {
+    if (dynamicAttributes) {
+      return;
+    }
+
+    let isMounted = true;
+
     const fetchAttributes = async () => {
-      const data = await storeApi.getAttributes();
-      setAttributes(data);
+      const data = await storeApi.getAttributes(categorySlug);
+      if (isMounted) {
+        setFetchedAttributes({ ...data, priceRange: DEFAULT_PRICE_RANGE });
+      }
     };
+
     fetchAttributes();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [categorySlug, dynamicAttributes]);
 
   const handleSizeChange = (size: string, checked: boolean) => {
     const newSizes = checked
@@ -53,11 +139,15 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
 
   const handlePriceChange = (value: number[]) => {
     const range = [value[0], value[1]] as [number, number];
+    setIsPriceRangeTouched(true);
     setPriceRange(range);
   };
 
-  const handlePriceCommit = () => {
-    triggerChange({ priceRange });
+  const handlePriceCommit = (value: number[]) => {
+    const range = [value[0], value[1]] as [number, number];
+    setIsPriceRangeTouched(true);
+    setPriceRange(range);
+    triggerChange({ priceRange: range });
   };
 
   const triggerChange = (overrides: FilterOverrides = {}) => {
@@ -65,7 +155,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
       onFilterChange({
         sizes: overrides.sizes ?? selectedSizes,
         colors: overrides.colors ?? selectedColors,
-        priceRange: overrides.priceRange ?? priceRange,
+        priceRange: overrides.priceRange ?? activePriceRange,
       });
     }
   };
@@ -73,9 +163,10 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
   const handleReset = () => {
     setSelectedSizes([]);
     setSelectedColors([]);
-    setPriceRange([0, 5000]);
+    setIsPriceRangeTouched(false);
+    setPriceRange(attributes.priceRange);
     if (onFilterChange) {
-      onFilterChange({ sizes: [], colors: [], priceRange: [0, 5000] });
+      onFilterChange({ sizes: [], colors: [], priceRange: attributes.priceRange });
     }
   };
 
@@ -99,15 +190,20 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
           <AccordionContent>
             <div className="pt-4 px-2">
               <Slider
-                defaultValue={[0, 5000]}
-                max={5000}
+                defaultValue={attributes.priceRange}
+                min={attributes.priceRange[0]}
+                max={attributes.priceRange[1]}
                 step={100}
-                value={priceRange}
+                value={activePriceRange}
                 onValueChange={(v) => handlePriceChange(v)}
                 onValueCommit={handlePriceCommit}
                 className="mb-4"
               />
               <div className="flex justify-between text-sm text-stone-600 font-medium">
+                <span>{activePriceRange[0]} TL</span>
+                <span>{activePriceRange[1]} TL+</span>
+              </div>
+              <div className="hidden">
                 <span>{priceRange[0]} ₺</span>
                 <span>{priceRange[1]} ₺+</span>
               </div>
@@ -145,17 +241,23 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
         <AccordionItem value="color" className="border-stone-200">
           <AccordionTrigger className="text-stone-800 font-medium hover:text-amber-600 hover:no-underline">Renk</AccordionTrigger>
           <AccordionContent>
-            <div className="flex flex-wrap gap-3 pt-2">
+            <div className="grid grid-cols-2 gap-2 pt-2">
               {attributes.colors.map((color) => (
-                <button
-                  key={color.name}
-                  onClick={() => handleColorChange(color.name)}
-                  className={`w-8 h-8 rounded-full shadow-sm hover:scale-110 transition-transform focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 border border-stone-200 ${
-                    selectedColors.includes(color.name) ? 'ring-2 ring-amber-500 ring-offset-2' : ''
-                  }`}
-                  style={{ backgroundColor: color.value.toLowerCase() }}
-                  aria-label={color.name}
-                />
+                <div key={color.name} className="flex items-center justify-center">
+                  <input 
+                    type="checkbox" 
+                    id={`color-${color.name}`} 
+                    className="peer hidden"
+                    checked={selectedColors.includes(color.name)}
+                    onChange={() => handleColorChange(color.name)}
+                  />
+                  <label
+                    htmlFor={`color-${color.name}`}
+                    className="w-full h-10 flex items-center justify-center border border-stone-200 rounded-md text-sm cursor-pointer text-stone-600 hover:border-amber-500 peer-checked:bg-stone-900 peer-checked:text-white peer-checked:border-stone-900 transition-all"
+                  >
+                    {color.name}
+                  </label>
+                </div>
               ))}
             </div>
           </AccordionContent>

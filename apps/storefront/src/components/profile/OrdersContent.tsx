@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Package, Truck, CheckCircle, ChevronRight,
-  MapPin, CreditCard, Search, Box, Loader2, Download, RefreshCcw
-} from 'lucide-react';
+  Package,
+  Truck,
+  CheckCircle,
+  X,
+  MapPin,
+  CreditCard,
+  Search,
+  Box,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -19,7 +26,17 @@ import { swal } from "@/utils/swal";
 
 // --- TİPLER ---
 
-type OrderStatus = 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'pending';
+type OrderStatus =
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled"
+  | "pending";
+
+const toMoney = (value: number | string | null | undefined): number => {
+  const amount = Number(value ?? 0);
+  return Number.isFinite(amount) ? amount : 0;
+};
 
 interface OrderItem {
   id: number;
@@ -33,11 +50,18 @@ interface OrderItem {
 
 interface Order {
   id: string;
+  orderNumber: string;
   date: string;
   status: string;
   statusCode: OrderStatus;
   stepIndex: number;
   total: number;
+  subtotal: number;
+  discountAmount: number;
+  shippingCost: number;
+  paidAmount: number;
+  remainingAmount: number;
+  paymentStatus: string;
   address: string;
   paymentMethod: string;
   cargoTrackingCode?: string;
@@ -50,84 +74,140 @@ interface Order {
 
 const getStatusCode = (status: string): OrderStatus => {
   const statusMap: Record<string, OrderStatus> = {
-    'PENDING': 'pending',
-    'PROCESSING': 'processing',
-    'SHIPPED': 'shipped',
-    'DELIVERED': 'delivered',
-    'CANCELLED': 'cancelled',
+    PENDING: "pending",
+    PROCESSING: "processing",
+    SHIPPED: "shipped",
+    DELIVERED: "delivered",
+    CANCELLED: "cancelled",
   };
-  return statusMap[status] || 'pending';
+  return statusMap[status] || "pending";
 };
 
 const getStepIndex = (status: string): number => {
   const stepMap: Record<string, number> = {
-    'PENDING': 0,
-    'PROCESSING': 1,
-    'SHIPPED': 2,
-    'DELIVERED': 3,
-    'CANCELLED': -1,
+    PENDING: 0,
+    PROCESSING: 1,
+    SHIPPED: 2,
+    DELIVERED: 3,
+    CANCELLED: -1,
   };
   return stepMap[status] ?? 0;
 };
 
 const getStatusLabel = (status: string): string => {
   const labelMap: Record<string, string> = {
-    'PENDING': 'Sipariş Alındı',
-    'PROCESSING': 'Hazırlanıyor',
-    'SHIPPED': 'Kargoya Verildi',
-    'DELIVERED': 'Teslim Edildi',
-    'CANCELLED': 'İptal Edildi',
+    PENDING: "Sipariş Alındı",
+    PROCESSING: "Hazırlanıyor",
+    SHIPPED: "Kargoya Verildi",
+    DELIVERED: "Teslim Edildi",
+    CANCELLED: "İptal Edildi",
+  };
+  return labelMap[status] || status;
+};
+
+const getPaymentStatusLabel = (status: string): string => {
+  const labelMap: Record<string, string> = {
+    PENDING: "Bekliyor",
+    PARTIAL: "Kismi Odendi",
+    COMPLETED: "Odendi",
+    FAILED: "Basarisiz",
+    REFUNDED: "Iade Edildi",
   };
   return labelMap[status] || status;
 };
 
 const transformOrder = (apiOrder: ApiOrder): Order => {
+  const total = toMoney(apiOrder.totalAmount ?? apiOrder.total);
+  const itemsSubtotal =
+    apiOrder.items?.reduce(
+      (sum, item) => sum + toMoney(item.unitPrice) * (item.quantity || 1),
+      0,
+    ) ?? 0;
+  const subtotal = toMoney(apiOrder.subtotal) || itemsSubtotal;
+  const discountAmount = toMoney(apiOrder.discountAmount);
+  const shippingCost = toMoney(apiOrder.shippingCost);
+  const completedPaymentTotal =
+    apiOrder.payments
+      ?.filter((payment) => payment.status === "COMPLETED")
+      .reduce((sum, payment) => sum + toMoney(payment.amount), 0) ?? 0;
+  const paidAmount =
+    toMoney(apiOrder.paidAmount) ||
+    completedPaymentTotal ||
+    (apiOrder.paymentStatus === "COMPLETED" ? total : 0);
+
   return {
-    id: apiOrder.orderNumber || apiOrder.id?.toString() || `SIP-${apiOrder.id?.toString().slice(0, 6)}` || `order-${Math.random().toString(36).substr(2,9)}`,
-    date: new Date(apiOrder.createdAt).toLocaleDateString('tr-TR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    id: apiOrder.id,
+    orderNumber:
+      apiOrder.orderNumber ||
+      `SIP-${apiOrder.id?.toString().slice(0, 6)}` ||
+      `order-${Math.random().toString(36).substr(2, 9)}`,
+    date: new Date(apiOrder.createdAt).toLocaleDateString("tr-TR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }),
     status: getStatusLabel(apiOrder.status),
     statusCode: getStatusCode(apiOrder.status),
     stepIndex: getStepIndex(apiOrder.status),
-    total: apiOrder.total,
+    total,
+    subtotal,
+    discountAmount,
+    shippingCost,
+    paidAmount,
+    remainingAmount: Math.max(0, total - paidAmount),
+    paymentStatus:
+      apiOrder.paymentStatus || apiOrder.payments?.[0]?.status || "PENDING",
     address: (() => {
       const addr = apiOrder.shippingAddress as any;
-      if (!addr) return 'Adres bilgisi mevcut değil';
+      if (!addr) return "Adres bilgisi mevcut değil";
       const parts = [addr.address, addr.district, addr.city].filter(Boolean);
-      return parts.join(', ');
+      return parts.join(", ");
     })(),
     paymentMethod: (() => {
       const method = apiOrder.payments?.[0]?.method || apiOrder.paymentMethod;
       const labels: Record<string, string> = {
-        CASH: 'Kapıda Ödeme',
-        CREDIT_CARD: 'Kredi Kartı',
-        BANK_TRANSFER: 'Banka Transferi',
+        CASH: "Kapıda Ödeme",
+        CREDIT_CARD: "Kredi Kartı",
+        BANK_TRANSFER: "Banka Transferi",
       };
-      return method ? (labels[method] || method) : 'Belirtilmedi';
+      return method ? labels[method] || method : "Belirtilmedi";
     })(),
     cargoTrackingCode: apiOrder.cargoTrackingCode,
     cargoProvider: apiOrder.cargoProvider,
-    items: apiOrder.items?.map((item: NonNullable<ApiOrder["items"]>[number], idx: number) => ({
-      id: idx,
-      name: item.productName || item.variant?.product?.name || 'Ürün',
-      image: item.variant?.product?.images?.[0] || 'https://via.placeholder.com/300',
-      price: item.unitPrice || 0,
-      quantity: item.quantity || 1,
-      size: item.variant?.size || '-',
-      color: item.variant?.color || '-',
-    })) || []
+    items:
+      apiOrder.items?.map(
+        (item: NonNullable<ApiOrder["items"]>[number], idx: number) => ({
+          id: idx,
+          name: item.productName || item.variant?.product?.name || "Ürün",
+          image:
+            item.variant?.product?.images?.[0] ||
+            "https://via.placeholder.com/300",
+          price: toMoney(item.unitPrice),
+          quantity: item.quantity || 1,
+          size: item.variant?.size || "-",
+          color: item.variant?.color || "-",
+        }),
+      ) || [],
   };
 };
 
 // --- YARDIMCI BİLEŞENLER ---
 
-const StatusStepper = ({ currentStep, status }: { currentStep: number, status: OrderStatus }) => {
-  if (status === 'cancelled') return <div className="text-rose-600 font-medium bg-rose-50 p-2 rounded">Sipariş İptal Edildi</div>;
+const StatusStepper = ({
+  currentStep,
+  status,
+}: {
+  currentStep: number;
+  status: OrderStatus;
+}) => {
+  if (status === "cancelled")
+    return (
+      <div className="text-rose-600 font-medium bg-rose-50 p-2 rounded">
+        Sipariş İptal Edildi
+      </div>
+    );
 
   const steps = ["Sipariş Alındı", "Hazırlanıyor", "Kargoda", "Teslim Edildi"];
 
@@ -145,11 +225,20 @@ const StatusStepper = ({ currentStep, status }: { currentStep: number, status: O
           const isCurrent = idx === currentStep;
 
           return (
-            <div key={idx} className="flex flex-col items-center gap-2 bg-white px-2">
-              <div className={`w-4 h-4 rounded-full border-2 transition-colors ${isCompleted ? 'bg-stone-900 border-stone-900' : 'bg-white border-stone-200'}`}>
-                {isCompleted && <CheckCircle className="w-full h-full text-white p-[1px]" />}
+            <div
+              key={idx}
+              className="flex flex-col items-center gap-2 bg-white px-2"
+            >
+              <div
+                className={`w-4 h-4 rounded-full border-2 transition-colors ${isCompleted ? "bg-stone-900 border-stone-900" : "bg-white border-stone-200"}`}
+              >
+                {isCompleted && (
+                  <CheckCircle className="w-full h-full text-white p-[1px]" />
+                )}
               </div>
-              <span className={`text-xs font-medium ${isCurrent ? 'text-stone-900' : 'text-stone-400'}`}>
+              <span
+                className={`text-xs font-medium ${isCurrent ? "text-stone-900" : "text-stone-400"}`}
+              >
                 {step}
               </span>
             </div>
@@ -160,22 +249,204 @@ const StatusStepper = ({ currentStep, status }: { currentStep: number, status: O
   );
 };
 
+const OrderDetailModal = ({
+  order,
+  isOpen,
+  onClose,
+}: {
+  order: Order;
+  isOpen: boolean;
+  onClose: () => void;
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/50 p-4 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      >
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={`order-detail-${order.id}`}
+          className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-xl bg-white shadow-2xl"
+          initial={{ opacity: 0, y: 24, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 16, scale: 0.98 }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4 border-b border-stone-100 bg-stone-50 px-6 py-5">
+            <div>
+              <p className="text-xs font-semibold uppercase text-stone-400">
+                Siparis Detayi
+              </p>
+              <h3
+                id={`order-detail-${order.id}`}
+                className="mt-1 font-serif text-2xl font-bold text-stone-900"
+              >
+                #{order.orderNumber}
+              </h3>
+              <p className="mt-1 text-sm text-stone-500">{order.date}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full p-2 text-stone-400 transition-colors hover:bg-white hover:text-stone-900"
+              aria-label="Siparis detayini kapat"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="max-h-[calc(90vh-96px)] overflow-y-auto p-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-lg border border-stone-100 p-4">
+                <span className="text-xs text-stone-400">Durum</span>
+                <div className="mt-2 flex items-center gap-2">
+                  <Package className="h-4 w-4 text-stone-500" />
+                  <span className="font-medium text-stone-900">
+                    {order.status}
+                  </span>
+                </div>
+              </div>
+              <div className="rounded-lg border border-stone-100 p-4">
+                <span className="text-xs text-stone-400">Odeme</span>
+                <div className="mt-2 flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-stone-500" />
+                  <span className="font-medium text-stone-900">
+                    {order.paymentMethod}
+                  </span>
+                </div>
+              </div>
+              <div className="rounded-lg border border-stone-100 p-4">
+                <span className="text-xs text-stone-400">Kargo</span>
+                <div className="mt-2 flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-stone-500" />
+                  <span className="font-medium text-stone-900">
+                    {order.cargoProvider || "Hazirlaniyor"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
+              <section>
+                <h4 className="mb-3 font-semibold text-stone-900">Urunler</h4>
+                <div className="space-y-3">
+                  {order.items.map((item) => (
+                    <div
+                      key={`detail-${order.id}-${item.id}`}
+                      className="flex gap-4 rounded-lg border border-stone-100 p-3"
+                    >
+                      <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-md bg-stone-100">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h5 className="line-clamp-1 font-medium text-stone-900">
+                          {item.name}
+                        </h5>
+                        <p className="mt-1 text-sm text-stone-500">
+                          Beden: {item.size} | Renk: {item.color}
+                        </p>
+                        <p className="mt-1 text-sm text-stone-500">
+                          Adet: {item.quantity}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-stone-900">
+                          {formatPrice(item.price * item.quantity)}
+                        </p>
+                        <p className="text-xs text-stone-400">
+                          {formatPrice(item.price)} / adet
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <aside className="space-y-4">
+                <div className="rounded-lg border border-stone-100 p-4">
+                  <h4 className="mb-3 font-semibold text-stone-900">
+                    Odeme Ozeti
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between text-stone-600">
+                      <span>Ara Toplam</span>
+                      <span>{formatPrice(order.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-rose-600">
+                      <span>Sepet Indirimi</span>
+                      <span>-{formatPrice(order.discountAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-stone-600">
+                      <span>Kargo</span>
+                      <span>{formatPrice(order.shippingCost)}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between font-semibold text-stone-900">
+                      <span>Toplam</span>
+                      <span>{formatPrice(order.total)}</span>
+                    </div>
+                    <div className="flex justify-between text-emerald-700">
+                      <span>Odenen</span>
+                      <span>{formatPrice(order.paidAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-stone-600">
+                      <span>{getPaymentStatusLabel(order.paymentStatus)}</span>
+                      <span>
+                        {order.remainingAmount > 0
+                          ? formatPrice(order.remainingAmount)
+                          : "Borc yok"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-stone-100 p-4">
+                  <h4 className="mb-3 font-semibold text-stone-900">
+                    Teslimat Adresi
+                  </h4>
+                  <div className="flex gap-2 text-sm text-stone-600">
+                    <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                    <span>{order.address}</span>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
 const OrderCard = ({ order }: { order: Order }) => {
-  const handleNotImplemented = () => toast.info("Bu özellik yakında eklenecektir.");
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const handleNotImplemented = () =>
+    toast.info("Bu özellik yakında eklenecektir.");
 
   const handleReturn = async () => {
     const { value: reason } = await swal.fire({
-      title: 'İade Nedeni',
-      input: 'textarea',
-      inputLabel: 'Lütfen iade nedeninizi kısaca belirtiniz',
-      inputPlaceholder: 'Ürün bedeni uymadı, beklediğim gibi değil vb...',
+      title: "İade Nedeni",
+      input: "textarea",
+      inputLabel: "Lütfen iade nedeninizi kısaca belirtiniz",
+      inputPlaceholder: "Ürün bedeni uymadı, beklediğim gibi değil vb...",
       showCancelButton: true,
-      confirmButtonText: 'Talebi Gönder',
-      cancelButtonText: 'İptal',
+      confirmButtonText: "Talebi Gönder",
+      cancelButtonText: "İptal",
       inputValidator: (value) => {
-        if (!value) return 'İade nedeni girmelisiniz!';
+        if (!value) return "İade nedeni girmelisiniz!";
         return null;
-      }
+      },
     });
 
     if (reason) {
@@ -193,6 +464,7 @@ const OrderCard = ({ order }: { order: Order }) => {
   };
 
   const handleDownloadInvoice = async () => {
+    setInvoiceLoading(true);
     try {
       const res = await storeApi.getInvoice(order.id);
       if (res.success && res.url) {
@@ -202,94 +474,219 @@ const OrderCard = ({ order }: { order: Order }) => {
       }
     } catch (err) {
       toast.error("Fatura yüklenirken hata oluştu.");
+    } finally {
+      setInvoiceLoading(false);
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-stone-200 rounded-xl overflow-hidden mb-6 hover:shadow-md transition-shadow duration-300"
-    >
-      {/* HEADER */}
-      <div className="bg-stone-50/80 p-4 border-b border-stone-100 flex flex-wrap justify-between items-center gap-4">
-        <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
-          <div>
-            <span className="text-stone-400 text-xs block mb-0.5">Sipariş Tarihi</span>
-            <span className="font-medium text-stone-700">{order.date}</span>
+    <>
+      <OrderDetailModal
+        order={order}
+        isOpen={detailOpen}
+        onClose={() => setDetailOpen(false)}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white border border-stone-200 rounded-xl overflow-hidden mb-6 hover:shadow-md transition-shadow duration-300"
+      >
+        {/* HEADER */}
+        <div className="bg-stone-50/80 p-4 border-b border-stone-100 flex flex-wrap justify-between items-center gap-4">
+          <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
+            <div>
+              <span className="text-stone-400 text-xs block mb-0.5">
+                Sipariş Tarihi
+              </span>
+              <span className="font-medium text-stone-700">{order.date}</span>
+            </div>
+            <div>
+              <span className="text-stone-400 text-xs block mb-0.5">
+                Sipariş Özeti
+              </span>
+              <span className="font-medium text-stone-700">
+                {order.items.length} Ürün | {formatPrice(order.total)}
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="text-stone-400 text-xs block mb-0.5">Sipariş Özeti</span>
-            <span className="font-medium text-stone-700">{order.items.length} Ürün | {formatPrice(order.total)}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-stone-400 tracking-wider">
+              #{order.orderNumber}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 border-stone-200 text-stone-600"
+              onClick={handleDownloadInvoice}
+              disabled={invoiceLoading}
+            >
+              {invoiceLoading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                "Fatura"
+              )}
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-stone-400 tracking-wider">#{order.id}</span>
-          <Button variant="outline" size="sm" className="h-8 border-stone-200 text-stone-600" onClick={handleDownloadInvoice}>Fatura</Button>
-        </div>
-      </div>
 
-      {/* BODY */}
-      <div className="p-6">
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4 sm:hidden">
-            <Badge className="bg-stone-900">{order.status}</Badge>
+        {/* BODY */}
+        <div className="p-6">
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4 sm:hidden">
+              <Badge className="bg-stone-900">{order.status}</Badge>
+            </div>
+            <StatusStepper
+              currentStep={order.stepIndex}
+              status={order.statusCode}
+            />
           </div>
-          <StatusStepper currentStep={order.stepIndex} status={order.statusCode} />
-        </div>
 
-        <div className="space-y-6">
-          {order.items.map((item) => (
-            <div key={`${order.id}-${item.id}`} className="flex gap-4 items-start">
-              <div className="relative w-20 h-24 bg-stone-100 rounded-md overflow-hidden flex-shrink-0 border border-stone-100">
-                <Image src={item.image} alt={item.name} fill className="object-cover" />
+          <div className="space-y-6">
+            {order.items.map((item) => (
+              <div
+                key={`${order.id}-${item.id}`}
+                className="flex gap-4 items-start"
+              >
+                <div className="relative w-20 h-24 bg-stone-100 rounded-md overflow-hidden flex-shrink-0 border border-stone-100">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-serif font-bold text-stone-900 truncate">
+                    {item.name}
+                  </h4>
+                  <p className="text-sm text-stone-500 mt-1">
+                    Beden: {item.size} • Renk: {item.color}
+                  </p>
+                  <p className="text-sm font-medium text-amber-600 mt-1">
+                    {formatPrice(item.price)}
+                  </p>
+                </div>
+                {order.statusCode === "delivered" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-stone-400 hover:text-stone-900 hidden sm:flex"
+                    onClick={handleNotImplemented}
+                  >
+                    Ürünü Değerlendir
+                  </Button>
+                )}
               </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-serif font-bold text-stone-900 truncate">{item.name}</h4>
-                <p className="text-sm text-stone-500 mt-1">Beden: {item.size} • Renk: {item.color}</p>
-                <p className="text-sm font-medium text-amber-600 mt-1">{formatPrice(item.price)}</p>
+            ))}
+          </div>
+
+          <Separator className="my-6" />
+
+          <div className="mb-6 grid grid-cols-2 gap-3 rounded-lg border border-stone-100 bg-stone-50 p-4 text-sm md:grid-cols-3 lg:grid-cols-6">
+            <div>
+              <span className="block text-xs text-stone-400">Ara Toplam</span>
+              <span className="font-medium text-stone-800">
+                {formatPrice(order.subtotal)}
+              </span>
+            </div>
+            <div>
+              <span className="block text-xs text-stone-400">
+                Sepet Indirimi
+              </span>
+              <span className="font-medium text-rose-600">
+                -{formatPrice(order.discountAmount)}
+              </span>
+            </div>
+            <div>
+              <span className="block text-xs text-stone-400">Kargo</span>
+              <span className="font-medium text-stone-800">
+                {formatPrice(order.shippingCost)}
+              </span>
+            </div>
+            <div>
+              <span className="block text-xs text-stone-400">
+                Siparis Toplami
+              </span>
+              <span className="font-semibold text-stone-900">
+                {formatPrice(order.total)}
+              </span>
+            </div>
+            <div>
+              <span className="block text-xs text-stone-400">Odenen Tutar</span>
+              <span className="font-semibold text-emerald-700">
+                {formatPrice(order.paidAmount)}
+              </span>
+            </div>
+            <div>
+              <span className="block text-xs text-stone-400">
+                {getPaymentStatusLabel(order.paymentStatus)}
+              </span>
+              <span className="font-medium text-stone-800">
+                {order.remainingAmount > 0
+                  ? `${formatPrice(order.remainingAmount)} kalan`
+                  : "Borc yok"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="flex gap-8 text-sm text-stone-500">
+              <div className="flex items-start gap-2 max-w-[200px]">
+                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span className="line-clamp-2">{order.address}</span>
               </div>
-              {order.statusCode === 'delivered' && (
-                <Button variant="ghost" size="sm" className="text-stone-400 hover:text-stone-900 hidden sm:flex" onClick={handleNotImplemented}>
-                  Ürünü Değerlendir
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4 flex-shrink-0" />
+                <span>{order.paymentMethod}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3 w-full md:w-auto">
+              {order.statusCode === "shipped" && (
+                <Button
+                  className="flex-1 md:flex-none bg-stone-900 hover:bg-amber-600 text-white gap-2"
+                  onClick={handleNotImplemented}
+                >
+                  <Truck className="w-4 h-4" /> Kargo Takip
+                </Button>
+              )}
+              {order.statusCode === "delivered" ? (
+                <>
+                  <Button
+                    variant="outline"
+                    className="flex-1 md:flex-none border-stone-200"
+                    onClick={() => setDetailOpen(true)}
+                  >
+                    Siparis Detayi
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 md:flex-none border-rose-200 text-rose-600"
+                    onClick={handleReturn}
+                  >
+                    İade Talebi
+                  </Button>
+                  <Button
+                    className="flex-1 md:flex-none bg-stone-900 text-white"
+                    onClick={handleNotImplemented}
+                  >
+                    Tekrar Satın Al
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="flex-1 md:flex-none border-stone-200"
+                  onClick={() => setDetailOpen(true)}
+                >
+                  Sipariş Detayı
                 </Button>
               )}
             </div>
-          ))}
-        </div>
-
-        <Separator className="my-6" />
-
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="flex gap-8 text-sm text-stone-500">
-            <div className="flex items-start gap-2 max-w-[200px]">
-              <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <span className="line-clamp-2">{order.address}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4 flex-shrink-0" />
-              <span>{order.paymentMethod}</span>
-            </div>
-          </div>
-
-          <div className="flex gap-3 w-full md:w-auto">
-            {order.statusCode === 'shipped' && (
-              <Button className="flex-1 md:flex-none bg-stone-900 hover:bg-amber-600 text-white gap-2" onClick={handleNotImplemented}>
-                <Truck className="w-4 h-4" /> Kargo Takip
-              </Button>
-            )}
-            {order.statusCode === 'delivered' ? (
-              <>
-                <Button variant="outline" className="flex-1 md:flex-none border-rose-200 text-rose-600" onClick={handleReturn}>İade Talebi</Button>
-                <Button className="flex-1 md:flex-none bg-stone-900 text-white" onClick={handleNotImplemented}>Tekrar Satın Al</Button>
-              </>
-            ) : (
-              <Button variant="outline" className="flex-1 md:flex-none border-stone-200" onClick={handleNotImplemented}>Sipariş Detayı</Button>
-            )}
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 
@@ -309,15 +706,19 @@ export default function OrdersContent() {
       const apiOrders = await storeApi.getOrders();
       setOrders(apiOrders.map(transformOrder));
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
+      console.error("Failed to fetch orders:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredOrders = orders.filter(order =>
-    order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.items.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredOrders = orders.filter(
+    (order) =>
+      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.items.some((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      ),
   );
 
   if (loading) {
@@ -332,8 +733,12 @@ export default function OrdersContent() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h2 className="text-2xl font-serif font-bold text-stone-900">Siparişlerim</h2>
-          <p className="text-stone-500 text-sm mt-1">Tüm siparişlerinizi detaylı olarak inceleyebilirsiniz.</p>
+          <h2 className="text-2xl font-serif font-bold text-stone-900">
+            Siparişlerim
+          </h2>
+          <p className="text-stone-500 text-sm mt-1">
+            Tüm siparişlerinizi detaylı olarak inceleyebilirsiniz.
+          </p>
         </div>
 
         <div className="relative w-full md:w-64">
@@ -349,30 +754,53 @@ export default function OrdersContent() {
 
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="bg-stone-100 p-1 rounded-lg w-full sm:w-auto grid grid-cols-3 sm:flex mb-6">
-          <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Tümü</TabsTrigger>
-          <TabsTrigger value="active" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Aktif</TabsTrigger>
-          <TabsTrigger value="completed" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Tamamlanan</TabsTrigger>
+          <TabsTrigger
+            value="all"
+            className="data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            Tümü
+          </TabsTrigger>
+          <TabsTrigger
+            value="active"
+            className="data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            Aktif
+          </TabsTrigger>
+          <TabsTrigger
+            value="completed"
+            className="data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            Tamamlanan
+          </TabsTrigger>
         </TabsList>
 
-        <AnimatePresence mode='wait'>
+        <AnimatePresence mode="wait">
           <TabsContent value="all" className="mt-0">
             {filteredOrders.length > 0 ? (
-              filteredOrders.map(order => <OrderCard key={order.id} order={order} />)
+              filteredOrders.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))
             ) : (
               <EmptyState />
             )}
           </TabsContent>
 
           <TabsContent value="active" className="mt-0">
-            {filteredOrders.filter(o => ['processing', 'shipped', 'pending'].includes(o.statusCode)).map(order => (
-              <OrderCard key={order.id} order={order} />
-            ))}
+            {filteredOrders
+              .filter((o) =>
+                ["processing", "shipped", "pending"].includes(o.statusCode),
+              )
+              .map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))}
           </TabsContent>
 
           <TabsContent value="completed" className="mt-0">
-            {filteredOrders.filter(o => ['delivered', 'cancelled'].includes(o.statusCode)).map(order => (
-              <OrderCard key={order.id} order={order} />
-            ))}
+            {filteredOrders
+              .filter((o) => ["delivered", "cancelled"].includes(o.statusCode))
+              .map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))}
           </TabsContent>
         </AnimatePresence>
       </Tabs>

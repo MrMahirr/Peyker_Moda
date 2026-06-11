@@ -9,6 +9,7 @@ import {
     ValidateNested,
     IsEmail,
     IsEnum,
+    IsBooleanString,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -143,6 +144,11 @@ export class StoreProductQueryDto {
     @IsString()
     @IsOptional()
     sort?: string;
+
+    @ApiPropertyOptional({ example: 'true', description: 'Sadece indirimli urunler' })
+    @IsBooleanString()
+    @IsOptional()
+    onSale?: string;
 
     @ApiPropertyOptional({ example: 'M,L', description: 'Bedenler (virgül ile ayrılmış)' })
     @IsString()

@@ -1,8 +1,9 @@
 "use client";
 
-import Link from 'next/link';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import Link from "next/link";
+import { ArrowRight, Loader2 } from "lucide-react";
 import ProductCard from "@/components/shared/ProductCard";
+import { ProductVariant } from "@/lib/api";
 
 interface ProductSectionProduct {
   id: number | string;
@@ -12,6 +13,8 @@ interface ProductSectionProduct {
   image: string;
   tag?: string;
   slug?: string;
+  stock?: number;
+  variants?: ProductVariant[];
 }
 
 interface ProductSectionProps {
@@ -29,7 +32,7 @@ export default function ProductSection({
   products,
   bgColor = "bg-white",
   isSale = false,
-  loading = false
+  loading = false,
 }: ProductSectionProps) {
   return (
     <section className={`py-24 ${bgColor} relative overflow-hidden`}>
@@ -40,15 +43,23 @@ export default function ProductSection({
       <div className="container mx-auto px-4 md:px-8 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-4">
           <div>
-            {isSale && <span className="text-rose-600 font-bold tracking-wider uppercase text-sm mb-2 block">Sınırlı Süre</span>}
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-2 text-stone-900">{title}</h2>
-            {subtitle && <p className="text-stone-600 font-light">{subtitle}</p>}
+            {isSale && (
+              <span className="text-rose-600 font-bold tracking-wider uppercase text-sm mb-2 block">
+                Sınırlı Süre
+              </span>
+            )}
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-2 text-stone-900">
+              {title}
+            </h2>
+            {subtitle && (
+              <p className="text-stone-600 font-light">{subtitle}</p>
+            )}
           </div>
           <Link
-            href={isSale ? '/indirim' : '/giyim'}
-            className={`group flex items-center gap-2 font-medium transition-colors ${isSale ? 'text-rose-600 hover:text-rose-700' : 'text-stone-900 hover:text-amber-600'}`}
+            href={isSale ? "/indirim" : "/giyim"}
+            className={`group flex items-center gap-2 font-medium transition-colors ${isSale ? "text-rose-600 hover:text-rose-700" : "text-stone-900 hover:text-amber-600"}`}
           >
-            {isSale ? 'İndirimdeki Her Şey' : 'Tümünü Gör'}
+            {isSale ? "İndirimdeki Her Şey" : "Tümünü Gör"}
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
@@ -72,6 +83,3 @@ export default function ProductSection({
     </section>
   );
 }
-
-
-

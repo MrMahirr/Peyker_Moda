@@ -1,82 +1,114 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { toast } from 'sonner';
-import { storeApi } from '@/lib/api';
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-interface FavoritesContextType {
-    favorites: string[];
-    toggleFavorite: (id: string, name?: string) => Promise<void>;
-    isFavorite: (id: string) => boolean;
-    loading: boolean;
-}
+import { storeApi } from "@/lib/api";
 
-const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
+import { hasFavoriteAccess } from "./favorites/auth";
+import {
+  addFavoriteId,
+  mapFavoritesToIds,
+  removeFavoriteId,
+} from "./favorites/favoriteIds";
+import { favoriteMessages } from "./favorites/messages";
+import { FavoritesContextValue } from "./favorites/types";
+
+const FavoritesContext = createContext<FavoritesContextValue | undefined>(
+  undefined,
+);
 
 export const FavoritesProvider = ({ children }: { children: ReactNode }) => {
-    const [favorites, setFavorites] = useState<string[]>([]);
-    const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const initFavorites = async () => {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                setLoading(false);
-                return;
-            }
-            try {
-                const favProducts = await storeApi.getFavorites();
-                setFavorites(favProducts.map((p: any) => String(p.id)));
-            } catch (error) {
-                console.error("Failed to fetch favorites:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        initFavorites();
-    }, []);
+  useEffect(() => {
+    const initFavorites = async () => {
+      if (!hasFavoriteAccess()) {
+        setLoading(false);
+        return;
+      }
 
-    const toggleFavorite = async (id: string, name?: string) => {
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-            toast.error('Favorilere eklemek için giriş yapmalısınız.');
-            return;
-        }
-
-        const currentlyFavorite = favorites.includes(id);
-
-        if (currentlyFavorite) {
-            // Remove
-            const success = await storeApi.removeFavorite(id);
-            if (success) {
-                setFavorites(prev => prev.filter(favId => favId !== id));
-                toast.info(`${name || 'Ürün'} favorilerden çıkarıldı.`);
-            } else {
-                toast.error('Favorilerden çıkarılırken bir hata oluştu.');
-            }
-        } else {
-            // Add
-            const success = await storeApi.addFavorite(id);
-            if (success) {
-                setFavorites(prev => [...prev, id]);
-                toast.success(`${name || 'Ürün'} favorilere eklendi!`);
-            } else {
-                toast.error('Favorilere eklenirken bir hata oluştu.');
-            }
-        }
+      try {
+        const favoriteProducts = await storeApi.getFavorites();
+        setFavorites(mapFavoritesToIds(favoriteProducts));
+      } catch (error) {
+        console.error("Failed to fetch favorites:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const isFavorite = (id: string) => favorites.includes(String(id));
+    initFavorites();
+  }, []);
 
-    return (
-        <FavoritesContext.Provider value={{ favorites, toggleFavorite, isFavorite, loading }}>
-            {children}
-        </FavoritesContext.Provider>
-    );
+  const toggleFavorite = useCallback(
+    async (id: string, name?: string) => {
+      if (!hasFavoriteAccess()) {
+        favoriteMessages.loginRequired();
+        return;
+      }
+
+      const currentlyFavorite = favorites.includes(id);
+
+      if (currentlyFavorite) {
+        const success = await storeApi.removeFavorite(id);
+        if (success) {
+          setFavorites((currentFavorites) =>
+            removeFavoriteId(currentFavorites, id),
+          );
+          favoriteMessages.removed(name);
+          return;
+        }
+
+        favoriteMessages.removeFailed();
+        return;
+      }
+
+      const success = await storeApi.addFavorite(id);
+      if (success) {
+        setFavorites((currentFavorites) => addFavoriteId(currentFavorites, id));
+        favoriteMessages.added(name);
+        return;
+      }
+
+      favoriteMessages.addFailed();
+    },
+    [favorites],
+  );
+
+  const isFavorite = useCallback(
+    (id: string) => favorites.includes(String(id)),
+    [favorites],
+  );
+
+  const value = useMemo<FavoritesContextValue>(
+    () => ({
+      favorites,
+      toggleFavorite,
+      isFavorite,
+      loading,
+    }),
+    [favorites, isFavorite, loading, toggleFavorite],
+  );
+
+  return (
+    <FavoritesContext.Provider value={value}>
+      {children}
+    </FavoritesContext.Provider>
+  );
 };
 
 export const useFavorites = () => {
-    const context = useContext(FavoritesContext);
-    if (!context) throw new Error('useFavorites must be used within FavoritesProvider');
-    return context;
+  const context = useContext(FavoritesContext);
+  if (!context)
+    throw new Error("useFavorites must be used within FavoritesProvider");
+  return context;
 };

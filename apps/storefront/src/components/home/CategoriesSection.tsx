@@ -1,105 +1,17 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import { categories as fallbackCategories } from "@/lib/data";
-import { storeApi } from "@/lib/api";
-import { fadeInUp } from "@/lib/utils";
-import Link from 'next/link';
-
-interface CategoryDisplay {
-  name: string;
-  image: string;
-  slug?: string;
-}
+import { CategoriesGrid } from "./categories/CategoriesGrid";
+import { CategoriesHeader } from "./categories/CategoriesHeader";
+import { useHomeCategories } from "./categories/hooks/useHomeCategories";
 
 export default function CategoriesSection() {
-  const [categories, setCategories] = useState<CategoryDisplay[]>(fallbackCategories);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const apiCollections = await storeApi.getCollectionContent();
-        if (apiCollections && apiCollections.length > 0) {
-          setCategories(
-            apiCollections
-              .filter(c => c.isActive)
-              .sort((a, b) => a.position - b.position)
-              .map(c => ({
-                name: c.name,
-                image: c.imageUrl,
-                slug: c.slug || '',
-              }))
-          );
-        }
-      } catch {
-        // Fallback data.ts categories remain
-      }
-    };
-    fetchCategories();
-  }, []);
+  const { categories } = useHomeCategories();
 
   return (
-    <section className="py-24 bg-white">
+    <section className="bg-white py-24">
       <div className="container mx-auto px-4 md:px-8">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={{ fadeInUp }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-3xl md:text-5xl font-serif font-bold mb-4 text-stone-900">
-            Koleksiyonları Keşfet
-          </h2>
-          <p className="text-stone-500 text-lg max-w-2xl mx-auto font-light">
-            Modern kadının gardırobunu tamamlayan zarif ve şık parçalar.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((cat, idx) => {
-            const getCategoryLink = (slug?: string) => {
-              if (!slug) return '/giyim';
-              const normalized = slug.toLowerCase().trim();
-              if (normalized === 'aksesuar' || normalized === 'aksesuarlar' || normalized === 'accessories') return '/aksesuar';
-              if (normalized === 'indirim' || normalized === 'firsat' || normalized === 'sale') return '/indirim';
-              if (normalized === 'giyim' || normalized === 'clothing' || normalized === 'elbise') return '/giyim';
-              return `/giyim?category=${slug}`;
-            };
-
-            return (
-              <Link key={idx} href={getCategoryLink(cat.slug)}>
-                <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1, duration: 0.6 }}
-              className="relative group cursor-pointer overflow-hidden rounded-lg h-[450px]"
-            >
-              <Image
-                src={cat.image}
-                alt={cat.name}
-                fill
-                className="object-cover transition-transform duration-1000 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/20 to-transparent opacity-80 transition-opacity" />
-              <div className="absolute bottom-8 left-8 text-white z-10">
-                <h3 className="text-3xl font-serif font-semibold mb-3 relative inline-block">
-                  {cat.name}
-                  <span className="absolute -bottom-1 left-0 w-1/3 h-0.5 bg-amber-500 transition-all duration-500 group-hover:w-full"></span>
-                </h3>
-                <p className="flex items-center gap-2 text-sm font-medium opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100">
-                  İncele <ArrowRight className="w-4 h-4" />
-                </p>
-              </div>
-            </motion.div>
-          </Link>
-        );
-      })}
-        </div>
+        <CategoriesHeader />
+        <CategoriesGrid categories={categories} />
       </div>
     </section>
   );

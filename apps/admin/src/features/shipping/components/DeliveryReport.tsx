@@ -13,10 +13,10 @@ export const DeliveryReport = () => {
                 const response = await ordersService.getAll();
                 const orders = response.data;
                 const delivered = orders.filter(o => o.status === 'DELIVERED').length;
-                const returned = orders.filter(o => o.status === 'CANCELLED' || o.status === 'REFUNDED').length;
+                const returned = orders.filter(o => o.status === 'RETURNED' || o.paymentStatus === 'REFUNDED').length;
                 const inTransit = orders.filter(o => o.status === 'SHIPPED').length;
                 setStats({ delivered, returned, inTransit, avgDeliveryDays: 3 }); // avg is dummy for now
-            } catch (err) {
+            } catch {
                 toast.error('Rapor yüklenemedi');
             } finally {
                 setLoading(false);

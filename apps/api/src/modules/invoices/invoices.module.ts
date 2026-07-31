@@ -4,9 +4,9 @@ import { InvoicesController } from './invoices.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    controllers: [InvoicesController],
-    providers: [InvoicesService],
-    exports: [InvoicesService],
+  imports: [PrismaModule],
+  controllers: [InvoicesController],
+  providers: [InvoicesService],
+  exports: [InvoicesService],
 })
-export class InvoicesModule { }
+export class InvoicesModule {}

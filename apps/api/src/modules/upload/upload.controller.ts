@@ -14,7 +14,14 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as os from 'os';
 import * as path from 'path';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import { UploadService } from './upload.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -26,8 +33,11 @@ const multerOptions = {
     destination: os.tmpdir(),
     filename: (req, file, cb) => {
       const ext = path.extname(file.originalname);
-      cb(null, `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`);
-    }
+      cb(
+        null,
+        `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`,
+      );
+    },
   }),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 };
@@ -68,7 +78,10 @@ export class UploadController {
       },
     },
   })
-  @ApiResponse({ status: 201, description: 'File uploaded successfully to S3 & DB' })
+  @ApiResponse({
+    status: 201,
+    description: 'File uploaded successfully to S3 & DB',
+  })
   async uploadSingle(
     @UploadedFile(new FileValidationPipe()) file: Express.Multer.File,
     @Query('folder') folder: string = 'products',
@@ -90,7 +103,10 @@ export class UploadController {
       },
     },
   })
-  @ApiResponse({ status: 201, description: 'Files uploaded successfully to S3 & DB' })
+  @ApiResponse({
+    status: 201,
+    description: 'Files uploaded successfully to S3 & DB',
+  })
   async uploadMultiple(
     @UploadedFiles(new FileValidationPipe()) files: Express.Multer.File[],
     @Query('folder') folder: string = 'products',

@@ -123,7 +123,10 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = await this.generateRefreshToken(user.id);
 
-    this.logger.log('Kullanıcı giriş yaptı', { email: user.email, userId: user.id });
+    this.logger.log('Kullanıcı giriş yaptı', {
+      email: user.email,
+      userId: user.id,
+    });
 
     return {
       accessToken,
@@ -242,7 +245,7 @@ export class AuthService {
       { sub: userId },
       {
         secret: this.configService.get<string>('app.jwtSecret'),
-        expiresIn: refreshExpiresIn as any,
+        expiresIn: refreshExpiresIn,
       },
     );
 

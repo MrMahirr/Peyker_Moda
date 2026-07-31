@@ -234,7 +234,7 @@ export class StorefrontService {
 
   async getAttributes(categorySlug?: string) {
     // Tüm varyantlardan benzersiz beden ve renkleri çek
-    let where: any = { stock: { gt: 0 } };
+    const where: any = { stock: { gt: 0 } };
 
     if (categorySlug) {
       where.product = {
@@ -898,7 +898,7 @@ export class StorefrontService {
         );
       }
 
-      let basePrice = Number(variant.price || variant.product.basePrice);
+      const basePrice = Number(variant.price || variant.product.basePrice);
       let price = Number(
         variant.price || variant.product.salePrice || variant.product.basePrice,
       );

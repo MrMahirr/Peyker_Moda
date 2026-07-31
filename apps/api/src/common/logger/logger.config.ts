@@ -2,7 +2,11 @@ import { WinstonModuleOptions } from 'nest-winston';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 
-export const getWinstonConfig = (nodeEnv: string, logLevel: string, logDir: string): WinstonModuleOptions => {
+export const getWinstonConfig = (
+  nodeEnv: string,
+  logLevel: string,
+  logDir: string,
+): WinstonModuleOptions => {
   const isProduction = nodeEnv === 'production';
 
   const transports: winston.transport[] = [
@@ -17,11 +21,15 @@ export const getWinstonConfig = (nodeEnv: string, logLevel: string, logDir: stri
         : winston.format.combine(
             winston.format.timestamp(),
             winston.format.colorize(),
-            winston.format.printf(({ timestamp, level, message, context, ...meta }) => {
-              const contextStr = context ? ` [${context}]` : '';
-              const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-              return `${timestamp} ${level}${contextStr}: ${message}${metaStr}`;
-            }),
+            winston.format.printf(
+              ({ timestamp, level, message, context, ...meta }) => {
+                const contextStr = context ? ` [${context}]` : '';
+                const metaStr = Object.keys(meta).length
+                  ? ` ${JSON.stringify(meta)}`
+                  : '';
+                return `${timestamp} ${level}${contextStr}: ${message}${metaStr}`;
+              },
+            ),
           ),
     }),
 

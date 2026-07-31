@@ -11,7 +11,10 @@ export interface CustomerJwtPayload {
 }
 
 @Injectable()
-export class CustomerJwtStrategy extends PassportStrategy(Strategy, 'jwt-customer') {
+export class CustomerJwtStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-customer',
+) {
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
@@ -19,7 +22,9 @@ export class CustomerJwtStrategy extends PassportStrategy(Strategy, 'jwt-custome
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('app.jwtSecret') || 'super-secret-key-change-in-production',
+      secretOrKey:
+        configService.get<string>('app.jwtSecret') ||
+        'super-secret-key-change-in-production',
     });
   }
 

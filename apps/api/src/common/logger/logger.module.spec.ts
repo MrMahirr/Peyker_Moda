@@ -11,7 +11,15 @@ describe('LoggerModule', () => {
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
-          load: [() => ({ app: { nodeEnv: 'development', logLevel: 'info', logDir: './logs' } })],
+          load: [
+            () => ({
+              app: {
+                nodeEnv: 'development',
+                logLevel: 'info',
+                logDir: './logs',
+              },
+            }),
+          ],
         }),
         LoggerModule,
       ],

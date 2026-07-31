@@ -4,9 +4,9 @@ import { ProductsService } from './products.service';
 import { UploadModule } from '../upload/upload.module';
 
 @Module({
-    imports: [UploadModule],
-    controllers: [ProductsController],
-    providers: [ProductsService],
-    exports: [ProductsService],
+  imports: [UploadModule],
+  controllers: [ProductsController],
+  providers: [ProductsService],
+  exports: [ProductsService],
 })
-export class ProductsModule { }
+export class ProductsModule {}

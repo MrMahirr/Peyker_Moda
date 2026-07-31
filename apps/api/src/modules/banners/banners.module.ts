@@ -10,12 +10,12 @@ import { CollectionContentStorageService } from './collection-content.storage.se
 @Module({
   controllers: [BannersController],
   providers: [
-    BannersService, 
+    BannersService,
     BannerStorageService,
     PageHeadersService,
     PageHeaderStorageService,
     CollectionContentService,
-    CollectionContentStorageService
+    CollectionContentStorageService,
   ],
 })
 export class BannersModule {}

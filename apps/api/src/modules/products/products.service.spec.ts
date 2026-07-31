@@ -17,8 +17,19 @@ describe('ProductsService', () => {
     basePrice: 100,
     compareAtPrice: 150,
     stock: 50,
-    images: [{ id: 'media-id-1', url: 'https://example.com/product.jpg', alt: 'Test' }],
-    variants: [{ id: 'variant-id-1', sku: 'SKU001-S', stock: 50, size: 'S', color: 'Black', price: 100 }],
+    images: [
+      { id: 'media-id-1', url: 'https://example.com/product.jpg', alt: 'Test' },
+    ],
+    variants: [
+      {
+        id: 'variant-id-1',
+        sku: 'SKU001-S',
+        stock: 50,
+        size: 'S',
+        color: 'Black',
+        price: 100,
+      },
+    ],
     lowStockThreshold: 10,
     isActive: true,
     categoryId: 'category-id-1',
@@ -124,7 +135,9 @@ describe('ProductsService', () => {
     it('should throw when product not found', async () => {
       mockPrismaService.product.findUnique.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent-id')).rejects.toThrow('Ürün bulunamadı');
+      await expect(service.findOne('non-existent-id')).rejects.toThrow(
+        'Ürün bulunamadı',
+      );
     });
   });
 
@@ -137,7 +150,10 @@ describe('ProductsService', () => {
         categoryId: 'category-id-1',
       };
       mockPrismaService.product.findUnique.mockResolvedValue(null);
-      mockPrismaService.product.create.mockResolvedValue({ ...mockProduct, ...createDto });
+      mockPrismaService.product.create.mockResolvedValue({
+        ...mockProduct,
+        ...createDto,
+      });
 
       const result = await service.create(createDto);
 
@@ -151,7 +167,10 @@ describe('ProductsService', () => {
       const updateDto = { name: 'Updated Product' };
       mockPrismaService.product.findUnique.mockResolvedValue(mockProduct);
       mockPrismaService.product.findFirst.mockResolvedValue(null);
-      mockPrismaService.product.update.mockResolvedValue({ ...mockProduct, ...updateDto });
+      mockPrismaService.product.update.mockResolvedValue({
+        ...mockProduct,
+        ...updateDto,
+      });
 
       const result = await service.update('product-id-1', updateDto);
 
@@ -162,7 +181,10 @@ describe('ProductsService', () => {
   describe('remove', () => {
     it('should soft delete a product', async () => {
       mockPrismaService.product.findUnique.mockResolvedValue(mockProduct);
-      mockPrismaService.product.update.mockResolvedValue({ ...mockProduct, isActive: false });
+      mockPrismaService.product.update.mockResolvedValue({
+        ...mockProduct,
+        isActive: false,
+      });
 
       const result = await service.remove('product-id-1');
 

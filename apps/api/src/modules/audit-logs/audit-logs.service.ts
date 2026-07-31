@@ -24,8 +24,12 @@ export class AuditLogsService {
           action: data.action,
           resource: data.resource,
           resourceId: data.resourceId,
-          oldData: data.oldData ? JSON.parse(JSON.stringify(data.oldData)) : null,
-          newData: data.newData ? JSON.parse(JSON.stringify(data.newData)) : null,
+          oldData: data.oldData
+            ? JSON.parse(JSON.stringify(data.oldData))
+            : null,
+          newData: data.newData
+            ? JSON.parse(JSON.stringify(data.newData))
+            : null,
           ipAddress: data.ipAddress,
           userAgent: data.userAgent,
         },

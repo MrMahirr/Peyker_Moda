@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthController } from './health.controller';
-import { HealthCheckService, MemoryHealthIndicator, DiskHealthIndicator } from '@nestjs/terminus';
+import {
+  HealthCheckService,
+  MemoryHealthIndicator,
+  DiskHealthIndicator,
+} from '@nestjs/terminus';
 import { PrismaHealthIndicator } from './indicators/prisma.health';
 import { RedisHealthIndicator } from './indicators/redis.health';
 
@@ -15,13 +19,19 @@ describe('HealthController', () => {
         {
           provide: HealthCheckService,
           useValue: {
-            check: jest.fn().mockImplementation((checks) => Promise.all(checks.map((c) => c()))),
+            check: jest
+              .fn()
+              .mockImplementation((checks) =>
+                Promise.all(checks.map((c) => c())),
+              ),
           },
         },
         {
           provide: PrismaHealthIndicator,
           useValue: {
-            isHealthy: jest.fn().mockResolvedValue({ database: { status: 'up' } }),
+            isHealthy: jest
+              .fn()
+              .mockResolvedValue({ database: { status: 'up' } }),
           },
         },
         {
@@ -33,14 +43,20 @@ describe('HealthController', () => {
         {
           provide: MemoryHealthIndicator,
           useValue: {
-            checkHeap: jest.fn().mockResolvedValue({ memory_heap: { status: 'up' } }),
-            checkRSS: jest.fn().mockResolvedValue({ memory_rss: { status: 'up' } }),
+            checkHeap: jest
+              .fn()
+              .mockResolvedValue({ memory_heap: { status: 'up' } }),
+            checkRSS: jest
+              .fn()
+              .mockResolvedValue({ memory_rss: { status: 'up' } }),
           },
         },
         {
           provide: DiskHealthIndicator,
           useValue: {
-            checkStorage: jest.fn().mockResolvedValue({ disk: { status: 'up' } }),
+            checkStorage: jest
+              .fn()
+              .mockResolvedValue({ disk: { status: 'up' } }),
           },
         },
       ],

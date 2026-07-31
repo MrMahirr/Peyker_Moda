@@ -5,14 +5,14 @@ import { CARGO_PROVIDER } from './cargo.constants';
 
 @Global()
 @Module({
-    providers: [
-        MockCargoProvider,
-        {
-            provide: CARGO_PROVIDER,
-            useExisting: MockCargoProvider,
-        },
-        CargoService,
-    ],
-    exports: [CargoService],
+  providers: [
+    MockCargoProvider,
+    {
+      provide: CARGO_PROVIDER,
+      useExisting: MockCargoProvider,
+    },
+    CargoService,
+  ],
+  exports: [CargoService],
 })
-export class CargoModule { }
+export class CargoModule {}

@@ -1,0 +1,182 @@
+import { useCallback, useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { cn } from '../../lib/utils';
+import { Upload, X, Loader2, Star } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { uploadService } from '../../services/upload.service';
+
+interface ImageUploadProps {
+    value?: any[];
+    onChange?: (items: any[]) => void;
+    maxFiles?: number;
+    folder?: string;
+    className?: string;
+}
+
+export function ImageUpload({
+    value = [],
+    onChange,
+    maxFiles = 5,
+    folder = 'products',
+    className,
+}: ImageUploadProps) {
+    const [loading, setLoading] = useState(false);
+    const [previews, setPreviews] = useState<any[]>(value);
+
+    useEffect(() => {
+        if (value && JSON.stringify(value) !== JSON.stringify(previews)) {
+            setPreviews(value);
+        }
+    }, [value]);
+
+    const onDrop = useCallback(async (acceptedFiles: File[]) => {
+        if (acceptedFiles.length === 0) return;
+
+        setLoading(true);
+        try {
+            // Upload files to backend
+            const results = await uploadService.uploadMultipleFiles(acceptedFiles, folder);
+
+            // Get items from response safely
+            const newItems = Array.isArray(results) 
+                ? results.filter(Boolean)
+                : [];
+
+            // Update state
+            const updatedPreviews = [...previews, ...newItems].slice(0, maxFiles);
+            setPreviews(updatedPreviews);
+            onChange?.(updatedPreviews);
+        } catch (error) {
+            console.error('Upload failed:', error);
+            // Optionally add toast notification here
+        } finally {
+            setLoading(false);
+        }
+    }, [previews, maxFiles, onChange]);
+
+    const removeImage = async (indexToRemove: number) => {
+        const itemToRemove = previews[indexToRemove];
+
+        // Optimistic update
+        const updated = previews.filter((_, index) => index !== indexToRemove);
+        setPreviews(updated);
+        onChange?.(updated);
+
+        // Delete from server (optional, but good for cleanup)
+        // Extract filename from URL or key
+        try {
+            const urlString = itemToRemove?.url || itemToRemove;
+            if (typeof urlString === 'string') {
+                const filename = urlString.split('/').pop();
+                if (filename) {
+                    await uploadService.deleteFile(filename, folder);
+                }
+            }
+        } catch (error) {
+            console.error('Delete failed:', error);
+        }
+    };
+
+    const makeCoverImage = (indexToPromote: number) => {
+        if (indexToPromote === 0) return;
+        const updated = [...previews];
+        const item = updated.splice(indexToPromote, 1)[0];
+        updated.unshift(item);
+        setPreviews(updated);
+        onChange?.(updated);
+    };
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: {
+            'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.gif'],
+        },
+        maxFiles: maxFiles - previews.length,
+        disabled: previews.length >= maxFiles || loading,
+    });
+
+    return (
+        <div className={cn("space-y-4", className)}>
+            <div
+                {...getRootProps()}
+                className={cn(
+                    "border-2 border-dashed border-zinc-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-zinc-50 relative",
+                    isDragActive && "border-indigo-500 bg-indigo-50",
+                    (previews.length >= maxFiles || loading) && "opacity-50 cursor-not-allowed"
+                )}
+            >
+                <input {...getInputProps()} />
+                {loading ? (
+                    <div className="flex flex-col items-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-2" />
+                        <p className="text-sm text-zinc-500">Yükleniyor...</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="bg-zinc-100 p-3 rounded-full mb-3">
+                            <Upload className="h-6 w-6 text-zinc-500" />
+                        </div>
+                        <p className="text-sm font-medium text-zinc-900">
+                            Resim yüklemek için tıklayın veya sürükleyin
+                        </p>
+                        <p className="text-xs text-zinc-500 mt-1">
+                            (Max {maxFiles} resim)
+                        </p>
+                    </>
+                )}
+            </div>
+
+            {previews.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {previews.map((item, index) => {
+                        const imgUrl = item?.url || item;
+                        return (
+                        <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-zinc-200">
+                            {index === 0 && maxFiles > 1 && (
+                                <div className="absolute top-2 left-2 z-10 pointer-events-none">
+                                    <span className="bg-indigo-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                                        Vitrin
+                                    </span>
+                                </div>
+                            )}
+                            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 rounded-full shadow-sm"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeImage(index);
+                                    }}
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </Button>
+                                {index > 0 && maxFiles > 1 && (
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        className="h-7 w-7 p-0 rounded-full shadow-sm bg-white/90 hover:bg-white text-indigo-600 border-indigo-100"
+                                        title="Vitrin Görseli Yap"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            makeCoverImage(index);
+                                        }}
+                                    >
+                                        <Star className="h-3.5 w-3.5 fill-indigo-600" />
+                                    </Button>
+                                )}
+                            </div>
+                            <img
+                                src={imgUrl}
+                                alt="Upload preview"
+                                className="object-cover w-full h-full"
+                            />
+                        </div>
+                    )})}
+                </div>
+            )}
+        </div>
+    );
+}

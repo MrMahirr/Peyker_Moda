@@ -8,6 +8,7 @@ node_modules
 # Local env files
 .env
 .env.local
+.env.docker
 .env.development.local
 .env.test.local
 .env.production.local
@@ -36,3 +37,13 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Logs
+/logs
+apps/api/logs
+*.log
+
+# Backups
+/backups
+*.sql.gz
+/.aiassistant/

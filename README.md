@@ -1,135 +1,193 @@
-# Turborepo starter
+# Peyker Moda
 
-This Turborepo starter is maintained by the Turborepo core team.
+Peyker Moda, e-ticaret vitrini, yonetim paneli ve POS/API katmanlarini tek monorepo icinde toplayan bir moda satis platformudur.
 
-## Using this example
+## Proje Yapisi
 
-Run the following command:
-
-```sh
-npx create-turbo@latest
+```text
+peyker-moda/
+|-- apps/
+|   |-- api/          # NestJS API, Prisma, PostgreSQL, Redis, MinIO
+|   |-- admin/        # React + Vite yonetim paneli
+|   `-- storefront/   # Next.js musteri vitrini
+|-- packages/
+|   |-- types/        # Paylasilan TypeScript tipleri
+|   |-- ui/           # Paylasilan UI paketleri
+|   |-- eslint-config/
+|   `-- typescript-config/
+|-- docker/           # Docker/Nginx yardimci dosyalari
+|-- scripts/          # Yardimci scriptler
+|-- docker-compose.yml
+|-- docker-compose.prod.yml
+|-- pnpm-workspace.yaml
+`-- turbo.json
 ```
 
-## What's inside?
+## Teknolojiler
 
-This Turborepo includes the following packages/apps:
+| Katman | Teknolojiler |
+| --- | --- |
+| API | NestJS 11, Prisma 5, PostgreSQL, Redis, MinIO/S3, Socket.IO, Swagger |
+| Admin | React 19, Vite 7, TypeScript, Tailwind CSS, React Router, TanStack Table |
+| Storefront | Next.js 16, React 19, Tailwind CSS, Radix UI |
+| Monorepo | pnpm workspace, Turborepo |
 
-### Apps and Packages
+## Gereksinimler
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- Node.js 18 veya uzeri
+- pnpm 9
+- Docker ve Docker Compose
+- PostgreSQL, Redis ve MinIO icin yerel servisler veya `docker-compose.yml`
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## Kurulum
 
-### Utilities
+Bagimliliklari kok dizinde yukleyin:
 
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```bash
+pnpm install
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+Gelistirme servislerini baslatin:
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+docker compose up -d
 ```
 
-### Develop
+API ortam dosyasini olusturun:
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```bash
+cp apps/api/.env.example apps/api/.env
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+Windows PowerShell kullanirken:
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```powershell
+Copy-Item apps/api/.env.example apps/api/.env
 ```
 
-### Remote Caching
+Yerel Docker servisleri icin temel `DATABASE_URL` degeri:
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```env
+DATABASE_URL="postgresql://peyker_user:peyker_password@localhost:2345/peyker_db?schema=public"
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+Varsayilan frontend API adresleri:
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+```env
+# apps/admin/.env
+VITE_API_URL=http://localhost:3000/api
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+# apps/storefront/.env.local
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
-## Useful Links
+## Veritabani
 
-Learn more about the power of Turborepo:
+Migration ve seed islemleri kok dizinden calistirilabilir:
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+```bash
+pnpm run db:migrate:dev
+pnpm run db:seed
+```
+
+Alternatif olarak API paketi icinden:
+
+```bash
+pnpm --filter api run migrate:dev
+pnpm --filter api run db:seed
+```
+
+## Gelistirme
+
+Tum uygulamalari birlikte baslatmak icin:
+
+```bash
+pnpm run dev
+```
+
+Tek uygulama calistirma:
+
+```bash
+pnpm --filter api run start:dev
+pnpm --filter admin run dev
+pnpm --filter storefront run dev
+```
+
+Varsayilan adresler:
+
+| Uygulama | Adres |
+| --- | --- |
+| API | http://localhost:3000/api |
+| Swagger | http://localhost:3000/docs |
+| Admin | http://localhost:5173 |
+| Storefront | http://localhost:3500 |
+| MinIO Console | http://localhost:9001 |
+
+## Komutlar
+
+Kok dizin komutlari:
+
+```bash
+pnpm run dev
+pnpm run build
+pnpm run lint
+pnpm run format
+pnpm run db:migrate:dev
+pnpm run db:migrate:deploy
+pnpm run db:seed
+pnpm run db:backup
+```
+
+API testleri:
+
+```bash
+pnpm --filter api run test
+pnpm --filter api run test:cov
+pnpm --filter api run test:e2e
+```
+
+## Ana Moduller
+
+API tarafinda urun, kategori, varyant, siparis, POS, musteri, musteri gruplari, kampanya, fatura, muhasebe, rapor, dashboard, bildirim, mesajlasma, kargo, odeme, CMS, banner, ayar, kullanici, rol ve audit log modulleri bulunur.
+
+Admin panel; katalog, siparis, musteri, POS, rapor ve sistem yonetimi ekranlari icin kullanilir. Storefront ise musteriye acik vitrin ve alisveris deneyimini saglar.
+
+## Docker
+
+Gelistirme altyapisi:
+
+```bash
+docker compose up -d
+docker compose down
+```
+
+Production compose dosyasi ve Makefile komutlari:
+
+```bash
+make build
+make up
+make logs
+make down
+```
+
+Windows'ta `make` yoksa ayni islemler `docker compose -f docker-compose.prod.yml --env-file .env.docker ...` komutlariyla calistirilabilir.
+
+## Build
+
+Tum paketler:
+
+```bash
+pnpm run build
+```
+
+Tek tek:
+
+```bash
+pnpm --filter api run build
+pnpm --filter admin run build
+pnpm --filter storefront run build
+```
+
+## Lisans
+
+Bu proje ozel kullanim icindir ve `UNLICENSED` olarak isaretlenmistir.

@@ -31,9 +31,7 @@ export class BarcodeService {
       }
     }
 
-    throw new Error(
-      'Benzersiz barkod üretilemedi. Lütfen tekrar deneyin.',
-    );
+    throw new Error('Benzersiz barkod üretilemedi. Lütfen tekrar deneyin.');
   }
 
   /**
@@ -69,9 +67,7 @@ export class BarcodeService {
       });
     }
 
-    this.logger.log(
-      `${results.length} varyanta otomatik barkod atandı.`,
-    );
+    this.logger.log(`${results.length} varyanta otomatik barkod atandı.`);
 
     return { updatedCount: results.length, barcodes: results };
   }

@@ -16,6 +16,7 @@ import {
   slugify,
   getPaginationParams,
   createPaginatedResult,
+  generateBarcode,
 } from '../../common/utils';
 
 @Injectable()
@@ -228,6 +229,30 @@ export class ProductsService {
       });
     }
 
+    let processedVariants: any[] = [];
+    if (variants?.length) {
+      for (const v of variants) {
+        let barcode = v.barcode;
+        if (!barcode) {
+          barcode = generateBarcode();
+          // Çakışma kontrolü
+          for (let i = 0; i < 5; i++) {
+            const existingBarcode = await this.prisma.variant.findUnique({
+              where: { barcode },
+            });
+            if (!existingBarcode) break;
+            barcode = generateBarcode();
+          }
+        }
+        processedVariants.push({
+          ...v,
+          barcode,
+          price: v.price ?? price,
+          stock: v.stock ?? 0,
+        });
+      }
+    }
+
     const product = await this.prisma.product.create({
       data: {
         ...rest,
@@ -235,13 +260,9 @@ export class ProductsService {
         salePrice: comparePrice,
         slug: uniqueSlug,
         images: mediaData as any, // Cast to any to bypass Prisma Json strict typing
-        variants: variants?.length
+        variants: processedVariants.length
           ? {
-              create: variants.map((v) => ({
-                ...v,
-                price: v.price ?? price,
-                stock: v.stock ?? 0,
-              })),
+              create: processedVariants,
             }
           : undefined,
       },
@@ -376,9 +397,22 @@ export class ProductsService {
             },
           });
         } else {
+          let barcode = v.barcode;
+          if (!barcode) {
+            barcode = generateBarcode();
+            for (let i = 0; i < 5; i++) {
+              const existingBarcode = await this.prisma.variant.findUnique({
+                where: { barcode },
+              });
+              if (!existingBarcode) break;
+              barcode = generateBarcode();
+            }
+          }
+
           await this.prisma.variant.create({
             data: {
               ...v,
+              barcode,
               productId: id,
               price: v.price ?? data.basePrice ?? existingProduct.basePrice,
               stock: v.stock ?? 0,

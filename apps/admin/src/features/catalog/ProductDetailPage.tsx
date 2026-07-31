@@ -3,8 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
-import { ChevronLeft, Image as ImageIcon, Loader2, Package, Boxes } from 'lucide-react';
+import { ChevronLeft, Image as ImageIcon, Loader2, Package, Boxes, Printer } from 'lucide-react';
 import { productsService, Product, ProductVariant } from './services/products.service';
+import { BarcodePrintModal, BarcodePrintItem } from '@/components/shared/BarcodePrintModal';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -43,6 +44,8 @@ export const ProductDetailPage = () => {
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+    const [printItems, setPrintItems] = useState<BarcodePrintItem[]>([]);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -88,6 +91,42 @@ export const ProductDetailPage = () => {
     const currency = product.currency || 'TRY';
     const variants = product.variants ?? [];
     const totalStock = product.totalStock ?? variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+
+    const handlePrintAll = () => {
+        const items = variants.map(v => ({
+            id: v.id || v.sku,
+            barcode: v.barcode || '',
+            productName: product.name,
+            variantName: formatVariantLabel(v),
+            price: Number(v.price ?? basePrice),
+            currency: currency
+        })).filter(v => v.barcode); // Sadece barkodu olanları yazdır
+        
+        if (items.length === 0) {
+            toast.error("Yazdırılacak barkod bulunamadı");
+            return;
+        }
+        
+        setPrintItems(items);
+        setIsPrintModalOpen(true);
+    };
+
+    const handlePrintSingle = (variant: ProductVariant) => {
+        if (!variant.barcode) {
+            toast.error("Bu varyantın barkodu yok");
+            return;
+        }
+        
+        setPrintItems([{
+            id: variant.id || variant.sku,
+            barcode: variant.barcode,
+            productName: product.name,
+            variantName: formatVariantLabel(variant),
+            price: Number(variant.price ?? basePrice),
+            currency: currency
+        }]);
+        setIsPrintModalOpen(true);
+    };
 
     return (
         <div className="space-y-6">
@@ -225,7 +264,21 @@ export const ProductDetailPage = () => {
                 <CardHeader
                     title="Varyantlar"
                     description="Urun varyantlari ve stok bilgileri."
-                    action={<Package className="w-4 h-4 text-zinc-500" />}
+                    action={
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 gap-2"
+                                onClick={handlePrintAll}
+                                disabled={variants.length === 0}
+                            >
+                                <Printer className="w-3.5 h-3.5" />
+                                Tümünü Yazdır
+                            </Button>
+                            <Package className="w-4 h-4 text-zinc-500" />
+                        </div>
+                    }
                 />
                 {variants.length === 0 ? (
                     <div className="flex items-center gap-3 text-sm text-zinc-500">
@@ -239,8 +292,10 @@ export const ProductDetailPage = () => {
                                 <tr>
                                     <th className="text-left py-2">Varyant</th>
                                     <th className="text-left py-2">SKU</th>
+                                    <th className="text-left py-2">Barkod</th>
                                     <th className="text-right py-2">Fiyat</th>
                                     <th className="text-right py-2">Stok</th>
+                                    <th className="w-10"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -250,11 +305,24 @@ export const ProductDetailPage = () => {
                                             {formatVariantLabel(variant)}
                                         </td>
                                         <td className="py-3 text-zinc-500">{variant.sku}</td>
+                                        <td className="py-3 text-zinc-500 font-mono text-xs">{variant.barcode || '-'}</td>
                                         <td className="py-3 text-right font-semibold text-zinc-800">
                                             {formatCurrency(Number(variant.price ?? basePrice), currency)}
                                         </td>
                                         <td className="py-3 text-right text-zinc-600">
                                             {variant.stock ?? 0}
+                                        </td>
+                                        <td className="py-3 pr-2 text-right">
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-800"
+                                                onClick={() => handlePrintSingle(variant)}
+                                                title="Barkodu Yazdır"
+                                                disabled={!variant.barcode}
+                                            >
+                                                <Printer className="w-4 h-4" />
+                                            </Button>
                                         </td>
                                     </tr>
                                 ))}
@@ -263,6 +331,12 @@ export const ProductDetailPage = () => {
                     </div>
                 )}
             </Card>
+
+            <BarcodePrintModal 
+                isOpen={isPrintModalOpen}
+                onClose={() => setIsPrintModalOpen(false)}
+                items={printItems}
+            />
         </div>
     );
 };

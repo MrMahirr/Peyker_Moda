@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateVariantDto, UpdateVariantDto } from './dto';
-import { generateSku } from '../../common/utils';
+import { generateSku, generateBarcode } from '../../common/utils';
 
 @Injectable()
 export class VariantsService {
@@ -80,14 +80,25 @@ export class VariantsService {
       throw new ConflictException('Bu SKU zaten kullanılıyor');
     }
 
-    // Barkod varsa benzersiz mi kontrol et
-    if (createVariantDto.barcode) {
+    // Barkod varsa benzersiz mi kontrol et, yoksa otomatik oluştur
+    let barcode = createVariantDto.barcode;
+    if (barcode) {
       const existingBarcode = await this.prisma.variant.findUnique({
-        where: { barcode: createVariantDto.barcode },
+        where: { barcode },
       });
 
       if (existingBarcode) {
         throw new ConflictException('Bu barkod zaten kullanılıyor');
+      }
+    } else {
+      barcode = generateBarcode();
+      // Çakışma kontrolü basitçe yapılabilir, ama benzersizlik için max 5 deneme
+      for (let i = 0; i < 5; i++) {
+        const existing = await this.prisma.variant.findUnique({
+          where: { barcode },
+        });
+        if (!existing) break;
+        barcode = generateBarcode();
       }
     }
 
@@ -95,6 +106,7 @@ export class VariantsService {
       data: {
         ...createVariantDto,
         sku,
+        barcode,
         productId,
       },
     });
@@ -197,10 +209,21 @@ export class VariantsService {
         });
 
         if (!exists) {
+          // Benzersiz barkod üret (basit çakışma kontrolü ile)
+          let barcode = generateBarcode();
+          for (let i = 0; i < 5; i++) {
+            const existingBarcode = await this.prisma.variant.findUnique({
+              where: { barcode },
+            });
+            if (!existingBarcode) break;
+            barcode = generateBarcode();
+          }
+
           const variant = await this.prisma.variant.create({
             data: {
               productId,
               sku,
+              barcode,
               size,
               color: color.name,
               colorCode: color.code,

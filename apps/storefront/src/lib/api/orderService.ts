@@ -1,6 +1,12 @@
 import { getAccessToken, getAuthHeaders } from "./authStorage";
 import { API_BASE_URL, getApiOrigin } from "./config";
-import { InvoiceResponse, Order, ReturnResponse, TrackedOrder } from "./types";
+import {
+  InvoiceResponse,
+  Order,
+  ReturnRequestPayload,
+  ReturnResponse,
+  TrackedOrder,
+} from "./types";
 
 export const orderService = {
   async trackOrder(
@@ -41,7 +47,10 @@ export const orderService = {
     }
   },
 
-  async createReturn(orderId: string, reason: string): Promise<ReturnResponse> {
+  async createReturn(
+    orderId: string,
+    payload: ReturnRequestPayload,
+  ): Promise<ReturnResponse> {
     const token = getAccessToken();
     if (!token) throw new Error("Not authenticated");
 
@@ -50,7 +59,7 @@ export const orderService = {
       {
         method: "POST",
         headers: getAuthHeaders(true),
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify(payload),
       },
     );
     return response.json();

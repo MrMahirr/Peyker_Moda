@@ -22,12 +22,19 @@ import {
 import { CampaignsService } from '../campaigns/campaigns.service';
 import { EmailService } from '../email/email.service';
 import { InvoicesService } from '../invoices/invoices.service';
+import { CreateCustomerReturnDto } from '../returns/dto';
+import { HydratedReturn, ReturnsService } from '../returns/returns.service';
 import {
   getPaginationParams,
   createPaginatedResult,
   generateOrderNumber,
 } from '../../common/utils';
-import { OrderSource, OrderStatus, PaymentStatus } from '@prisma/client';
+import {
+  OrderSource,
+  OrderStatus,
+  PaymentStatus,
+  Prisma,
+} from '@prisma/client';
 import { PageHeaderStorageService } from '../banners/page-header.storage.service';
 import { CollectionContentStorageService } from '../banners/collection-content.storage.service';
 import { BannerStorageService } from '../banners/banner.storage.service';
@@ -46,6 +53,7 @@ export class StorefrontService {
     private collectionContentStorage: CollectionContentStorageService,
     private bannerStorage: BannerStorageService,
     private invoicesService: InvoicesService,
+    private returnsService: ReturnsService,
   ) {}
 
   // ========== AUTHENTICATION ==========
@@ -972,90 +980,103 @@ export class StorefrontService {
       checkoutDto.items,
       checkoutDto.couponCode,
     );
+    const variantQuantities = this.getCartVariantQuantities(checkoutDto.items);
 
     // Sipariş numarası
-    const orderNumber = await this.generateUniqueOrderNumber();
+    const order = await this.prisma.$transaction(async (tx) => {
+      const orderNumber = await this.generateUniqueOrderNumber(tx);
 
-    // Müşteri bul veya oluştur
-    let customer;
+      // Müşteri bul veya oluştur
+      let customer;
 
-    if (customerId) {
-      customer = await this.prisma.customer.findUnique({
-        where: { id: customerId },
-      });
-    }
+      if (customerId) {
+        customer = await tx.customer.findUnique({
+          where: { id: customerId },
+        });
+      }
 
-    if (!customer) {
-      customer = await this.prisma.customer.findFirst({
-        where: { phone: checkoutDto.shippingAddress.phone },
-      });
-    }
+      if (!customer) {
+        customer = await tx.customer.findFirst({
+          where: { phone: checkoutDto.shippingAddress.phone },
+        });
+      }
 
-    if (!customer) {
-      const [firstName, ...lastNameParts] =
-        checkoutDto.shippingAddress.fullName.split(' ');
-      customer = await this.prisma.customer.create({
+      if (!customer) {
+        const [firstName, ...lastNameParts] =
+          checkoutDto.shippingAddress.fullName.split(' ');
+        customer = await tx.customer.create({
+          data: {
+            firstName,
+            lastName: lastNameParts.join(' ') || '',
+            phone: checkoutDto.shippingAddress.phone,
+            email: checkoutDto.shippingAddress.email,
+            address: checkoutDto.shippingAddress.address,
+            city: checkoutDto.shippingAddress.city,
+            district: checkoutDto.shippingAddress.district,
+          },
+        });
+      }
+
+      // Sipariş oluştur
+      const order = await tx.order.create({
         data: {
-          firstName,
-          lastName: lastNameParts.join(' ') || '',
-          phone: checkoutDto.shippingAddress.phone,
-          email: checkoutDto.shippingAddress.email,
-          address: checkoutDto.shippingAddress.address,
-          city: checkoutDto.shippingAddress.city,
-          district: checkoutDto.shippingAddress.district,
-        },
-      });
-    }
-
-    // Sipariş oluştur
-    const order = await this.prisma.order.create({
-      data: {
-        orderNumber,
-        customerId: customer.id,
-        subtotal: cart.subtotal,
-        discountAmount: cart.discount,
-        shippingCost: cart.shippingCost,
-        totalAmount: cart.total,
-        couponCode: checkoutDto.couponCode,
-        shippingAddress: checkoutDto.shippingAddress as any,
-        notes: checkoutDto.notes,
-        source: OrderSource.ONLINE,
-        status: OrderStatus.PENDING,
-        paymentStatus: PaymentStatus.PENDING,
-        payments: {
-          create: {
-            amount: cart.total,
-            method: checkoutDto.paymentMethod,
-            status: PaymentStatus.PENDING,
+          orderNumber,
+          customerId: customer.id,
+          subtotal: cart.subtotal,
+          discountAmount: cart.discount,
+          shippingCost: cart.shippingCost,
+          totalAmount: cart.total,
+          couponCode: checkoutDto.couponCode,
+          shippingAddress: checkoutDto.shippingAddress as any,
+          notes: checkoutDto.notes,
+          source: OrderSource.ONLINE,
+          status: OrderStatus.PENDING,
+          paymentStatus: PaymentStatus.PENDING,
+          payments: {
+            create: {
+              amount: cart.total,
+              method: checkoutDto.paymentMethod,
+              status: PaymentStatus.PENDING,
+            },
+          },
+          items: {
+            create: cart.items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              total: item.total,
+            })),
           },
         },
-        items: {
-          create: cart.items.map((item) => ({
-            variantId: item.variantId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            total: item.total,
-          })),
+        include: {
+          items: true,
+          customer: {
+            select: { firstName: true, lastName: true, phone: true },
+          },
         },
-      },
-      include: {
-        items: true,
-        customer: { select: { firstName: true, lastName: true, phone: true } },
-      },
-    });
-
-    // Stokları düşür
-    for (const item of checkoutDto.items) {
-      await this.prisma.variant.update({
-        where: { id: item.variantId },
-        data: { stock: { decrement: item.quantity } },
       });
-    }
 
-    // Kupon kullanıldı olarak işaretle
-    if (checkoutDto.couponCode) {
-      await this.campaignsService.useCoupon(checkoutDto.couponCode);
-    }
+      // Stokları düşür
+      for (const [variantId, quantity] of variantQuantities.entries()) {
+        const stockUpdate = await tx.variant.updateMany({
+          where: { id: variantId, stock: { gte: quantity } },
+          data: { stock: { decrement: quantity } },
+        });
+
+        if (stockUpdate.count !== 1) {
+          throw new BadRequestException(
+            `Yetersiz stok veya urun bulunamadi: ${variantId}`,
+          );
+        }
+      }
+
+      // Kupon kullanıldı olarak işaretle
+      if (checkoutDto.couponCode) {
+        await this.campaignsService.useCoupon(checkoutDto.couponCode, tx);
+      }
+
+      return order;
+    });
 
     this.logger.log(`Yeni online sipariş: ${order.orderNumber}`);
 
@@ -1095,7 +1116,7 @@ export class StorefrontService {
    * Müşteri siparişlerini getir
    */
   async getCustomerOrders(customerId: string) {
-    return this.prisma.order.findMany({
+    const orders = await this.prisma.order.findMany({
       where: { customerId },
       include: {
         items: {
@@ -1111,6 +1132,15 @@ export class StorefrontService {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    const returnSummaries = await this.returnsService.getOrderReturnSummaries(
+      orders.map((order) => order.id),
+    );
+
+    return orders.map((order) => ({
+      ...order,
+      returnInfo: returnSummaries.get(order.id),
+    }));
   }
 
   /**
@@ -1132,6 +1162,11 @@ export class StorefrontService {
             },
           },
         },
+        returns: {
+          where: { status: { not: 'REJECTED' } },
+          include: { items: true },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
@@ -1140,13 +1175,16 @@ export class StorefrontService {
     }
 
     return {
+      id: order.id,
       orderNumber: order.orderNumber,
       status: order.status,
       paymentStatus: order.paymentStatus,
       totalAmount: order.totalAmount,
       createdAt: order.createdAt,
+      returnInfo: await this.returnsService.getOrderReturnSummary(order.id),
       items: order.items.map((item) => ({
         product: item.variant.product.name,
+        variantId: item.variantId,
         image: (item.variant.product.images as any)?.[0],
         size: item.variant.size,
         color: item.variant.color,
@@ -1156,42 +1194,12 @@ export class StorefrontService {
     };
   }
 
-  async createReturn(customerId: string, orderId: string, body: any) {
-    const order = await this.prisma.order.findFirst({
-      where: {
-        customerId,
-        OR: [{ id: orderId }, { orderNumber: orderId }],
-      },
-      include: { items: true },
-    });
-
-    if (!order) throw new NotFoundException('Sipariş bulunamadı');
-
-    const existingReturn = await this.prisma.return.findFirst({
-      where: { orderId },
-    });
-
-    if (existingReturn) {
-      throw new BadRequestException(
-        'Bu sipariş için zaten bir iade talebi oluşturulmuş.',
-      );
-    }
-
-    return this.prisma.return.create({
-      data: {
-        orderId,
-        reason: body.reason || 'Müşteri iade talebi',
-        refundAmount: order.totalAmount,
-        status: 'PENDING',
-        items: {
-          create: order.items.map((item) => ({
-            variantId: item.variantId,
-            quantity: item.quantity,
-            reason: body.reason || 'Müşteri iade talebi',
-          })),
-        },
-      },
-    });
+  async createReturn(
+    customerId: string,
+    orderId: string,
+    body: CreateCustomerReturnDto,
+  ): Promise<HydratedReturn> {
+    return this.returnsService.createCustomerReturn(customerId, orderId, body);
   }
 
   async getOrderInvoice(customerId: string, orderId: string) {
@@ -1239,13 +1247,27 @@ export class StorefrontService {
         */
   }
 
-  private async generateUniqueOrderNumber(): Promise<string> {
+  private getCartVariantQuantities(items: CartItemDto[]): Map<string, number> {
+    const quantities = new Map<string, number>();
+    for (const item of items) {
+      quantities.set(
+        item.variantId,
+        (quantities.get(item.variantId) || 0) + item.quantity,
+      );
+    }
+
+    return quantities;
+  }
+
+  private async generateUniqueOrderNumber(
+    client: Prisma.TransactionClient | PrismaService = this.prisma,
+  ): Promise<string> {
     let orderNumber: string;
     let exists = true;
 
     while (exists) {
       orderNumber = generateOrderNumber();
-      const existing = await this.prisma.order.findUnique({
+      const existing = await client.order.findUnique({
         where: { orderNumber },
       });
       exists = !!existing;

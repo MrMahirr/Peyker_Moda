@@ -20,6 +20,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { StorefrontService } from './storefront.service';
 import { StoreProductQueryDto, UpdateCartDto, CheckoutDto, CustomerLoginDto, CustomerRegisterDto, GoogleLoginDto, TrackOrderDto } from './dto';
+import { CreateCustomerReturnDto } from '../returns/dto';
 import { CustomerJwtAuthGuard, OptionalCustomerJwtAuthGuard } from '../../common/guards';
 
 const PublicStoreReadThrottle = Throttle({
@@ -251,7 +252,7 @@ export class StorefrontController {
     @UseGuards(CustomerJwtAuthGuard)
     @ApiBearerAuth('JWT-customer')
     @ApiOperation({ summary: 'İade Talebi Oluştur' })
-    async createReturn(@Req() req: any, @Param('id') orderId: string, @Body() body: { reason: string; items?: { variantId: string; quantity: number; reason?: string }[] }) {
+    async createReturn(@Req() req: any, @Param('id') orderId: string, @Body() body: CreateCustomerReturnDto) {
         return this.storefrontService.createReturn(req.user.id, orderId, body);
     }
 

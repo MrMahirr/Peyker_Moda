@@ -25,6 +25,18 @@ const formatAddress = (shippingAddress: ApiOrder["shippingAddress"]) => {
 
 export const transformOrder = (apiOrder: ApiOrder): Order => {
   const total = toMoney(apiOrder.totalAmount ?? apiOrder.total);
+  const returnableItemsByOrderItem = new Map(
+    apiOrder.returnInfo?.returnableItems?.map((item) => [
+      item.orderItemId,
+      item,
+    ]) ?? [],
+  );
+  const returnableItemsByVariant = new Map(
+    apiOrder.returnInfo?.returnableItems?.map((item) => [
+      item.variantId,
+      item,
+    ]) ?? [],
+  );
   const itemsSubtotal =
     apiOrder.items?.reduce(
       (sum, item) => sum + toMoney(item.unitPrice) * (item.quantity || 1),
@@ -72,19 +84,42 @@ export const transformOrder = (apiOrder: ApiOrder): Order => {
     ),
     cargoTrackingCode: apiOrder.cargoTrackingCode,
     cargoProvider: apiOrder.cargoProvider,
+    returnInfo: apiOrder.returnInfo
+      ? {
+          hasReturn: apiOrder.returnInfo.hasReturn,
+          latestStatus: apiOrder.returnInfo.latestStatus,
+          returnCount: apiOrder.returnInfo.returnCount,
+          totalReturnableQuantity: apiOrder.returnInfo.totalReturnableQuantity,
+          totalRequestedQuantity: apiOrder.returnInfo.totalRequestedQuantity,
+          totalCompletedQuantity: apiOrder.returnInfo.totalCompletedQuantity,
+          returnableAmount: toMoney(apiOrder.returnInfo.returnableAmount),
+          returns: apiOrder.returnInfo.returns,
+        }
+      : undefined,
     items:
       apiOrder.items?.map(
-        (item: NonNullable<ApiOrder["items"]>[number], index: number) => ({
-          id: index,
-          name: item.productName || item.variant?.product?.name || "Urun",
-          image:
-            item.variant?.product?.images?.[0] ||
-            "https://via.placeholder.com/300",
-          price: toMoney(item.unitPrice),
-          quantity: item.quantity || 1,
-          size: item.variant?.size || "-",
-          color: item.variant?.color || "-",
-        }),
+        (item: NonNullable<ApiOrder["items"]>[number], index: number) => {
+          const orderItemId = item.id || item.variantId || String(index);
+          const returnableItem =
+            returnableItemsByOrderItem.get(orderItemId) ||
+            (item.variantId
+              ? returnableItemsByVariant.get(item.variantId)
+              : undefined);
+
+          return {
+            id: orderItemId,
+            variantId: item.variantId,
+            name: item.productName || item.variant?.product?.name || "Urun",
+            image:
+              item.variant?.product?.images?.[0] ||
+              "https://via.placeholder.com/300",
+            price: toMoney(item.unitPrice),
+            quantity: item.quantity || 1,
+            returnableQuantity: returnableItem?.returnableQuantity || 0,
+            size: item.variant?.size || "-",
+            color: item.variant?.color || "-",
+          };
+        },
       ) || [],
   };
 };

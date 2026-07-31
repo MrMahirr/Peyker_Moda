@@ -1,5 +1,30 @@
 import api from "../../../lib/axios";
 
+export interface OrderShippingAddress {
+  address?: string;
+  district?: string;
+  city?: string;
+}
+
+export interface OrderPayment {
+  id?: string;
+  method: "CASH" | "CREDIT_CARD" | "DEBIT_CARD" | "BANK_TRANSFER" | "OTHER";
+  amount?: number;
+  status?: string;
+  createdAt?: string;
+}
+
+export interface OrderItemVariant {
+  id?: string;
+  size?: string | null;
+  color?: string | null;
+  product?: {
+    id?: string;
+    name?: string;
+    sku?: string;
+  };
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
@@ -9,7 +34,9 @@ export interface Order {
     | "PROCESSING"
     | "SHIPPED"
     | "DELIVERED"
-    | "CANCELLED";
+    | "COMPLETED"
+    | "CANCELLED"
+    | "RETURNED";
   paymentStatus: "PENDING" | "PARTIAL" | "COMPLETED" | "FAILED" | "REFUNDED";
   source: "POS" | "ONLINE" | "PHONE";
   subtotal: number;
@@ -25,13 +52,13 @@ export interface Order {
     email?: string;
   };
   items?: OrderItem[];
-  shippingAddress?: any;
+  shippingAddress?: string | OrderShippingAddress | null;
   cargoTrackingCode?: string;
   cargoProvider?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
-  payments?: any[];
+  payments?: OrderPayment[];
 }
 
 export interface OrderItem {
@@ -41,7 +68,7 @@ export interface OrderItem {
   discount: number;
   total: number;
   variantId: string;
-  variant?: any;
+  variant?: OrderItemVariant;
 }
 
 export interface OrderQueryParams {

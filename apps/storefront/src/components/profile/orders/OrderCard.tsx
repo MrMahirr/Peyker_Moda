@@ -21,11 +21,18 @@ interface OrderCardProps {
   order: Order;
 }
 
+const RETURN_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Iade Incelemede",
+  APPROVED: "Iade Onaylandi",
+  REJECTED: "Iade Reddedildi",
+  COMPLETED: "Iade Tamamlandi",
+};
+
 export function OrderCard({ order }: OrderCardProps) {
   const [detailOpen, setDetailOpen] = useState(false);
   const [trackingOpen, setTrackingOpen] = useState(false);
   const { loading: invoiceLoading, openInvoice } = useOrderInvoice(order.id);
-  const { requestReturn } = useOrderReturn(order.id);
+  const { requestReturn } = useOrderReturn(order);
 
   const handleNotImplemented = () =>
     toast.info("Bu ozellik yakinda eklenecektir.");
@@ -77,6 +84,15 @@ export function OrderCard({ order }: OrderCardProps) {
             <div className="flex items-center gap-2 mb-4 sm:hidden">
               <Badge className="bg-stone-900">{order.status}</Badge>
             </div>
+            {order.returnInfo?.hasReturn && (
+              <Badge
+                variant="outline"
+                className="mb-4 border-amber-200 bg-amber-50 text-amber-700"
+              >
+                {RETURN_STATUS_LABELS[order.returnInfo.latestStatus || ""] ||
+                  "Iade Talebi"}
+              </Badge>
+            )}
             <OrderStatusStepper
               currentStep={order.stepIndex}
               status={order.statusCode}

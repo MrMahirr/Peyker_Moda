@@ -29,6 +29,7 @@ import { PriceListsModule } from './modules/price-lists/price-lists.module';
 // Faz 4: Sales & POS
 import { OrdersModule } from './modules/orders/orders.module';
 import { PosModule } from './modules/pos/pos.module';
+import { ReturnsModule } from './modules/returns/returns.module';
 
 // Faz 5: Muhasebe
 import { TransactionsModule } from './modules/transactions/transactions.module';
@@ -120,6 +121,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     // Faz 4: Sales & POS
     OrdersModule,
     PosModule,
+    ReturnsModule,
 
     // Faz 5: Muhasebe
     TransactionsModule,
@@ -166,4 +168,4 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

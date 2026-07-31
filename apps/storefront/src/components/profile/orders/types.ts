@@ -2,17 +2,37 @@ export type OrderStatus =
   | "processing"
   | "shipped"
   | "delivered"
+  | "returned"
   | "cancelled"
   | "pending";
 
 export interface OrderItem {
-  id: number;
+  id: string;
+  variantId?: string;
   name: string;
   image: string;
   price: number;
   quantity: number;
+  returnableQuantity: number;
   size: string;
   color: string;
+}
+
+export interface OrderReturnInfo {
+  hasReturn: boolean;
+  latestStatus: string | null;
+  returnCount: number;
+  totalReturnableQuantity: number;
+  totalRequestedQuantity: number;
+  totalCompletedQuantity: number;
+  returnableAmount: number;
+  returns: Array<{
+    id: string;
+    status: string;
+    reason: string;
+    refundAmount: number | string;
+    createdAt: string;
+  }>;
 }
 
 export interface Order {
@@ -34,5 +54,6 @@ export interface Order {
   cargoTrackingCode?: string;
   cargoProvider?: string;
   cargoLink?: string;
+  returnInfo?: OrderReturnInfo;
   items: OrderItem[];
 }

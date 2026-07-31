@@ -83,6 +83,19 @@ export function OrderDetailModal({
                 </SummaryCard>
               </div>
 
+              {order.returnInfo && (
+                <div className="mt-4 rounded-lg border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
+                  <span className="font-medium">Iade Durumu: </span>
+                  {order.returnInfo.hasReturn
+                    ? order.returnInfo.latestStatus || "Talep alindi"
+                    : "Talep yok"}
+                  <span className="ml-3">
+                    Iade edilebilir adet:{" "}
+                    {order.returnInfo.totalReturnableQuantity}
+                  </span>
+                </div>
+              )}
+
               <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
                 <section>
                   <h4 className="mb-3 font-semibold text-stone-900">Urunler</h4>

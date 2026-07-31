@@ -10,6 +10,7 @@ interface ModalProps {
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
+  bodyClassName?: string;
 }
 
 const sizeMap: Record<string, string> = {
@@ -19,7 +20,7 @@ const sizeMap: Record<string, string> = {
   xl: 'max-w-4xl',
 };
 
-export const Modal = ({ isOpen, onClose, title, description, children, size = 'md', className }: ModalProps) => {
+export const Modal = ({ isOpen, onClose, title, description, children, size = 'md', className, bodyClassName }: ModalProps) => {
   // Close on ESC
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -70,7 +71,7 @@ export const Modal = ({ isOpen, onClose, title, description, children, size = 'm
         )}
 
         {/* Body */}
-        <div className="p-6">
+        <div className={cn("p-6", bodyClassName)}>
           {children}
         </div>
       </div>

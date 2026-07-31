@@ -6,6 +6,7 @@ export interface PosCartItem {
     name: string;
     price: number;
     quantity: number;
+    lineType?: 'SALE' | 'RETURN' | 'EXCHANGE';
     image?: string;
 }
 
@@ -34,7 +35,10 @@ export const PosCart = ({
     onChangeQuantity,
     onClear,
 }: PosCartProps) => {
-    const computedSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const computedSubtotal = items.reduce((sum, item) => {
+        const multiplier = item.lineType === 'RETURN' ? -1 : 1;
+        return sum + item.price * item.quantity * multiplier;
+    }, 0);
     const computedTax = computedSubtotal * (taxRate / 100);
     const computedTotal = computedSubtotal + computedTax;
 
@@ -72,14 +76,23 @@ export const PosCart = ({
                         </p>
                     </div>
                 ) : (
-                    items.map((item) => (
+                    items.map((item) => {
+                        const isReturn = item.lineType === 'RETURN';
+                        return (
                         <div key={item.id} className="flex gap-3 bg-white border border-zinc-200/60 rounded-xl p-3 shadow-sm">
                             {item.image && (
                                 <img src={item.image} alt={item.name} className="h-14 w-14 object-cover rounded-lg" />
                             )}
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between">
-                                    <h4 className="font-semibold text-[13px] text-zinc-900 truncate">{item.name}</h4>
+                                    <div className="min-w-0">
+                                        <h4 className="font-semibold text-[13px] text-zinc-900 truncate">{item.name}</h4>
+                                        {isReturn && (
+                                            <span className="inline-flex mt-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-600">
+                                                Iade
+                                            </span>
+                                        )}
+                                    </div>
                                     {onRemove && (
                                         <button
                                             onClick={() => onRemove(item.id)}
@@ -90,7 +103,7 @@ export const PosCart = ({
                                     )}
                                 </div>
                                 <div className="flex items-end justify-between mt-2">
-                                    <div className="text-zinc-900 font-bold text-[14px]">{formatMoney(item.price * item.quantity)} TL</div>
+                                    <div className="text-zinc-900 font-bold text-[14px]">{formatMoney(item.price * item.quantity * (isReturn ? -1 : 1))} TL</div>
                                     <div className="flex items-center gap-1 bg-zinc-100 rounded-lg p-1 border border-zinc-200/60">
                                         <button
                                             className="w-6 h-6 flex items-center justify-center rounded-md bg-white border border-zinc-200/50"
@@ -109,7 +122,8 @@ export const PosCart = ({
                                 </div>
                             </div>
                         </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 

@@ -37,6 +37,10 @@ export function OrderActions({
   onReturnClick,
   onNotImplementedClick,
 }: OrderActionsProps) {
+  const canRequestReturn =
+    order.statusCode === "delivered" &&
+    (order.returnInfo?.totalReturnableQuantity ?? 0) > 0;
+
   return (
     <div className="flex flex-wrap gap-3 w-full md:w-auto">
       {order.statusCode === "shipped" && (
@@ -60,8 +64,9 @@ export function OrderActions({
             variant="outline"
             className="flex-1 md:flex-none border-rose-200 text-rose-600"
             onClick={onReturnClick}
+            disabled={!canRequestReturn}
           >
-            Iade Talebi
+            {canRequestReturn ? "Iade Talebi" : "Iade Kapali"}
           </Button>
           <Button
             className="flex-1 md:flex-none bg-stone-900 text-white"

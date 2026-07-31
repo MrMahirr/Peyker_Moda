@@ -5,6 +5,7 @@ const STATUS_CODE_MAP: Record<string, OrderStatus> = {
   PROCESSING: "processing",
   SHIPPED: "shipped",
   DELIVERED: "delivered",
+  RETURNED: "returned",
   CANCELLED: "cancelled",
 };
 
@@ -13,6 +14,7 @@ const STEP_INDEX_MAP: Record<string, number> = {
   PROCESSING: 1,
   SHIPPED: 2,
   DELIVERED: 3,
+  RETURNED: 3,
   CANCELLED: -1,
 };
 
@@ -21,6 +23,7 @@ const STATUS_LABEL_MAP: Record<string, string> = {
   PROCESSING: "Hazirlaniyor",
   SHIPPED: "Kargoya Verildi",
   DELIVERED: "Teslim Edildi",
+  RETURNED: "Iade Edildi",
   CANCELLED: "Iptal Edildi",
 };
 

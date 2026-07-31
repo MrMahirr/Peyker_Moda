@@ -11,7 +11,7 @@ import { useOrders } from "./orders/hooks/useOrders";
 import { Order } from "./orders/types";
 
 const ACTIVE_ORDER_STATUSES = ["processing", "shipped", "pending"];
-const COMPLETED_ORDER_STATUSES = ["delivered", "cancelled"];
+const COMPLETED_ORDER_STATUSES = ["delivered", "returned", "cancelled"];
 
 const filterOrdersBySearch = (orders: Order[], searchTerm: string) => {
   const normalizedSearch = searchTerm.trim().toLowerCase();

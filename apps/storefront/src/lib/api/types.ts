@@ -95,6 +95,8 @@ export interface Order {
   cargoTrackingCode?: string;
   cargoProvider?: string;
   items?: Array<{
+    id?: string;
+    variantId?: string;
     productName?: string;
     quantity: number;
     unitPrice: number | string;
@@ -107,6 +109,37 @@ export interface Order {
       };
     };
   }>;
+  returnInfo?: {
+    hasReturn: boolean;
+    latestStatus: string | null;
+    returnCount: number;
+    totalReturnableQuantity: number;
+    totalRequestedQuantity: number;
+    totalCompletedQuantity: number;
+    returnableAmount: number;
+    returnableItems: Array<{
+      orderItemId: string;
+      variantId: string;
+      orderedQuantity: number;
+      requestedQuantity: number;
+      completedQuantity: number;
+      returnableQuantity: number;
+      unitRefundAmount: number;
+    }>;
+    returns: Array<{
+      id: string;
+      status: string;
+      reason: string;
+      refundAmount: number | string;
+      createdAt: string;
+      updatedAt: string;
+      items: Array<{
+        variantId: string;
+        quantity: number;
+        reason?: string | null;
+      }>;
+    }>;
+  };
   createdAt: string;
   updatedAt: string;
   payments?: Array<{
@@ -252,4 +285,14 @@ export interface InvoiceResponse extends ApiRecord {
 export interface ReturnResponse extends ApiRecord {
   error?: boolean;
   message?: string;
+}
+
+export interface ReturnRequestPayload {
+  reason: string;
+  notes?: string;
+  items: Array<{
+    variantId: string;
+    quantity: number;
+    reason?: string;
+  }>;
 }

@@ -13,20 +13,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-
-type TrackableOrderStatus =
-  | "processing"
-  | "shipped"
-  | "delivered"
-  | "cancelled"
-  | "pending";
+import { OrderStatus } from "./types";
 
 export interface TrackableOrder {
   id: string;
   orderNumber: string;
   date: string;
   status: string;
-  statusCode: TrackableOrderStatus;
+  statusCode: OrderStatus;
   address: string;
   cargoProvider?: string;
   cargoTrackingCode?: string;
@@ -40,7 +34,7 @@ interface OrderTrackingModalProps {
 }
 
 const TRACKING_STEPS: Array<{
-  key: TrackableOrderStatus;
+  key: OrderStatus;
   label: string;
   description: string;
 }> = [
@@ -91,10 +85,7 @@ const getTrackingUrl = (
   return `https://www.google.com/search?q=${encodeURIComponent(`${provider} kargo takip ${trackingCode}`)}`;
 };
 
-const getStepState = (
-  step: TrackableOrderStatus,
-  currentStatus: TrackableOrderStatus,
-) => {
+const getStepState = (step: OrderStatus, currentStatus: OrderStatus) => {
   const order = ["pending", "processing", "shipped", "delivered"];
   const stepIndex = order.indexOf(step);
   const currentIndex = order.indexOf(currentStatus);

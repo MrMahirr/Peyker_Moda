@@ -105,7 +105,42 @@ export class OrdersService {
 
     // Arama
     if (query.search) {
-      where.orderNumber = { contains: query.search, mode: 'insensitive' };
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : []),
+        {
+          OR: [
+            { orderNumber: { contains: query.search, mode: 'insensitive' } },
+            {
+              customer: {
+                is: {
+                  firstName: { contains: query.search, mode: 'insensitive' },
+                },
+              },
+            },
+            {
+              customer: {
+                is: {
+                  lastName: { contains: query.search, mode: 'insensitive' },
+                },
+              },
+            },
+            {
+              customer: {
+                is: {
+                  phone: { contains: query.search, mode: 'insensitive' },
+                },
+              },
+            },
+            {
+              customer: {
+                is: {
+                  email: { contains: query.search, mode: 'insensitive' },
+                },
+              },
+            },
+          ],
+        },
+      ];
     }
 
     // Müşteri filtresi

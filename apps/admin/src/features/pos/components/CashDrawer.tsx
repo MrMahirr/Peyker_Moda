@@ -7,10 +7,14 @@ import { posService } from '../services/pos.service';
 import type { PosSession } from '../services/pos.service';
 import type { CashDrawerSummary } from '../types';
 
+interface CashDrawerProps {
+    onSessionChange?: () => void;
+}
+
 const formatCurrency = (value: number) =>
     new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
 
-export const CashDrawer = () => {
+export const CashDrawer = ({ onSessionChange }: CashDrawerProps = {}) => {
     const [session, setSession] = useState<PosSession | null>(null);
     const [loading, setLoading] = useState(true);
     const [openingBalance, setOpeningBalance] = useState('');
@@ -41,6 +45,7 @@ export const CashDrawer = () => {
             setSession(newSession);
             setOpeningBalance('');
             toast.success('Kasa açıldı');
+            onSessionChange?.();
         } catch (err) {
             console.error('Open session error:', err);
             toast.error('Kasa açılamadı');
@@ -58,6 +63,7 @@ export const CashDrawer = () => {
             setSession(null);
             setClosingBalance('');
             toast.success(`Kasa kapatıldı. Fark: ${formatCurrency(closed.difference || 0)}`);
+            onSessionChange?.();
         } catch (err) {
             console.error('Close session error:', err);
             toast.error('Kasa kapatılamadı');

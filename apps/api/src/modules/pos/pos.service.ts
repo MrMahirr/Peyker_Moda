@@ -17,6 +17,7 @@ import {
   PaymentStatus,
   PaymentMethod,
   OrderSource,
+  Prisma,
 } from '@prisma/client';
 
 @Injectable()
@@ -130,112 +131,134 @@ export class PosService {
    * POS Satış işlemi
    */
   async processSale(saleDto: PosSaleDto, userId: string) {
-    // Stok kontrolü ve toplam hesaplama
-    let subtotal = 0;
-    const orderItems: any[] = [];
+    const variantQuantities = this.getVariantQuantities(saleDto.items);
 
-    for (const item of saleDto.items) {
-      const variant = await this.prisma.variant.findUnique({
-        where: { id: item.variantId },
-        include: { product: true },
-      });
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Stok kontrolü ve toplam hesaplama
+      let subtotal = 0;
+      const orderItems: Prisma.OrderItemUncheckedCreateWithoutOrderInput[] = [];
 
-      if (!variant) {
-        throw new BadRequestException(`Ürün bulunamadı: ${item.variantId}`);
+      for (const item of saleDto.items) {
+        const variant = await tx.variant.findUnique({
+          where: { id: item.variantId },
+          include: { product: true },
+        });
+
+        if (!variant) {
+          throw new BadRequestException(`Ürün bulunamadı: ${item.variantId}`);
+        }
+
+        const requestedQuantity = variantQuantities.get(item.variantId) || 0;
+        if (variant.stock < requestedQuantity) {
+          throw new BadRequestException(
+            `Yetersiz stok: ${variant.product.name} (${variant.size}/${variant.color})`,
+          );
+        }
+
+        const itemTotal = item.price * item.quantity - (item.discount || 0);
+        subtotal += itemTotal;
+
+        orderItems.push({
+          variantId: item.variantId,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          discount: item.discount || 0,
+          total: itemTotal,
+        });
       }
 
-      if (variant.stock < item.quantity) {
+      // İndirim ve toplam
+      const discountAmount = saleDto.discountAmount || 0;
+      const totalAmount = subtotal - discountAmount;
+
+      // Ödeme kontrolü
+      const totalPayment = saleDto.payments.reduce(
+        (sum, p) => sum + p.amount,
+        0,
+      );
+      if (totalPayment < totalAmount) {
         throw new BadRequestException(
-          `Yetersiz stok: ${variant.product.name} (${variant.size}/${variant.color})`,
+          `Yetersiz ödeme. Toplam: ${totalAmount.toFixed(2)} TL, Ödenen: ${totalPayment.toFixed(2)} TL`,
         );
       }
 
-      const itemTotal = item.price * item.quantity - (item.discount || 0);
-      subtotal += itemTotal;
+      // Sipariş numarası
+      const orderNumber = await this.generateUniqueOrderNumber(tx);
 
-      orderItems.push({
-        variantId: item.variantId,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        discount: item.discount || 0,
-        total: itemTotal,
+      // Sipariş ve ödemeleri oluştur
+      const order = await tx.order.create({
+        data: {
+          orderNumber,
+          customerId: saleDto.customerId,
+          userId,
+          subtotal,
+          discountAmount,
+          totalAmount,
+          paidAmount: totalPayment,
+          notes: saleDto.notes,
+          source: OrderSource.POS,
+          status: OrderStatus.COMPLETED,
+          paymentStatus: PaymentStatus.COMPLETED,
+          items: {
+            create: orderItems,
+          },
+          payments: {
+            create: saleDto.payments.map((p) => ({
+              method: p.method,
+              amount: p.amount,
+              status: PaymentStatus.COMPLETED,
+            })),
+          },
+        },
+        include: {
+          items: { include: { variant: { include: { product: true } } } },
+          payments: true,
+          customer: { select: { firstName: true, lastName: true } },
+        },
       });
-    }
 
-    // İndirim ve toplam
-    const discountAmount = saleDto.discountAmount || 0;
-    const totalAmount = subtotal - discountAmount;
+      // Stokları düşür
+      for (const [variantId, quantity] of variantQuantities.entries()) {
+        const stockUpdate = await tx.variant.updateMany({
+          where: { id: variantId, stock: { gte: quantity } },
+          data: { stock: { decrement: quantity } },
+        });
 
-    // Ödeme kontrolü
-    const totalPayment = saleDto.payments.reduce((sum, p) => sum + p.amount, 0);
-    if (totalPayment < totalAmount) {
-      throw new BadRequestException(
-        `Yetersiz ödeme. Toplam: ${totalAmount.toFixed(2)} TL, Ödenen: ${totalPayment.toFixed(2)} TL`,
-      );
-    }
+        if (stockUpdate.count !== 1) {
+          throw new BadRequestException(
+            `Yetersiz stok veya urun bulunamadi: ${variantId}`,
+          );
+        }
+      }
 
-    // Sipariş numarası
-    const orderNumber = await this.generateUniqueOrderNumber();
-
-    // Sipariş ve ödemeleri oluştur
-    const order = await this.prisma.order.create({
-      data: {
-        orderNumber,
-        customerId: saleDto.customerId,
-        userId,
+      // Para üstü hesapla
+      return {
+        order,
         subtotal,
         discountAmount,
         totalAmount,
-        paidAmount: totalPayment,
-        notes: saleDto.notes,
-        source: OrderSource.POS,
-        status: OrderStatus.COMPLETED,
-        paymentStatus: PaymentStatus.COMPLETED,
-        items: {
-          create: orderItems,
-        },
-        payments: {
-          create: saleDto.payments.map((p) => ({
-            method: p.method,
-            amount: p.amount,
-            status: PaymentStatus.COMPLETED,
-          })),
-        },
-      },
-      include: {
-        items: { include: { variant: { include: { product: true } } } },
-        payments: true,
-        customer: { select: { firstName: true, lastName: true } },
-      },
+        totalPayment,
+      };
     });
 
-    // Stokları düşür
-    for (const item of saleDto.items) {
-      await this.prisma.variant.update({
-        where: { id: item.variantId },
-        data: { stock: { decrement: item.quantity } },
-      });
-    }
-
-    // Para üstü hesapla
-    const change = totalPayment - totalAmount;
+    const change = result.totalPayment - result.totalAmount;
 
     this.logger.log(
-      `POS Satış: ${order.orderNumber} - ${totalAmount.toFixed(2)} TL`,
+      `POS Satış: ${result.order.orderNumber} - ${result.totalAmount.toFixed(2)} TL`,
     );
 
     return {
-      order,
+      order: result.order,
       change,
       receipt: {
-        orderNumber: order.orderNumber,
-        items: order.items,
-        subtotal,
-        discount: discountAmount,
-        total: totalAmount,
-        payments: order.payments,
+        orderNumber: result.order.orderNumber,
+        items: result.order.items,
+        subtotal: result.subtotal,
+        discount: result.discountAmount,
+        total: result.totalAmount,
+        payments: result.order.payments,
         change,
-        date: order.createdAt,
+        date: result.order.createdAt,
       },
     };
   }
@@ -452,13 +475,29 @@ export class PosService {
   /**
    * Benzersiz sipariş numarası
    */
-  private async generateUniqueOrderNumber(): Promise<string> {
+  private getVariantQuantities(
+    items: PosSaleDto['items'],
+  ): Map<string, number> {
+    const quantities = new Map<string, number>();
+    for (const item of items) {
+      quantities.set(
+        item.variantId,
+        (quantities.get(item.variantId) || 0) + item.quantity,
+      );
+    }
+
+    return quantities;
+  }
+
+  private async generateUniqueOrderNumber(
+    client: Prisma.TransactionClient | PrismaService = this.prisma,
+  ): Promise<string> {
     let orderNumber: string;
     let exists = true;
 
     while (exists) {
       orderNumber = generateOrderNumber();
-      const existing = await this.prisma.order.findUnique({
+      const existing = await client.order.findUnique({
         where: { orderNumber },
       });
       exists = !!existing;

@@ -61,12 +61,11 @@ export class PosService {
       const optionsStr = hasOptions
         ? ` (${[v.size, v.color].filter(Boolean).join(' / ')})`
         : '';
-      // images form handling
       let imageUrl: string | undefined = undefined;
       if (v.product.images) {
-        const imgs = v.product.images as string[];
+        const imgs = v.product.images as any[];
         if (Array.isArray(imgs) && imgs.length > 0) {
-          imageUrl = imgs[0];
+          imageUrl = typeof imgs[0] === 'object' && imgs[0] !== null ? imgs[0].url : imgs[0];
         }
       }
 
@@ -106,12 +105,11 @@ export class PosService {
       ? ` (${[variant.size, variant.color].filter(Boolean).join(' / ')})`
       : '';
 
-    // images form handling
     let imageUrl: string | undefined = undefined;
     if (variant.product.images) {
-      const imgs = variant.product.images as string[];
+      const imgs = variant.product.images as any[];
       if (Array.isArray(imgs) && imgs.length > 0) {
-        imageUrl = imgs[0];
+        imageUrl = typeof imgs[0] === 'object' && imgs[0] !== null ? imgs[0].url : imgs[0];
       }
     }
 

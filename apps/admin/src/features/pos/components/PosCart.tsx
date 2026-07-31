@@ -80,9 +80,9 @@ export const PosCart = ({
                         const isReturn = item.lineType === 'RETURN';
                         return (
                         <div key={item.id} className="flex gap-3 bg-white border border-zinc-200/60 rounded-xl p-3 shadow-sm">
-                            {item.image && (
-                                <img src={item.image} alt={item.name} className="h-14 w-14 object-cover rounded-lg" />
-                            )}
+                            <div className="flex-shrink-0">
+                                <img src={item.image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&auto=format&fit=crop"} alt={item.name} className="h-14 w-14 object-cover rounded-lg" />
+                            </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between">
                                     <div className="min-w-0">

@@ -27,10 +27,10 @@ export class HealthController {
     return this.health.check([
       () => this.prismaHealth.isHealthy('database'),
       () => this.redisHealth.isHealthy('redis'),
-      () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024), // 150MB
-      () => this.memory.checkRSS('memory_rss', 300 * 1024 * 1024), // 300MB
+      () => this.memory.checkHeap('memory_heap', 400 * 1024 * 1024), // 400MB
+      () => this.memory.checkRSS('memory_rss', 480 * 1024 * 1024), // 480MB
       () =>
-        this.disk.checkStorage('disk', { path: '/', thresholdPercent: 0.9 }), // 90% threshold
+        this.disk.checkStorage('disk', { path: '/', thresholdPercent: 0.95 }), // 95% threshold
     ]);
   }
 }

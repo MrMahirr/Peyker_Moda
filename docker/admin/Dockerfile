@@ -7,7 +7,7 @@
 # ---- Stage 1: Dependencies ----
 FROM node:22-bookworm-slim AS deps
 
-RUN npm install -g pnpm@latest
+RUN corepack enable pnpm && corepack prepare pnpm@9.0.0 --activate
 
 WORKDIR /app
 
@@ -26,7 +26,7 @@ RUN pnpm install --frozen-lockfile
 # ---- Stage 2: Build ----
 FROM node:22-bookworm-slim AS build
 
-RUN npm install -g pnpm@latest
+RUN corepack enable pnpm && corepack prepare pnpm@9.0.0 --activate
 
 WORKDIR /app
 

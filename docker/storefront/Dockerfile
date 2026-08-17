@@ -7,7 +7,7 @@
 # ---- Stage 1: Dependencies ----
 FROM node:22-alpine AS deps
 
-RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+RUN npm install -g pnpm@9.0.0
 
 WORKDIR /app
 
@@ -26,7 +26,7 @@ RUN pnpm install --frozen-lockfile
 # ---- Stage 2: Build ----
 FROM node:22-alpine AS build
 
-RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+RUN npm install -g pnpm@9.0.0
 
 WORKDIR /app
 

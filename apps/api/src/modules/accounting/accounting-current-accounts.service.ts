@@ -40,7 +40,9 @@ export class AccountingCurrentAccountsService {
       this.getSupplierCurrentAccounts(),
     ]);
 
-    return [...customers, ...suppliers].sort((a, b) => a.name.localeCompare(b.name));
+    return [...customers, ...suppliers].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
   }
 
   private async getCustomerCurrentAccounts() {
@@ -89,7 +91,8 @@ export class AccountingCurrentAccountsService {
         const name = `${customer.firstName} ${customer.lastName}`.trim();
         const groupedChecks = checkMap.get(name) ?? [];
         const totalDebt = customer.orders.reduce((sum, order) => {
-          const remaining = Number(order.totalAmount) - Number(order.paidAmount);
+          const remaining =
+            Number(order.totalAmount) - Number(order.paidAmount);
           return sum + Math.max(0, remaining);
         }, 0);
         const totalCredit = groupedChecks.reduce(
@@ -193,8 +196,8 @@ export class AccountingCurrentAccountsService {
   }
 
   private getLatestDate(dates: Array<string | undefined>) {
-    const normalizedDates = dates.filter(
-      (date): date is string => Boolean(date),
+    const normalizedDates = dates.filter((date): date is string =>
+      Boolean(date),
     );
 
     if (normalizedDates.length === 0) {
@@ -202,7 +205,9 @@ export class AccountingCurrentAccountsService {
     }
 
     return normalizedDates.reduce((latest, current) =>
-      new Date(current).getTime() > new Date(latest).getTime() ? current : latest,
+      new Date(current).getTime() > new Date(latest).getTime()
+        ? current
+        : latest,
     );
   }
 

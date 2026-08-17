@@ -3,9 +3,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { RotateCcw, Save, Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { api } from '@/lib/api';
+import api from '@/lib/axios';
 import { showSuccess, showError } from '@/utils/swal';
-
 export const ReturnInvoice = () => {
     const [orderNumber, setOrderNumber] = useState('');
     const [reason, setReason] = useState('');

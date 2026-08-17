@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Plus, Edit, Trash, ChevronRight, Loader2, FolderTree } from 'lucide-react';
 import { toast } from 'sonner';
 import { showDeleteConfirm } from '@/utils/swal';
-import { categoriesService, Category } from '../services/categories.service';
+import { categoriesService, Category, CreateCategoryDto } from '../services/categories.service';
 
 export const CategoryList = () => {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -33,9 +32,10 @@ export const CategoryList = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const payload = {
-                ...formData,
-                parentId: formData.parentId ? formData.parentId : null,
+            const payload: CreateCategoryDto = {
+                name: formData.name,
+                description: formData.description,
+                ...(formData.parentId ? { parentId: formData.parentId } : {}),
             };
 
             if (editingCategory) {

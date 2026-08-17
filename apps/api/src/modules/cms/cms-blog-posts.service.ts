@@ -8,10 +8,7 @@ import { slugify } from '../../common/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateBlogPostDto, UpdateBlogPostDto } from './dto';
 import { CmsStorageService } from './cms-storage.service';
-import {
-  BlogPostRecord,
-  BlogPostResponse,
-} from './cms.types';
+import { BlogPostRecord, BlogPostResponse } from './cms.types';
 
 @Injectable()
 export class CmsBlogPostsService {
@@ -30,9 +27,7 @@ export class CmsBlogPostsService {
 
   async findPublishedBySlug(slug: string): Promise<BlogPostResponse> {
     const posts = await this.storage.getBlogPosts();
-    const post = posts.find(
-      (item) => item.slug === slug && item.isPublished,
-    );
+    const post = posts.find((item) => item.slug === slug && item.isPublished);
 
     if (!post) {
       throw new NotFoundException('Blog yazisi bulunamadi');
@@ -75,10 +70,7 @@ export class CmsBlogPostsService {
     return response;
   }
 
-  async update(
-    id: string,
-    dto: UpdateBlogPostDto,
-  ): Promise<BlogPostResponse> {
+  async update(id: string, dto: UpdateBlogPostDto): Promise<BlogPostResponse> {
     const posts = await this.storage.getBlogPosts();
     const index = posts.findIndex((post) => post.id === id);
 
@@ -106,7 +98,9 @@ export class CmsBlogPostsService {
       excerpt: dto.excerpt?.trim() ?? current.excerpt,
       content: dto.content?.trim() ?? current.content,
       image:
-        dto.image !== undefined ? this.optionalString(dto.image) : current.image,
+        dto.image !== undefined
+          ? this.optionalString(dto.image)
+          : current.image,
       isPublished: nextPublished,
       publishedAt:
         nextPublished && !current.publishedAt

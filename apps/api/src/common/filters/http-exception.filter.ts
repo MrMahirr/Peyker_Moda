@@ -33,7 +33,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       } else {
         message = exception.message;
       }
-    } 
+    }
     // 2. Prisma Hataları
     else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
       // Prisma P2002: Unique constraint violation
@@ -42,26 +42,31 @@ export class HttpExceptionFilter implements ExceptionFilter {
         status = HttpStatus.CONFLICT;
         message = `Bu kayıt (${target.join(', ')}) zaten sistemde mevcut.`;
         error = 'Conflict';
-      } 
+      }
       // Prisma P2025: Record not found
       else if (exception.code === 'P2025') {
         status = HttpStatus.NOT_FOUND;
         message = 'İstenen kayıt bulunamadı.';
         error = 'Not Found';
-      }
-      else {
+      } else {
         status = HttpStatus.BAD_REQUEST;
         message = `Veritabanı isteği reddedildi (Kod: ${exception.code})`;
         error = 'Bad Request';
       }
-      this.logger.error(`Prisma Error ${exception.code}: ${exception.message}`, exception.stack);
-    } 
+      this.logger.error(
+        `Prisma Error ${exception.code}: ${exception.message}`,
+        exception.stack,
+      );
+    }
     // 3. Prisma Validation Hataları (Eksik alan/yanlış tip)
     else if (exception instanceof Prisma.PrismaClientValidationError) {
       status = HttpStatus.UNPROCESSABLE_ENTITY;
       message = 'Veritabanına eksik veya hatalı formatta veri gönderildi.';
       error = 'Unprocessable Entity';
-      this.logger.error(`Prisma Validation Error: ${exception.message}`, exception.stack);
+      this.logger.error(
+        `Prisma Validation Error: ${exception.message}`,
+        exception.stack,
+      );
     }
     // 4. Standart / Beklenmeyen Hatalar
     else if (exception instanceof Error) {
@@ -77,7 +82,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const logMethod = status >= 500 ? 'error' : 'warn';
       this.logger[logMethod](
         `${request.method} ${request.url} ${status} - ${error}: ${JSON.stringify(message)}`,
-        exception instanceof Error ? exception.stack : undefined
+        exception instanceof Error ? exception.stack : undefined,
       );
     }
 

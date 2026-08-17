@@ -53,8 +53,8 @@ export class MessagingProviderRegistryService {
   }
 
   getCapability(channel: MessagingChannel) {
-    return this.providers.find(
-      (provider) => provider.getCapability().channel === channel,
-    )?.getCapability();
+    return this.providers
+      .find((provider) => provider.getCapability().channel === channel)
+      ?.getCapability();
   }
 }

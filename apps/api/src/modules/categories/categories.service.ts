@@ -1,9 +1,9 @@
 import {
-    Injectable,
-    NotFoundException,
-    ConflictException,
-    BadRequestException,
-    Logger,
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto, CategoryQueryDto } from './dto';
@@ -11,259 +11,267 @@ import { slugify } from '../../common/utils';
 
 @Injectable()
 export class CategoriesService {
-    private readonly logger = new Logger(CategoriesService.name);
+  private readonly logger = new Logger(CategoriesService.name);
 
-    constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-    /**
-     * Tüm kategorileri getir (tree yapısında veya düz liste)
-     */
-    async findAll(query: CategoryQueryDto) {
-        const where: any = {};
+  /**
+   * Tüm kategorileri getir (tree yapısında veya düz liste)
+   */
+  async findAll(query: CategoryQueryDto) {
+    const where: any = {};
 
-        if (query.isActive !== undefined) {
-            where.isActive = query.isActive;
-        }
-
-        // Belirli bir parent'ın alt kategorilerini getir
-        if (query.parentId) {
-            where.parentId = query.parentId;
-        } else if (!query.includeChildren) {
-            // Sadece ana kategorileri getir (parentId null olanlar)
-            where.parentId = null;
-        }
-
-        const categories = await this.prisma.category.findMany({
-            where,
-            orderBy: [{ order: 'asc' }, { name: 'asc' }],
-            include: query.includeChildren
-                ? {
-                    _count: { select: { products: true } },
-                    children: {
-                        where: query.isActive !== undefined ? { isActive: query.isActive } : {},
-                        orderBy: [{ order: 'asc' }, { name: 'asc' }],
-                        include: {
-                            _count: { select: { products: true } },
-                            children: {
-                                where: query.isActive !== undefined ? { isActive: query.isActive } : {},
-                                orderBy: [{ order: 'asc' }, { name: 'asc' }],
-                                include: {
-                                    _count: { select: { products: true } },
-                                }
-                            },
-                        },
-                    },
-                }
-                : { _count: { select: { products: true } } },
-        });
-
-        return categories;
+    if (query.isActive !== undefined) {
+      where.isActive = query.isActive;
     }
 
-    /**
-     * Kategori ağacı (tree) olarak getir
-     */
-    async findTree() {
-        const categories = await this.prisma.category.findMany({
-            where: { parentId: null, isActive: true },
-            orderBy: [{ order: 'asc' }, { name: 'asc' }],
-            include: {
+    // Belirli bir parent'ın alt kategorilerini getir
+    if (query.parentId) {
+      where.parentId = query.parentId;
+    } else if (!query.includeChildren) {
+      // Sadece ana kategorileri getir (parentId null olanlar)
+      where.parentId = null;
+    }
+
+    const categories = await this.prisma.category.findMany({
+      where,
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
+      include: query.includeChildren
+        ? {
+            _count: { select: { products: true } },
+            children: {
+              where:
+                query.isActive !== undefined
+                  ? { isActive: query.isActive }
+                  : {},
+              orderBy: [{ order: 'asc' }, { name: 'asc' }],
+              include: {
                 _count: { select: { products: true } },
                 children: {
-                    where: { isActive: true },
-                    orderBy: [{ order: 'asc' }, { name: 'asc' }],
-                    include: {
-                        _count: { select: { products: true } },
-                        children: {
-                            where: { isActive: true },
-                            orderBy: [{ order: 'asc' }, { name: 'asc' }],
-                            include: {
-                                _count: { select: { products: true } },
-                            }
-                        },
-                    },
+                  where:
+                    query.isActive !== undefined
+                      ? { isActive: query.isActive }
+                      : {},
+                  orderBy: [{ order: 'asc' }, { name: 'asc' }],
+                  include: {
+                    _count: { select: { products: true } },
+                  },
                 },
+              },
             },
-        });
+          }
+        : { _count: { select: { products: true } } },
+    });
 
-        return categories;
-    }
+    return categories;
+  }
 
-    /**
-     * Tekil kategori getir
-     */
-    async findOne(id: string) {
-        const category = await this.prisma.category.findUnique({
-            where: { id },
-            include: {
-                parent: {
-                    select: { id: true, name: true, slug: true },
-                },
-                children: {
-                    where: { isActive: true },
-                    orderBy: [{ order: 'asc' }, { name: 'asc' }],
-                    select: {
-                        id: true,
-                        name: true,
-                        slug: true,
-                        imageUrl: true,
-                        order: true,
-                    },
-                },
-                _count: {
-                    select: { products: true },
-                },
+  /**
+   * Kategori ağacı (tree) olarak getir
+   */
+  async findTree() {
+    const categories = await this.prisma.category.findMany({
+      where: { parentId: null, isActive: true },
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
+      include: {
+        _count: { select: { products: true } },
+        children: {
+          where: { isActive: true },
+          orderBy: [{ order: 'asc' }, { name: 'asc' }],
+          include: {
+            _count: { select: { products: true } },
+            children: {
+              where: { isActive: true },
+              orderBy: [{ order: 'asc' }, { name: 'asc' }],
+              include: {
+                _count: { select: { products: true } },
+              },
             },
-        });
+          },
+        },
+      },
+    });
 
-        if (!category) {
-            throw new NotFoundException('Kategori bulunamadı');
-        }
+    return categories;
+  }
 
-        return category;
+  /**
+   * Tekil kategori getir
+   */
+  async findOne(id: string) {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+      include: {
+        parent: {
+          select: { id: true, name: true, slug: true },
+        },
+        children: {
+          where: { isActive: true },
+          orderBy: [{ order: 'asc' }, { name: 'asc' }],
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            imageUrl: true,
+            order: true,
+          },
+        },
+        _count: {
+          select: { products: true },
+        },
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Kategori bulunamadı');
     }
 
-    /**
-     * Yeni kategori oluştur
-     */
-    async create(createCategoryDto: CreateCategoryDto) {
-        // Slug oluştur
-        const slug = slugify(createCategoryDto.name);
+    return category;
+  }
 
-        // Slug benzersiz mi kontrol et
-        const existingCategory = await this.prisma.category.findUnique({
-            where: { slug },
-        });
+  /**
+   * Yeni kategori oluştur
+   */
+  async create(createCategoryDto: CreateCategoryDto) {
+    // Slug oluştur
+    const slug = slugify(createCategoryDto.name);
 
-        if (existingCategory) {
-            throw new ConflictException('Bu isimde bir kategori zaten mevcut');
-        }
+    // Slug benzersiz mi kontrol et
+    const existingCategory = await this.prisma.category.findUnique({
+      where: { slug },
+    });
 
-        // Parent kategori varsa kontrol et
-        if (createCategoryDto.parentId) {
-            const parentCategory = await this.prisma.category.findUnique({
-                where: { id: createCategoryDto.parentId },
-            });
-
-            if (!parentCategory) {
-                throw new BadRequestException('Üst kategori bulunamadı');
-            }
-        }
-
-        const category = await this.prisma.category.create({
-            data: {
-                ...createCategoryDto,
-                slug,
-            },
-        });
-
-        this.logger.log(`Yeni kategori oluşturuldu: ${category.name}`);
-
-        return category;
+    if (existingCategory) {
+      throw new ConflictException('Bu isimde bir kategori zaten mevcut');
     }
 
-    /**
-     * Kategori güncelle
-     */
-    async update(id: string, updateCategoryDto: UpdateCategoryDto) {
-        await this.findOne(id);
+    // Parent kategori varsa kontrol et
+    if (createCategoryDto.parentId) {
+      const parentCategory = await this.prisma.category.findUnique({
+        where: { id: createCategoryDto.parentId },
+      });
 
-        const data: any = { ...updateCategoryDto };
-
-        // İsim değişiyorsa slug güncelle
-        if (updateCategoryDto.name) {
-            const slug = slugify(updateCategoryDto.name);
-
-            // Slug benzersiz mi kontrol et (kendi kendisi hariç)
-            const existingCategory = await this.prisma.category.findFirst({
-                where: {
-                    slug,
-                    NOT: { id },
-                },
-            });
-
-            if (existingCategory) {
-                throw new ConflictException('Bu isimde bir kategori zaten mevcut');
-            }
-
-            data.slug = slug;
-        }
-
-        // Parent değişiyorsa kontrol et
-        if (updateCategoryDto.parentId) {
-            // Kendi kendine parent olmasın
-            if (updateCategoryDto.parentId === id) {
-                throw new BadRequestException('Kategori kendi kendine üst kategori olamaz');
-            }
-
-            const parentCategory = await this.prisma.category.findUnique({
-                where: { id: updateCategoryDto.parentId },
-            });
-
-            if (!parentCategory) {
-                throw new BadRequestException('Üst kategori bulunamadı');
-            }
-        }
-
-        const category = await this.prisma.category.update({
-            where: { id },
-            data,
-        });
-
-        this.logger.log(`Kategori güncellendi: ${category.name}`);
-
-        return category;
+      if (!parentCategory) {
+        throw new BadRequestException('Üst kategori bulunamadı');
+      }
     }
 
-    /**
-     * Kategori sil (soft delete)
-     */
-    async remove(id: string) {
-        const category = await this.findOne(id);
+    const category = await this.prisma.category.create({
+      data: {
+        ...createCategoryDto,
+        slug,
+      },
+    });
 
-        // Alt kategorileri kontrol et
-        const childCount = await this.prisma.category.count({
-            where: { parentId: id },
-        });
+    this.logger.log(`Yeni kategori oluşturuldu: ${category.name}`);
 
-        if (childCount > 0) {
-            throw new BadRequestException(
-                'Bu kategorinin alt kategorileri var. Önce alt kategorileri silin veya taşıyın.',
-            );
-        }
+    return category;
+  }
 
-        // Ürün sayısını kontrol et
-        const productCount = await this.prisma.product.count({
-            where: { categoryId: id },
-        });
+  /**
+   * Kategori güncelle
+   */
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    await this.findOne(id);
 
-        if (productCount > 0) {
-            throw new BadRequestException(
-                'Bu kategoride ürünler var. Önce ürünleri başka bir kategoriye taşıyın.',
-            );
-        }
+    const data: any = { ...updateCategoryDto };
 
-        await this.prisma.category.update({
-            where: { id },
-            data: { isActive: false },
-        });
+    // İsim değişiyorsa slug güncelle
+    if (updateCategoryDto.name) {
+      const slug = slugify(updateCategoryDto.name);
 
-        this.logger.log(`Kategori silindi: ${category.name}`);
+      // Slug benzersiz mi kontrol et (kendi kendisi hariç)
+      const existingCategory = await this.prisma.category.findFirst({
+        where: {
+          slug,
+          NOT: { id },
+        },
+      });
 
-        return { message: 'Kategori başarıyla silindi' };
+      if (existingCategory) {
+        throw new ConflictException('Bu isimde bir kategori zaten mevcut');
+      }
+
+      data.slug = slug;
     }
 
-    /**
-     * Kategori sıralamasını güncelle
-     */
-    async updateOrder(id: string, order: number) {
-        await this.findOne(id);
+    // Parent değişiyorsa kontrol et
+    if (updateCategoryDto.parentId) {
+      // Kendi kendine parent olmasın
+      if (updateCategoryDto.parentId === id) {
+        throw new BadRequestException(
+          'Kategori kendi kendine üst kategori olamaz',
+        );
+      }
 
-        await this.prisma.category.update({
-            where: { id },
-            data: { order },
-        });
+      const parentCategory = await this.prisma.category.findUnique({
+        where: { id: updateCategoryDto.parentId },
+      });
 
-        return { message: 'Sıralama güncellendi' };
+      if (!parentCategory) {
+        throw new BadRequestException('Üst kategori bulunamadı');
+      }
     }
+
+    const category = await this.prisma.category.update({
+      where: { id },
+      data,
+    });
+
+    this.logger.log(`Kategori güncellendi: ${category.name}`);
+
+    return category;
+  }
+
+  /**
+   * Kategori sil (soft delete)
+   */
+  async remove(id: string) {
+    const category = await this.findOne(id);
+
+    // Alt kategorileri kontrol et
+    const childCount = await this.prisma.category.count({
+      where: { parentId: id },
+    });
+
+    if (childCount > 0) {
+      throw new BadRequestException(
+        'Bu kategorinin alt kategorileri var. Önce alt kategorileri silin veya taşıyın.',
+      );
+    }
+
+    // Ürün sayısını kontrol et
+    const productCount = await this.prisma.product.count({
+      where: { categoryId: id },
+    });
+
+    if (productCount > 0) {
+      throw new BadRequestException(
+        'Bu kategoride ürünler var. Önce ürünleri başka bir kategoriye taşıyın.',
+      );
+    }
+
+    await this.prisma.category.update({
+      where: { id },
+      data: { isActive: false },
+    });
+
+    this.logger.log(`Kategori silindi: ${category.name}`);
+
+    return { message: 'Kategori başarıyla silindi' };
+  }
+
+  /**
+   * Kategori sıralamasını güncelle
+   */
+  async updateOrder(id: string, order: number) {
+    await this.findOne(id);
+
+    await this.prisma.category.update({
+      where: { id },
+      data: { order },
+    });
+
+    return { message: 'Sıralama güncellendi' };
+  }
 }

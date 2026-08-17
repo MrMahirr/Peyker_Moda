@@ -12,7 +12,7 @@ export interface CreateSupplierDto {
     isActive?: boolean;
 }
 
-export interface UpdateSupplierDto extends Partial<CreateSupplierDto> {}
+export type UpdateSupplierDto = Partial<CreateSupplierDto>;
 
 class SuppliersService {
     async findAll(): Promise<Supplier[]> {

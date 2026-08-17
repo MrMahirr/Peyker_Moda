@@ -5,55 +5,55 @@ import { UpdateSupplierDto } from './dto/update-supplier.dto';
 
 @Injectable()
 export class SuppliersService {
-    constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-    async create(createSupplierDto: CreateSupplierDto) {
-        return this.prisma.supplier.create({
-            data: {
-                ...createSupplierDto,
-                account: {
-                    create: {
-                        balance: 0,
-                    }
-                }
-            },
-        });
+  async create(createSupplierDto: CreateSupplierDto) {
+    return this.prisma.supplier.create({
+      data: {
+        ...createSupplierDto,
+        account: {
+          create: {
+            balance: 0,
+          },
+        },
+      },
+    });
+  }
+
+  async findAll() {
+    return this.prisma.supplier.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    const supplier = await this.prisma.supplier.findUnique({
+      where: { id },
+    });
+
+    if (!supplier) {
+      throw new NotFoundException(`Supplier with ID ${id} not found`);
     }
 
-    async findAll() {
-        return this.prisma.supplier.findMany({
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-    }
+    return supplier;
+  }
 
-    async findOne(id: string) {
-        const supplier = await this.prisma.supplier.findUnique({
-            where: { id },
-        });
+  async update(id: string, updateSupplierDto: UpdateSupplierDto) {
+    await this.findOne(id); // Check if exists
 
-        if (!supplier) {
-            throw new NotFoundException(`Supplier with ID ${id} not found`);
-        }
+    return this.prisma.supplier.update({
+      where: { id },
+      data: updateSupplierDto,
+    });
+  }
 
-        return supplier;
-    }
+  async remove(id: string) {
+    await this.findOne(id); // Check if exists
 
-    async update(id: string, updateSupplierDto: UpdateSupplierDto) {
-        await this.findOne(id); // Check if exists
-
-        return this.prisma.supplier.update({
-            where: { id },
-            data: updateSupplierDto,
-        });
-    }
-
-    async remove(id: string) {
-        await this.findOne(id); // Check if exists
-
-        return this.prisma.supplier.delete({
-            where: { id },
-        });
-    }
+    return this.prisma.supplier.delete({
+      where: { id },
+    });
+  }
 }

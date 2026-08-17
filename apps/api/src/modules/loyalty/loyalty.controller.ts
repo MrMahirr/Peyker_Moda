@@ -8,11 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, Roles } from '../../common/decorators';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import {
@@ -50,10 +46,7 @@ export class LoyaltyController {
   @Patch('tiers/:id')
   @Roles('admin', 'manager')
   @ApiOperation({ summary: 'Sadakat seviyesini guncelle' })
-  async updateTier(
-    @Param('id') id: string,
-    @Body() dto: UpdateLoyaltyTierDto,
-  ) {
+  async updateTier(@Param('id') id: string, @Body() dto: UpdateLoyaltyTierDto) {
     return this.loyaltyTierService.update(id, dto);
   }
 

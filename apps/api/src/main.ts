@@ -7,12 +7,16 @@ import helmet from 'helmet';
 import { join } from 'path';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter, TransformInterceptor, LoggingInterceptor } from './common';
+import {
+  HttpExceptionFilter,
+  TransformInterceptor,
+  LoggingInterceptor,
+} from './common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  
+
   const configService = app.get(ConfigService);
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
 
@@ -26,22 +30,27 @@ async function bootstrap() {
   app.setGlobalPrefix(apiPrefix);
 
   // Security - Helmet (HTTP security headers)
-  app.use(helmet({
-    crossOriginEmbedderPolicy: false, // Disable for Swagger UI compatibility
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:', 'https:'],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // For Swagger
+  app.use(
+    helmet({
+      crossOriginEmbedderPolicy: false, // Disable for Swagger UI compatibility
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // For Swagger
+        },
       },
-    },
-  }));
+    }),
+  );
 
   // CORS
-  const corsOrigin = configService.get<string>('app.corsOrigin', 'http://localhost:5173');
+  const corsOrigin = configService.get<string>(
+    'app.corsOrigin',
+    'http://localhost:5173',
+  );
   app.enableCors({
-    origin: corsOrigin.split(',').map(o => o.trim()),
+    origin: corsOrigin.split(',').map((o) => o.trim()),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type,Accept,Authorization,X-Requested-With',
@@ -105,7 +114,9 @@ async function bootstrap() {
   const port = configService.get<number>('app.port', 3000);
   await app.listen(port);
 
-  logger.log(`🚀 Application is running on: http://localhost:${port}/${apiPrefix}`);
+  logger.log(
+    `🚀 Application is running on: http://localhost:${port}/${apiPrefix}`,
+  );
   logger.log(`📚 Swagger documentation: http://localhost:${port}/docs`);
 }
 

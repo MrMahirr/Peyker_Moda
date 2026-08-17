@@ -99,19 +99,19 @@ export const InvoiceList = () => {
         {
             header: 'Fatura No',
             accessorKey: 'invoiceNumber',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => <span className="font-mono text-[13px] font-bold text-zinc-900 bg-zinc-100/80 px-2 py-1 rounded-md border border-zinc-200/50">{info.getValue()}</span>
         },
         {
             header: 'Tarih',
             accessorKey: 'createdAt',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => <span className="text-zinc-500 text-[13px] font-medium">{formatDate(info.getValue())}</span>
         },
         {
             header: 'Müşteri / Cari',
             accessorKey: 'customer',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: ({ row }: any) => {
                 const customer = row.original.customer;
                 const customerName = row.original.customerName;
@@ -126,13 +126,13 @@ export const InvoiceList = () => {
         {
             header: 'Tutar',
             accessorKey: 'total',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => <span className="font-bold text-[15px] font-mono text-zinc-900">{formatCurrency(info.getValue())}</span>
         },
         {
             header: 'Durum',
             accessorKey: 'status',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => {
                 const status = info.getValue() as string;
                 const statusInfo = STATUS_MAP[status] || { label: status, variant: 'neutral' };
@@ -146,7 +146,7 @@ export const InvoiceList = () => {
         {
             header: 'İşlemler',
             id: 'actions',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: ({ row }: any) => {
                 const invoice = row.original;
                 return (

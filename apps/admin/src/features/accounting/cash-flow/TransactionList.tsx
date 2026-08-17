@@ -64,13 +64,13 @@ export const TransactionList = () => {
         {
             header: 'Tarih',
             accessorKey: 'transactionDate',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => <span className="text-zinc-500 text-[13px] font-medium">{formatDate(info.getValue())}</span>
         },
         {
             header: 'Tür',
             accessorKey: 'type',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: ({ row }: any) => {
                 const type = row.getValue('type') as string;
                 return type === 'INCOME' ? (
@@ -87,7 +87,7 @@ export const TransactionList = () => {
         {
             header: 'Ödeme / Kategori',
             accessorKey: 'category',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => {
                 const isCash = info.row.original.paymentMethod === 'CASH';
                 return (
@@ -104,13 +104,13 @@ export const TransactionList = () => {
         {
             header: 'Açıklama',
             accessorKey: 'description',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => <span className="text-[14px] font-semibold text-zinc-900">{info.getValue() || '-'}</span>
         },
         {
             header: 'Tutar',
             accessorKey: 'amount',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => {
                 const type = info.row.original.type;
                 const amt = Number(info.getValue());
@@ -124,7 +124,7 @@ export const TransactionList = () => {
         {
             header: 'İşlem Yapan',
             accessorKey: 'updatedBy',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => {
                 const user = info.row.original.user;
                 return <span className="text-zinc-500 text-[13px] font-medium">{user ? `${user.firstName} ${user.lastName}` : 'Sistem'}</span>;
@@ -133,7 +133,7 @@ export const TransactionList = () => {
         {
             header: '',
             accessorKey: 'actions',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => (
                 <div className="flex justify-end gap-1">
                     <Button 

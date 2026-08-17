@@ -5,16 +5,16 @@ import { WebsocketGateway } from './websocket.gateway';
 
 @Global()
 @Module({
-    imports: [
-        JwtModule.registerAsync({
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                secret: configService.get<string>('JWT_SECRET'),
-            }),
-        }),
-    ],
-    providers: [WebsocketGateway],
-    exports: [WebsocketGateway],
+  imports: [
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+      }),
+    }),
+  ],
+  providers: [WebsocketGateway],
+  exports: [WebsocketGateway],
 })
-export class WebsocketModule { }
+export class WebsocketModule {}

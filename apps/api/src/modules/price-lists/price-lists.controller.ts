@@ -8,11 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { CreatePriceListDto, UpdatePriceListDto } from './dto';
@@ -49,10 +45,7 @@ export class PriceListsController {
   @Patch(':id')
   @Roles('admin', 'manager')
   @ApiOperation({ summary: 'Fiyat listesi guncelle' })
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdatePriceListDto,
-  ) {
+  async update(@Param('id') id: string, @Body() dto: UpdatePriceListDto) {
     return this.priceListsService.update(id, dto);
   }
 

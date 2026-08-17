@@ -67,7 +67,7 @@ export class MessagingService {
       setTimeout(async () => {
         try {
           const currentMessages = await this.storage.getBulkMessages();
-          const target = currentMessages.find(m => m.id === message.id);
+          const target = currentMessages.find((m) => m.id === message.id);
           if (target) {
             target.status = BulkMessageStatus.SENT;
             target.providerReason = 'Başarıyla iletildi (Native Queue)';

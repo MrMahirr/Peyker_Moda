@@ -5,11 +5,7 @@ import {
   CMS_FAQS_SETTING_KEY,
   CMS_PAGES_SETTING_KEY,
 } from './cms.constants';
-import {
-  BlogPostRecord,
-  CmsPageRecord,
-  FaqItemRecord,
-} from './cms.types';
+import { BlogPostRecord, CmsPageRecord, FaqItemRecord } from './cms.types';
 
 @Injectable()
 export class CmsStorageService {

@@ -275,13 +275,13 @@ export const PosPage = () => {
                   key={item.id}
                   className="flex gap-3 bg-white border border-zinc-200/60 rounded-xl p-3 shadow-sm hover:border-zinc-300 transition-colors group"
                 >
-                  {item.image && (
+                  <div className="flex-shrink-0">
                     <img
-                      src={item.image}
+                      src={item.image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&auto=format&fit=crop"}
                       alt={item.name}
                       className="h-16 w-16 object-cover rounded-lg bg-zinc-50 border border-zinc-100"
                     />
-                  )}
+                  </div>
                   <div className="flex-1 flex flex-col py-0.5 min-w-0">
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">

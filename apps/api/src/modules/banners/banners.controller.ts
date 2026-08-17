@@ -10,11 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { BannersService } from './banners.service';
@@ -88,7 +84,10 @@ export class BannersController {
   @Roles('admin', 'manager')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Sayfa başlığı oluştur/güncelle' })
-  async upsertPageHeader(@Param('pageSlug') pageSlug: string, @Body() dto: any) {
+  async upsertPageHeader(
+    @Param('pageSlug') pageSlug: string,
+    @Body() dto: any,
+  ) {
     return this.pageHeadersService.upsert(pageSlug, dto);
   }
 

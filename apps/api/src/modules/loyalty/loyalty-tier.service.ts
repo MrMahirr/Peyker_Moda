@@ -21,8 +21,12 @@ export class LoyaltyTierService {
   async create(dto: CreateLoyaltyTierDto) {
     const tiers = await this.storage.getTiers();
 
-    if (tiers.some((tier) => tier.name.toLowerCase() === dto.name.toLowerCase())) {
-      throw new ConflictException('Bu isimde bir sadakat seviyesi zaten mevcut');
+    if (
+      tiers.some((tier) => tier.name.toLowerCase() === dto.name.toLowerCase())
+    ) {
+      throw new ConflictException(
+        'Bu isimde bir sadakat seviyesi zaten mevcut',
+      );
     }
 
     const tier: LoyaltyTier = {
@@ -53,10 +57,13 @@ export class LoyaltyTierService {
     if (
       nextName &&
       tiers.some(
-        (tier) => tier.id !== id && tier.name.toLowerCase() === nextName.toLowerCase(),
+        (tier) =>
+          tier.id !== id && tier.name.toLowerCase() === nextName.toLowerCase(),
       )
     ) {
-      throw new ConflictException('Bu isimde bir sadakat seviyesi zaten mevcut');
+      throw new ConflictException(
+        'Bu isimde bir sadakat seviyesi zaten mevcut',
+      );
     }
 
     const updatedTier: LoyaltyTier = {
@@ -93,9 +100,8 @@ export class LoyaltyTierService {
     const sorted = this.sortTiers(tiers);
 
     return (
-      [...sorted]
-        .reverse()
-        .find((tier) => totalSpent >= tier.minSpent) ?? sorted[0]
+      [...sorted].reverse().find((tier) => totalSpent >= tier.minSpent) ??
+      sorted[0]
     );
   }
 

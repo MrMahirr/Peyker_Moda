@@ -88,7 +88,10 @@ export class PriceListsService {
     );
   }
 
-  async update(id: string, dto: UpdatePriceListDto): Promise<PriceListResponse> {
+  async update(
+    id: string,
+    dto: UpdatePriceListDto,
+  ): Promise<PriceListResponse> {
     const priceLists = await this.storage.getPriceLists();
     const index = priceLists.findIndex((priceList) => priceList.id === id);
 

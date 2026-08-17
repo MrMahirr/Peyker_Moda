@@ -86,9 +86,7 @@ export class CustomerAnalyticsService {
       orders.reduce((sum, order) => sum + Number(order.totalAmount), 0),
     );
     const averageOrderValue =
-      orders.length > 0
-        ? this.roundCurrency(lifetimeValue / orders.length)
-        : 0;
+      orders.length > 0 ? this.roundCurrency(lifetimeValue / orders.length) : 0;
     const purchaseFrequency = this.calculatePurchaseFrequency(orders);
     const lastPurchaseDate = orders.at(-1)?.createdAt.toISOString();
     const favoriteCategory = this.getFavoriteCategory(orders);
@@ -126,7 +124,10 @@ export class CustomerAnalyticsService {
   }
 
   private getFavoriteCategory(orders: CustomerAnalyticsOrder[]) {
-    const categoryTotals = new Map<string, { quantity: number; revenue: number }>();
+    const categoryTotals = new Map<
+      string,
+      { quantity: number; revenue: number }
+    >();
 
     for (const order of orders) {
       for (const item of order.items) {

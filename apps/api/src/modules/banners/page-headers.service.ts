@@ -13,7 +13,7 @@ export class PageHeadersService {
 
   async findBySlug(pageSlug: string) {
     const headers = await this.storage.getPageHeaders();
-    return headers.find(h => h.pageSlug === pageSlug && h.isActive) || null;
+    return headers.find((h) => h.pageSlug === pageSlug && h.isActive) || null;
   }
 
   async upsert(pageSlug: string, data: Partial<PageHeaderRecord>) {

@@ -59,7 +59,7 @@ export const StockMovements = () => {
         {
             header: 'Tür',
             accessorKey: 'type',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => {
                 const type = info.row.original.type as StockMovementType;
                 const Icon = type === 'IN' || type === 'RETURN' ? ArrowDownCircle
@@ -75,7 +75,7 @@ export const StockMovements = () => {
         {
             header: 'Ürün / Varyant',
             accessorKey: 'productName',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => (
                 <div className="flex flex-col">
                     <span className="font-semibold text-[14px] text-zinc-900">{info.row.original.productName}</span>
@@ -86,7 +86,7 @@ export const StockMovements = () => {
         {
             header: 'Miktar',
             accessorKey: 'quantity',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => {
                 const mov = info.row.original;
                 const isPositive = mov.type === 'IN' || mov.type === 'RETURN';
@@ -100,7 +100,7 @@ export const StockMovements = () => {
         {
             header: 'Önceki → Yeni',
             accessorKey: 'previousStock',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => (
                 <span className="text-[13px] font-medium text-zinc-600">
                     {info.row.original.previousStock} → {info.row.original.newStock}
@@ -110,7 +110,7 @@ export const StockMovements = () => {
         {
             header: 'Açıklama',
             accessorKey: 'reason',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => (
                 <span className="text-[13px] text-zinc-500">{info.row.original.reason || '—'}</span>
             ),
@@ -118,7 +118,7 @@ export const StockMovements = () => {
         {
             header: 'İşlemi Yapan',
             accessorKey: 'user',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => {
                 const user = info.row.original.user;
                 return user ? (
@@ -129,7 +129,7 @@ export const StockMovements = () => {
         {
             header: 'Tarih',
             accessorKey: 'createdAt',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => (
                 <span className="text-[13px] text-zinc-500">
                     {new Date(info.row.original.createdAt).toLocaleDateString('tr-TR')}

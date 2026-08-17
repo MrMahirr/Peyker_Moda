@@ -293,7 +293,9 @@ export class AccountingService {
     }
 
     if (dto.amount > remainingAmount) {
-      throw new BadRequestException('Odeme tutari kalan bakiyeden buyuk olamaz');
+      throw new BadRequestException(
+        'Odeme tutari kalan bakiyeden buyuk olamaz',
+      );
     }
 
     await this.prisma.$transaction(async (tx) => {
@@ -403,8 +405,13 @@ export class AccountingService {
     const currentMonth = today.getMonth() + 1; // 1-12 (dto.month is 1-12)
 
     // Geçmiş aylar mı kontrolü
-    if (dto.year > currentYear || (dto.year === currentYear && dto.month >= currentMonth)) {
-        throw new ConflictException('Sadece tamamlanmış (geçmiş) aylar kapatılabilir. Bu ay henüz bitmedi.');
+    if (
+      dto.year > currentYear ||
+      (dto.year === currentYear && dto.month >= currentMonth)
+    ) {
+      throw new ConflictException(
+        'Sadece tamamlanmış (geçmiş) aylar kapatılabilir. Bu ay henüz bitmedi.',
+      );
     }
 
     const closedPeriods = await this.storage.getClosedPeriods();
@@ -416,7 +423,10 @@ export class AccountingService {
       throw new ConflictException('Bu donem zaten kapatildi');
     }
 
-    const summary = await this.reportService.getPeriodSummary(dto.year, dto.month);
+    const summary = await this.reportService.getPeriodSummary(
+      dto.year,
+      dto.month,
+    );
     const closedPeriod: AccountingClosedPeriod = {
       id: randomUUID(),
       year: dto.year,
@@ -439,7 +449,11 @@ export class AccountingService {
           not: OrderStatus.CANCELLED,
         },
         paymentStatus: {
-          in: [PaymentStatus.PENDING, PaymentStatus.PARTIAL, PaymentStatus.COMPLETED],
+          in: [
+            PaymentStatus.PENDING,
+            PaymentStatus.PARTIAL,
+            PaymentStatus.COMPLETED,
+          ],
         },
       },
       include: {
@@ -467,7 +481,9 @@ export class AccountingService {
     });
   }
 
-  private mapOrderToInstallment(order: InstallmentOrder): AccountingInstallment {
+  private mapOrderToInstallment(
+    order: InstallmentOrder,
+  ): AccountingInstallment {
     const totalAmount = Number(order.totalAmount);
     const paidAmount = Number(order.paidAmount);
     const remainingAmount = Math.max(0, totalAmount - paidAmount);

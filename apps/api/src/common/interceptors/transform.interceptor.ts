@@ -26,7 +26,13 @@ export class TransformInterceptor<T>
     return next.handle().pipe(
       map((res) => {
         // Eğer servis { data, meta } yapısı dönüyorsa, onları parçala
-        if (res && typeof res === 'object' && 'data' in res && 'meta' in res && Object.keys(res).length === 2) {
+        if (
+          res &&
+          typeof res === 'object' &&
+          'data' in res &&
+          'meta' in res &&
+          Object.keys(res).length === 2
+        ) {
           return {
             success: true,
             data: res.data,

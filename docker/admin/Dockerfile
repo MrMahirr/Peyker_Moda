@@ -21,7 +21,12 @@ COPY packages/typescript-config/ ./packages/typescript-config/
 COPY packages/eslint-config/package.json ./packages/eslint-config/
 COPY packages/ui/package.json ./packages/ui/
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm config set network-concurrency 2 && \
+    pnpm config set fetch-retries 5 && \
+    pnpm config set fetch-retry-factor 2 && \
+    pnpm config set fetch-retry-mintimeout 10000 && \
+    pnpm config set fetch-retry-maxtimeout 60000 && \
+    pnpm install --frozen-lockfile
 
 # ---- Stage 2: Build ----
 FROM node:22-bookworm-slim AS build

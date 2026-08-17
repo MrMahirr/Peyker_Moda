@@ -5,9 +5,9 @@
 # SOLID: Single Responsibility — yalnızca Next.js SSR Storefront
 
 # ---- Stage 1: Dependencies ----
-FROM node:22-alpine AS deps
+FROM node:22-bookworm-slim AS deps
 
-RUN npm install -g pnpm@9.0.0
+RUN npm install -g pnpm@latest
 
 WORKDIR /app
 
@@ -24,9 +24,9 @@ COPY packages/ui/package.json ./packages/ui/
 RUN pnpm install --frozen-lockfile
 
 # ---- Stage 2: Build ----
-FROM node:22-alpine AS build
+FROM node:22-bookworm-slim AS build
 
-RUN npm install -g pnpm@9.0.0
+RUN npm install -g pnpm@latest
 
 WORKDIR /app
 
@@ -47,7 +47,7 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 RUN cd apps/storefront && npx next build
 
 # ---- Stage 3: Production ----
-FROM node:22-alpine AS production
+FROM node:22-bookworm-slim AS production
 
 # Güvenlik: Non-root user
 RUN addgroup --system --gid 1001 nextjs && \

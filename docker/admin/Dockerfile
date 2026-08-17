@@ -5,9 +5,9 @@
 # SOLID: Single Responsibility — yalnızca Admin Panel static build
 
 # ---- Stage 1: Dependencies ----
-FROM node:22-alpine AS deps
+FROM node:22-bookworm-slim AS deps
 
-RUN npm install -g pnpm@9.0.0
+RUN npm install -g pnpm@latest
 
 WORKDIR /app
 
@@ -24,9 +24,9 @@ COPY packages/ui/package.json ./packages/ui/
 RUN pnpm install --frozen-lockfile
 
 # ---- Stage 2: Build ----
-FROM node:22-alpine AS build
+FROM node:22-bookworm-slim AS build
 
-RUN npm install -g pnpm@9.0.0
+RUN npm install -g pnpm@latest
 
 WORKDIR /app
 

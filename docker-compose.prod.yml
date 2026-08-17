@@ -93,6 +93,7 @@ services:
     build:
       context: .
       dockerfile: docker/api/Dockerfile
+      network: host
     container_name: peyker_prod_api
     environment:
       NODE_ENV: production
@@ -137,6 +138,7 @@ services:
     build:
       context: .
       dockerfile: docker/admin/Dockerfile
+      network: host
       args:
         VITE_API_URL: ${VITE_API_URL:-/api}
     container_name: peyker_prod_admin
@@ -152,6 +154,7 @@ services:
     build:
       context: .
       dockerfile: docker/storefront/Dockerfile
+      network: host
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
     container_name: peyker_prod_storefront
@@ -174,6 +177,7 @@ services:
     build:
       context: .
       dockerfile: docker/nginx/Dockerfile
+      network: host
     container_name: peyker_prod_nginx
     ports:
       - "${NGINX_HTTP_PORT:-80}:80"

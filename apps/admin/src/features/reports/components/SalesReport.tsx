@@ -114,8 +114,8 @@ export const SalesReport = () => {
                                 <Tooltip 
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' }}
                                     labelStyle={{ fontWeight: 'bold', color: '#18181b', marginBottom: '4px' }}
-                                    formatter={(value: number, name: string) => [
-                                        formatCurrency(value), 
+                                    formatter={(value: any, name: any) => [
+                                        formatCurrency(Number(value) || 0), 
                                         name === 'revenue' ? 'Ciro' : 'Net Kâr'
                                     ]}
                                     labelFormatter={(label) => new Date(label).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}

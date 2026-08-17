@@ -18,29 +18,37 @@ describe('Environment Validation', () => {
 
   it('should throw error if JWT_SECRET is missing', () => {
     const { JWT_SECRET, ...invalidConfig } = validConfig;
-    expect(() => validate(invalidConfig)).toThrow('Invalid environment variables');
+    expect(() => validate(invalidConfig)).toThrow(
+      'Invalid environment variables',
+    );
   });
 
   it('should throw error if JWT_SECRET is too short', () => {
     const invalidConfig = { ...validConfig, JWT_SECRET: 'short' };
-    expect(() => validate(invalidConfig)).toThrow('Invalid environment variables');
+    expect(() => validate(invalidConfig)).toThrow(
+      'Invalid environment variables',
+    );
   });
 
   it('should throw error if ADMIN_PASSWORD is insecure in production', () => {
-    const invalidConfig = { 
-      ...validConfig, 
-      NODE_ENV: 'production', 
-      ADMIN_PASSWORD: 'Admin123!' 
+    const invalidConfig = {
+      ...validConfig,
+      NODE_ENV: 'production',
+      ADMIN_PASSWORD: 'Admin123!',
     };
-    expect(() => validate(invalidConfig)).toThrow('Insecure admin password in production');
+    expect(() => validate(invalidConfig)).toThrow(
+      'Insecure admin password in production',
+    );
   });
 
   it('should throw error if JWT_SECRET is default in production', () => {
-    const invalidConfig = { 
-      ...validConfig, 
-      NODE_ENV: 'production', 
-      JWT_SECRET: 'super-secret-key-change-in-production' 
+    const invalidConfig = {
+      ...validConfig,
+      NODE_ENV: 'production',
+      JWT_SECRET: 'super-secret-key-change-in-production',
     };
-    expect(() => validate(invalidConfig)).toThrow('Insecure JWT secret in production');
+    expect(() => validate(invalidConfig)).toThrow(
+      'Insecure JWT secret in production',
+    );
   });
 });

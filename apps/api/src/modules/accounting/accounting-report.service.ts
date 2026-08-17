@@ -25,8 +25,17 @@ export class AccountingReportService {
       startDate.setDate(startDate.getDate() - (day - 1));
       startDate.setHours(0, 0, 0, 0);
     } else if (period === 'monthly') {
-      startDate = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0, 0);
-    } else { // daily
+      startDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1,
+        0,
+        0,
+        0,
+        0,
+      );
+    } else {
+      // daily
       startDate = new Date(today);
       startDate.setHours(0, 0, 0, 0);
     }
@@ -39,11 +48,11 @@ export class AccountingReportService {
         where: { transactionDate: dateRange },
       }),
       this.prisma.payment.findMany({
-        where: { 
+        where: {
           status: 'COMPLETED',
-          createdAt: dateRange 
-        }
-      })
+          createdAt: dateRange,
+        },
+      }),
     ]);
 
     let totalSales = 0;
@@ -62,14 +71,17 @@ export class AccountingReportService {
         // Genelde manuel gelirler de kasaya girer. Z-Raporunda gösterelim.
         totalSales += amount;
         cashIn += amount;
-        
+
         if (t.paymentMethod === 'CASH') cash += amount;
         else if (t.paymentMethod === 'CREDIT_CARD') creditCard += amount;
         else other += amount;
       } else if (t.type === 'EXPENSE') {
         cashOut += amount;
-        if (t.category === 'Return' || t.description?.toLowerCase().includes('iade')) {
-            totalReturns += amount;
+        if (
+          t.category === 'Return' ||
+          t.description?.toLowerCase().includes('iade')
+        ) {
+          totalReturns += amount;
         }
       }
     }
@@ -79,7 +91,7 @@ export class AccountingReportService {
       const amount = Number(p.amount);
       totalSales += amount;
       cashIn += amount;
-      
+
       if (p.method === 'CASH') cash += amount;
       else if (p.method === 'CREDIT_CARD') creditCard += amount;
       else other += amount;
@@ -91,15 +103,15 @@ export class AccountingReportService {
     // Kasa başlangıç bakiyesi (Önceki günden devreden kasa)
     const snapshots = await this.storage.getZReportSnapshots();
     let startBalance = 0;
-    
+
     if (period === 'daily') {
       const todayDateStr = startDate.toISOString().split('T')[0];
       // Bugün için kapanış alınmışsa, onu döndür!
-      const existingSnapshot = snapshots.find(s => s.date === todayDateStr);
+      const existingSnapshot = snapshots.find((s) => s.date === todayDateStr);
       if (existingSnapshot) {
         return existingSnapshot;
       }
-      
+
       // Bugün kapanış alınmamışsa, en son kapanmış günün devreden kasasını al
       if (snapshots.length > 0) {
         // Zaten sırayla ekleniyor, en sonuncu son eleman.
@@ -134,7 +146,7 @@ export class AccountingReportService {
         cashIn,
         cashOut,
         safeBalance,
-      }
+      },
     };
   }
 
@@ -145,21 +157,21 @@ export class AccountingReportService {
 
     // 2. Snapshotlara ekle
     const snapshots = await this.storage.getZReportSnapshots();
-    
+
     // Zaten varsa bir daha kapatma
-    if (snapshots.some(s => s.date === todayStr)) {
-       return currentReport;
+    if (snapshots.some((s) => s.date === todayStr)) {
+      return currentReport;
     }
-    
+
     const snapshot = {
       ...currentReport,
       date: todayStr, // Sadece YYYY-MM-DD olarak kaydet
       closedAt: new Date().toISOString(),
     };
-    
+
     snapshots.push(snapshot);
     await this.storage.saveZReportSnapshots(snapshots);
-    
+
     return snapshot;
   }
 

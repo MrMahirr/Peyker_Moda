@@ -1,169 +1,169 @@
 import {
-    Injectable,
-    NotFoundException,
-    ConflictException,
-    BadRequestException,
-    Logger,
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCustomerGroupDto, UpdateCustomerGroupDto } from './dto';
 
 @Injectable()
 export class CustomerGroupsService {
-    private readonly logger = new Logger(CustomerGroupsService.name);
+  private readonly logger = new Logger(CustomerGroupsService.name);
 
-    constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-    /**
-     * Tüm grupları getir
-     */
-    async findAll() {
-        const groups = await this.prisma.customerGroup.findMany({
-            orderBy: { name: 'asc' },
-            include: {
-                _count: {
-                    select: { customers: true },
-                },
-            },
-        });
+  /**
+   * Tüm grupları getir
+   */
+  async findAll() {
+    const groups = await this.prisma.customerGroup.findMany({
+      orderBy: { name: 'asc' },
+      include: {
+        _count: {
+          select: { customers: true },
+        },
+      },
+    });
 
-        return groups;
+    return groups;
+  }
+
+  /**
+   * Tekil grup getir
+   */
+  async findOne(id: string) {
+    const group = await this.prisma.customerGroup.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { customers: true },
+        },
+      },
+    });
+
+    if (!group) {
+      throw new NotFoundException('Müşteri grubu bulunamadı');
     }
 
-    /**
-     * Tekil grup getir
-     */
-    async findOne(id: string) {
-        const group = await this.prisma.customerGroup.findUnique({
-            where: { id },
-            include: {
-                _count: {
-                    select: { customers: true },
-                },
-            },
-        });
+    return group;
+  }
 
-        if (!group) {
-            throw new NotFoundException('Müşteri grubu bulunamadı');
-        }
+  /**
+   * Yeni grup oluştur
+   */
+  async create(createCustomerGroupDto: CreateCustomerGroupDto) {
+    // İsim benzersiz mi kontrol et
+    const existingGroup = await this.prisma.customerGroup.findFirst({
+      where: { name: createCustomerGroupDto.name },
+    });
 
-        return group;
+    if (existingGroup) {
+      throw new ConflictException('Bu isimde bir grup zaten mevcut');
     }
 
-    /**
-     * Yeni grup oluştur
-     */
-    async create(createCustomerGroupDto: CreateCustomerGroupDto) {
-        // İsim benzersiz mi kontrol et
-        const existingGroup = await this.prisma.customerGroup.findFirst({
-            where: { name: createCustomerGroupDto.name },
-        });
+    const group = await this.prisma.customerGroup.create({
+      data: createCustomerGroupDto,
+    });
 
-        if (existingGroup) {
-            throw new ConflictException('Bu isimde bir grup zaten mevcut');
-        }
+    this.logger.log(`Yeni müşteri grubu oluşturuldu: ${group.name}`);
 
-        const group = await this.prisma.customerGroup.create({
-            data: createCustomerGroupDto,
-        });
+    return group;
+  }
 
-        this.logger.log(`Yeni müşteri grubu oluşturuldu: ${group.name}`);
+  /**
+   * Grup güncelle
+   */
+  async update(id: string, updateCustomerGroupDto: UpdateCustomerGroupDto) {
+    await this.findOne(id);
 
-        return group;
+    // İsim değişiyorsa benzersizlik kontrol et
+    if (updateCustomerGroupDto.name) {
+      const existingGroup = await this.prisma.customerGroup.findFirst({
+        where: { name: updateCustomerGroupDto.name, NOT: { id } },
+      });
+
+      if (existingGroup) {
+        throw new ConflictException('Bu isimde bir grup zaten mevcut');
+      }
     }
 
-    /**
-     * Grup güncelle
-     */
-    async update(id: string, updateCustomerGroupDto: UpdateCustomerGroupDto) {
-        await this.findOne(id);
+    const group = await this.prisma.customerGroup.update({
+      where: { id },
+      data: updateCustomerGroupDto,
+    });
 
-        // İsim değişiyorsa benzersizlik kontrol et
-        if (updateCustomerGroupDto.name) {
-            const existingGroup = await this.prisma.customerGroup.findFirst({
-                where: { name: updateCustomerGroupDto.name, NOT: { id } },
-            });
+    this.logger.log(`Müşteri grubu güncellendi: ${group.name}`);
 
-            if (existingGroup) {
-                throw new ConflictException('Bu isimde bir grup zaten mevcut');
-            }
-        }
+    return group;
+  }
 
-        const group = await this.prisma.customerGroup.update({
-            where: { id },
-            data: updateCustomerGroupDto,
-        });
+  /**
+   * Grup sil
+   */
+  async remove(id: string) {
+    const group = await this.findOne(id);
 
-        this.logger.log(`Müşteri grubu güncellendi: ${group.name}`);
+    // Müşterisi var mı kontrol et
+    const customerCount = await this.prisma.customer.count({
+      where: { groupId: id },
+    });
 
-        return group;
+    if (customerCount > 0) {
+      throw new BadRequestException(
+        `Bu grupta ${customerCount} müşteri var. Önce müşterileri başka bir gruba taşıyın.`,
+      );
     }
 
-    /**
-     * Grup sil
-     */
-    async remove(id: string) {
-        const group = await this.findOne(id);
+    await this.prisma.customerGroup.delete({
+      where: { id },
+    });
 
-        // Müşterisi var mı kontrol et
-        const customerCount = await this.prisma.customer.count({
-            where: { groupId: id },
-        });
+    this.logger.log(`Müşteri grubu silindi: ${group.name}`);
 
-        if (customerCount > 0) {
-            throw new BadRequestException(
-                `Bu grupta ${customerCount} müşteri var. Önce müşterileri başka bir gruba taşıyın.`,
-            );
-        }
+    return { message: 'Grup başarıyla silindi' };
+  }
 
-        await this.prisma.customerGroup.delete({
-            where: { id },
-        });
+  /**
+   * Gruba müşteri ekle
+   */
+  async addCustomer(groupId: string, customerId: string) {
+    await this.findOne(groupId);
 
-        this.logger.log(`Müşteri grubu silindi: ${group.name}`);
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: customerId },
+    });
 
-        return { message: 'Grup başarıyla silindi' };
+    if (!customer) {
+      throw new NotFoundException('Müşteri bulunamadı');
     }
 
-    /**
-     * Gruba müşteri ekle
-     */
-    async addCustomer(groupId: string, customerId: string) {
-        await this.findOne(groupId);
+    await this.prisma.customer.update({
+      where: { id: customerId },
+      data: { groupId },
+    });
 
-        const customer = await this.prisma.customer.findUnique({
-            where: { id: customerId },
-        });
+    return { message: 'Müşteri gruba eklendi' };
+  }
 
-        if (!customer) {
-            throw new NotFoundException('Müşteri bulunamadı');
-        }
+  /**
+   * Gruptan müşteri çıkar
+   */
+  async removeCustomer(customerId: string) {
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: customerId },
+    });
 
-        await this.prisma.customer.update({
-            where: { id: customerId },
-            data: { groupId },
-        });
-
-        return { message: 'Müşteri gruba eklendi' };
+    if (!customer) {
+      throw new NotFoundException('Müşteri bulunamadı');
     }
 
-    /**
-     * Gruptan müşteri çıkar
-     */
-    async removeCustomer(customerId: string) {
-        const customer = await this.prisma.customer.findUnique({
-            where: { id: customerId },
-        });
+    await this.prisma.customer.update({
+      where: { id: customerId },
+      data: { groupId: null },
+    });
 
-        if (!customer) {
-            throw new NotFoundException('Müşteri bulunamadı');
-        }
-
-        await this.prisma.customer.update({
-            where: { id: customerId },
-            data: { groupId: null },
-        });
-
-        return { message: 'Müşteri gruptan çıkarıldı' };
-    }
+    return { message: 'Müşteri gruptan çıkarıldı' };
+  }
 }

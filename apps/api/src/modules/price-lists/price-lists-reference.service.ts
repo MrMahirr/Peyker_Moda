@@ -116,37 +116,25 @@ export class PriceListsReferenceService {
       );
     }
 
-    if (
-      input.scopeType === PriceListScopeType.CATEGORY &&
-      !input.categoryId
-    ) {
+    if (input.scopeType === PriceListScopeType.CATEGORY && !input.categoryId) {
       throw new BadRequestException(
         'Kategori bazli fiyat listesi icin kategori secilmelidir',
       );
     }
 
-    if (
-      input.scopeType === PriceListScopeType.PRODUCT &&
-      !input.productId
-    ) {
+    if (input.scopeType === PriceListScopeType.PRODUCT && !input.productId) {
       throw new BadRequestException(
         'Urun bazli fiyat listesi icin urun secilmelidir',
       );
     }
 
-    if (
-      input.scopeType === PriceListScopeType.CATEGORY &&
-      input.productId
-    ) {
+    if (input.scopeType === PriceListScopeType.CATEGORY && input.productId) {
       throw new BadRequestException(
         'Kategori bazli listede urun secimi kullanilamaz',
       );
     }
 
-    if (
-      input.scopeType === PriceListScopeType.PRODUCT &&
-      input.categoryId
-    ) {
+    if (input.scopeType === PriceListScopeType.PRODUCT && input.categoryId) {
       throw new BadRequestException(
         'Urun bazli listede kategori secimi kullanilamaz',
       );

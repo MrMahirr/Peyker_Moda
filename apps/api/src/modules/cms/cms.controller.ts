@@ -8,11 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, Roles } from '../../common/decorators';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { CmsBlogPostsService } from './cms-blog-posts.service';
@@ -125,10 +121,7 @@ export class CmsController {
   @Roles('admin', 'manager')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'CMS sayfasi guncelle' })
-  async updatePage(
-    @Param('id') id: string,
-    @Body() dto: UpdateCmsPageDto,
-  ) {
+  async updatePage(@Param('id') id: string, @Body() dto: UpdateCmsPageDto) {
     return this.pagesService.update(id, dto);
   }
 
@@ -164,10 +157,7 @@ export class CmsController {
   @Roles('admin', 'manager')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'SSS kaydi guncelle' })
-  async updateFaq(
-    @Param('id') id: string,
-    @Body() dto: UpdateFaqItemDto,
-  ) {
+  async updateFaq(@Param('id') id: string, @Body() dto: UpdateFaqItemDto) {
     return this.faqsService.update(id, dto);
   }
 

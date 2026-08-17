@@ -23,7 +23,8 @@ export class AccountingDuePaymentService {
             check.type === 'RECEIVED'
               ? AccountingDuePaymentType.RECEIVABLE
               : AccountingDuePaymentType.PAYABLE,
-          entityName: check.customerName ?? check.supplierName ?? check.bankName,
+          entityName:
+            check.customerName ?? check.supplierName ?? check.bankName,
           amount: check.amount,
           dueDate: check.dueDate,
           daysOverdue: dueMetrics.daysOverdue,
@@ -44,7 +45,9 @@ export class AccountingDuePaymentService {
           installment.nextDueDate,
       )
       .map((installment) => {
-        const dueMetrics = this.getDueMetrics(installment.nextDueDate as string);
+        const dueMetrics = this.getDueMetrics(
+          installment.nextDueDate as string,
+        );
 
         return {
           id: `installment-${installment.id}`,

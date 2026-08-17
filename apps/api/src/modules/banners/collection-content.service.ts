@@ -21,10 +21,10 @@ export class CollectionContentService {
 
   async create(data: Partial<CollectionContentRecord>) {
     const contents = await this.storage.getCollectionContents();
-    
+
     const position = data.position ?? this.getNextPosition(contents);
     const now = new Date().toISOString();
-    
+
     const newContent: CollectionContentRecord = {
       id: randomUUID(),
       name: data.name || '',
@@ -39,7 +39,9 @@ export class CollectionContentService {
     const normalized = this.normalizePositions(contents);
     await this.storage.saveCollectionContents(normalized);
 
-    return normalized.find((item) => item.id === newContent.id) as CollectionContentRecord;
+    return normalized.find(
+      (item) => item.id === newContent.id,
+    ) as CollectionContentRecord;
   }
 
   async update(id: string, data: Partial<CollectionContentRecord>) {

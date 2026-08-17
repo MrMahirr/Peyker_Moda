@@ -100,7 +100,7 @@ export const SalesChart = ({ dateRange }: { dateRange?: { startDate: string, end
                                 padding: '10px 14px',
                                 fontSize: '12px',
                             }}
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                             
                             formatter={(value: any) => [`₺${Number(value).toLocaleString('tr-TR')}`, '']}
                             labelStyle={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}
                         />

@@ -1,219 +1,242 @@
 import {
-    Injectable,
-    NotFoundException,
-    ConflictException,
-    Logger,
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateVariantDto, UpdateVariantDto } from './dto';
-import { generateSku } from '../../common/utils';
+import { generateSku, generateBarcode } from '../../common/utils';
 
 @Injectable()
 export class VariantsService {
-    private readonly logger = new Logger(VariantsService.name);
+  private readonly logger = new Logger(VariantsService.name);
 
-    constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-    /**
-     * Ürüne ait varyantları getir
-     */
-    async findByProduct(productId: string) {
-        const product = await this.prisma.product.findUnique({
-            where: { id: productId },
-        });
+  /**
+   * Ürüne ait varyantları getir
+   */
+  async findByProduct(productId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
 
-        if (!product) {
-            throw new NotFoundException('Ürün bulunamadı');
-        }
-
-        return this.prisma.variant.findMany({
-            where: { productId },
-            orderBy: [{ color: 'asc' }, { size: 'asc' }],
-        });
+    if (!product) {
+      throw new NotFoundException('Ürün bulunamadı');
     }
 
-    /**
-     * Varyant detayı
-     */
-    async findOne(id: string) {
-        const variant = await this.prisma.variant.findUnique({
-            where: { id },
-            include: {
-                product: {
-                    select: { id: true, name: true, sku: true },
-                },
-            },
-        });
+    return this.prisma.variant.findMany({
+      where: { productId },
+      orderBy: [{ color: 'asc' }, { size: 'asc' }],
+    });
+  }
 
-        if (!variant) {
-            throw new NotFoundException('Varyant bulunamadı');
-        }
+  /**
+   * Varyant detayı
+   */
+  async findOne(id: string) {
+    const variant = await this.prisma.variant.findUnique({
+      where: { id },
+      include: {
+        product: {
+          select: { id: true, name: true, sku: true },
+        },
+      },
+    });
 
-        return variant;
+    if (!variant) {
+      throw new NotFoundException('Varyant bulunamadı');
     }
 
-    /**
-     * Yeni varyant oluştur
-     */
-    async create(productId: string, createVariantDto: CreateVariantDto) {
-        const product = await this.prisma.product.findUnique({
-            where: { id: productId },
+    return variant;
+  }
+
+  /**
+   * Yeni varyant oluştur
+   */
+  async create(productId: string, createVariantDto: CreateVariantDto) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Ürün bulunamadı');
+    }
+
+    // SKU yoksa otomatik oluştur
+    let sku = createVariantDto.sku;
+    if (!sku) {
+      const suffix = `${createVariantDto.size || 'X'}-${createVariantDto.color?.substring(0, 3).toUpperCase() || 'STD'}`;
+      sku = `${product.sku}-${suffix}`;
+    }
+
+    // SKU benzersiz mi kontrol et
+    const existingSku = await this.prisma.variant.findUnique({
+      where: { sku },
+    });
+
+    if (existingSku) {
+      throw new ConflictException('Bu SKU zaten kullanılıyor');
+    }
+
+    // Barkod varsa benzersiz mi kontrol et, yoksa otomatik oluştur
+    let barcode = createVariantDto.barcode;
+    if (barcode) {
+      const existingBarcode = await this.prisma.variant.findUnique({
+        where: { barcode },
+      });
+
+      if (existingBarcode) {
+        throw new ConflictException('Bu barkod zaten kullanılıyor');
+      }
+    } else {
+      barcode = generateBarcode();
+      // Çakışma kontrolü basitçe yapılabilir, ama benzersizlik için max 5 deneme
+      for (let i = 0; i < 5; i++) {
+        const existing = await this.prisma.variant.findUnique({
+          where: { barcode },
+        });
+        if (!existing) break;
+        barcode = generateBarcode();
+      }
+    }
+
+    const variant = await this.prisma.variant.create({
+      data: {
+        ...createVariantDto,
+        sku,
+        barcode,
+        productId,
+      },
+    });
+
+    this.logger.log(`Yeni varyant oluşturuldu: ${variant.sku}`);
+
+    return variant;
+  }
+
+  /**
+   * Varyant güncelle
+   */
+  async update(id: string, updateVariantDto: UpdateVariantDto) {
+    await this.findOne(id);
+
+    // SKU değişiyorsa benzersizlik kontrol et
+    if (updateVariantDto.sku) {
+      const existingSku = await this.prisma.variant.findFirst({
+        where: { sku: updateVariantDto.sku, NOT: { id } },
+      });
+
+      if (existingSku) {
+        throw new ConflictException('Bu SKU zaten kullanılıyor');
+      }
+    }
+
+    // Barkod değişiyorsa benzersizlik kontrol et
+    if (updateVariantDto.barcode) {
+      const existingBarcode = await this.prisma.variant.findFirst({
+        where: { barcode: updateVariantDto.barcode, NOT: { id } },
+      });
+
+      if (existingBarcode) {
+        throw new ConflictException('Bu barkod zaten kullanılıyor');
+      }
+    }
+
+    const variant = await this.prisma.variant.update({
+      where: { id },
+      data: updateVariantDto,
+    });
+
+    this.logger.log(`Varyant güncellendi: ${variant.sku}`);
+
+    return variant;
+  }
+
+  /**
+   * Varyant sil
+   */
+  async remove(id: string) {
+    const variant = await this.findOne(id);
+
+    // Sipariş öğelerinde kullanılıyor mu kontrol et
+    const orderItemCount = await this.prisma.orderItem.count({
+      where: { variantId: id },
+    });
+
+    if (orderItemCount > 0) {
+      throw new ConflictException(
+        'Bu varyant siparişlerde kullanılıyor. Silinemez.',
+      );
+    }
+
+    await this.prisma.variant.delete({
+      where: { id },
+    });
+
+    this.logger.log(`Varyant silindi: ${variant.sku}`);
+
+    return { message: 'Varyant başarıyla silindi' };
+  }
+
+  /**
+   * Toplu varyant oluştur (beden ve renk kombinasyonları)
+   */
+  async bulkCreate(
+    productId: string,
+    sizes: string[],
+    colors: { name: string; code?: string }[],
+    baseStock = 0,
+  ) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Ürün bulunamadı');
+    }
+
+    const variants: any[] = [];
+
+    for (const color of colors) {
+      for (const size of sizes) {
+        const sku = `${product.sku}-${size}-${color.name.substring(0, 3).toUpperCase()}`;
+
+        // SKU zaten varsa atla
+        const exists = await this.prisma.variant.findUnique({
+          where: { sku },
         });
 
-        if (!product) {
-            throw new NotFoundException('Ürün bulunamadı');
-        }
-
-        // SKU yoksa otomatik oluştur
-        let sku = createVariantDto.sku;
-        if (!sku) {
-            const suffix = `${createVariantDto.size || 'X'}-${createVariantDto.color?.substring(0, 3).toUpperCase() || 'STD'}`;
-            sku = `${product.sku}-${suffix}`;
-        }
-
-        // SKU benzersiz mi kontrol et
-        const existingSku = await this.prisma.variant.findUnique({
-            where: { sku },
-        });
-
-        if (existingSku) {
-            throw new ConflictException('Bu SKU zaten kullanılıyor');
-        }
-
-        // Barkod varsa benzersiz mi kontrol et
-        if (createVariantDto.barcode) {
+        if (!exists) {
+          // Benzersiz barkod üret (basit çakışma kontrolü ile)
+          let barcode = generateBarcode();
+          for (let i = 0; i < 5; i++) {
             const existingBarcode = await this.prisma.variant.findUnique({
-                where: { barcode: createVariantDto.barcode },
+              where: { barcode },
             });
+            if (!existingBarcode) break;
+            barcode = generateBarcode();
+          }
 
-            if (existingBarcode) {
-                throw new ConflictException('Bu barkod zaten kullanılıyor');
-            }
-        }
-
-        const variant = await this.prisma.variant.create({
+          const variant = await this.prisma.variant.create({
             data: {
-                ...createVariantDto,
-                sku,
-                productId,
+              productId,
+              sku,
+              barcode,
+              size,
+              color: color.name,
+              colorCode: color.code,
+              stock: baseStock,
             },
-        });
-
-        this.logger.log(`Yeni varyant oluşturuldu: ${variant.sku}`);
-
-        return variant;
+          });
+          variants.push(variant);
+        }
+      }
     }
 
-    /**
-     * Varyant güncelle
-     */
-    async update(id: string, updateVariantDto: UpdateVariantDto) {
-        await this.findOne(id);
+    this.logger.log(`${variants.length} varyant oluşturuldu: ${product.name}`);
 
-        // SKU değişiyorsa benzersizlik kontrol et
-        if (updateVariantDto.sku) {
-            const existingSku = await this.prisma.variant.findFirst({
-                where: { sku: updateVariantDto.sku, NOT: { id } },
-            });
-
-            if (existingSku) {
-                throw new ConflictException('Bu SKU zaten kullanılıyor');
-            }
-        }
-
-        // Barkod değişiyorsa benzersizlik kontrol et
-        if (updateVariantDto.barcode) {
-            const existingBarcode = await this.prisma.variant.findFirst({
-                where: { barcode: updateVariantDto.barcode, NOT: { id } },
-            });
-
-            if (existingBarcode) {
-                throw new ConflictException('Bu barkod zaten kullanılıyor');
-            }
-        }
-
-        const variant = await this.prisma.variant.update({
-            where: { id },
-            data: updateVariantDto,
-        });
-
-        this.logger.log(`Varyant güncellendi: ${variant.sku}`);
-
-        return variant;
-    }
-
-    /**
-     * Varyant sil
-     */
-    async remove(id: string) {
-        const variant = await this.findOne(id);
-
-        // Sipariş öğelerinde kullanılıyor mu kontrol et
-        const orderItemCount = await this.prisma.orderItem.count({
-            where: { variantId: id },
-        });
-
-        if (orderItemCount > 0) {
-            throw new ConflictException(
-                'Bu varyant siparişlerde kullanılıyor. Silinemez.',
-            );
-        }
-
-        await this.prisma.variant.delete({
-            where: { id },
-        });
-
-        this.logger.log(`Varyant silindi: ${variant.sku}`);
-
-        return { message: 'Varyant başarıyla silindi' };
-    }
-
-    /**
-     * Toplu varyant oluştur (beden ve renk kombinasyonları)
-     */
-    async bulkCreate(
-        productId: string,
-        sizes: string[],
-        colors: { name: string; code?: string }[],
-        baseStock = 0,
-    ) {
-        const product = await this.prisma.product.findUnique({
-            where: { id: productId },
-        });
-
-        if (!product) {
-            throw new NotFoundException('Ürün bulunamadı');
-        }
-
-        const variants: any[] = [];
-
-        for (const color of colors) {
-            for (const size of sizes) {
-                const sku = `${product.sku}-${size}-${color.name.substring(0, 3).toUpperCase()}`;
-
-                // SKU zaten varsa atla
-                const exists = await this.prisma.variant.findUnique({
-                    where: { sku },
-                });
-
-                if (!exists) {
-                    const variant = await this.prisma.variant.create({
-                        data: {
-                            productId,
-                            sku,
-                            size,
-                            color: color.name,
-                            colorCode: color.code,
-                            stock: baseStock,
-                        },
-                    });
-                    variants.push(variant);
-                }
-            }
-        }
-
-        this.logger.log(`${variants.length} varyant oluşturuldu: ${product.name}`);
-
-        return variants;
-    }
+    return variants;
+  }
 }

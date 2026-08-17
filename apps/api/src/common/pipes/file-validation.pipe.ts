@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  PipeTransform,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, PipeTransform, BadRequestException } from '@nestjs/common';
 import * as path from 'path';
 
 export interface FileValidationOptions {

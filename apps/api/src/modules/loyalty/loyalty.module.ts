@@ -8,10 +8,6 @@ import { LoyaltyTierService } from './loyalty-tier.service';
 @Module({
   imports: [CustomersModule],
   controllers: [LoyaltyController],
-  providers: [
-    LoyaltyStorageService,
-    LoyaltyTierService,
-    LoyaltyPointsService,
-  ],
+  providers: [LoyaltyStorageService, LoyaltyTierService, LoyaltyPointsService],
 })
 export class LoyaltyModule {}

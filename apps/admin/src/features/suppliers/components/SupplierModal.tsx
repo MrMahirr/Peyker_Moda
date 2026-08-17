@@ -61,7 +61,7 @@ export const SupplierModal = ({ isOpen, onClose, onSave, supplier }: SupplierMod
             const cleanData: Partial<CreateSupplierDto> = {};
             for (const [key, value] of Object.entries(formData)) {
                 if (value !== '') {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                     
                     (cleanData as any)[key] = value;
                 }
             }

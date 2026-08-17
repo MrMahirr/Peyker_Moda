@@ -115,7 +115,7 @@ export const SellingInvoice = () => {
                                         onClick={() => removeItem(i)}
                                         className="text-zinc-400 hover:text-red-500 text-lg"
                                     >
-                                        ×
+                                        Ã—
                                     </button>
                                 </td>
                             </tr>

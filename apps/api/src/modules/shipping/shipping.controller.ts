@@ -55,10 +55,7 @@ export class ShippingController {
   @Patch('carriers/:id')
   @Roles('admin', 'manager')
   @ApiOperation({ summary: 'Kargo firmasi guncelle' })
-  async updateCarrier(
-    @Param('id') id: string,
-    @Body() dto: UpdateCarrierDto,
-  ) {
+  async updateCarrier(@Param('id') id: string, @Body() dto: UpdateCarrierDto) {
     return this.shippingService.updateCarrier(id, dto);
   }
 

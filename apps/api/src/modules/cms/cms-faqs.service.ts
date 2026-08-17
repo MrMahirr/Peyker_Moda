@@ -27,7 +27,8 @@ export class CmsFaqsService {
     if (
       faqs.some(
         (faq) =>
-          faq.question.trim().toLowerCase() === dto.question.trim().toLowerCase(),
+          faq.question.trim().toLowerCase() ===
+          dto.question.trim().toLowerCase(),
       )
     ) {
       throw new ConflictException('Bu soru zaten mevcut');

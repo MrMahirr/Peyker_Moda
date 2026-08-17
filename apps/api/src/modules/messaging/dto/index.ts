@@ -1,14 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import {
-  MessagingAudienceType,
-  MessagingChannel,
-} from '../messaging.types';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { MessagingAudienceType, MessagingChannel } from '../messaging.types';
 
 export class CreateBulkMessageDto {
   @ApiProperty({ enum: MessagingChannel, example: MessagingChannel.EMAIL })

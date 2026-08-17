@@ -27,7 +27,12 @@ export class BannersService {
   async create(dto: CreateBannerDto) {
     const banners = await this.storage.getBanners();
 
-    if (banners.some((banner) => banner.title.toLowerCase() === dto.title.trim().toLowerCase())) {
+    if (
+      banners.some(
+        (banner) =>
+          banner.title.toLowerCase() === dto.title.trim().toLowerCase(),
+      )
+    ) {
       throw new ConflictException('Bu baslikta bir banner zaten mevcut');
     }
 
@@ -78,12 +83,23 @@ export class BannersService {
       ...banners[index],
       ...dto,
       title: nextTitle ?? banners[index].title,
-      subtitle: dto.subtitle !== undefined ? dto.subtitle?.trim() : banners[index].subtitle,
+      subtitle:
+        dto.subtitle !== undefined
+          ? dto.subtitle?.trim()
+          : banners[index].subtitle,
       imageUrl: dto.imageUrl?.trim() ?? banners[index].imageUrl,
       linkUrl:
-        dto.linkUrl !== undefined ? dto.linkUrl.trim() || undefined : banners[index].linkUrl,
-      ctaText: dto.ctaText !== undefined ? dto.ctaText?.trim() : banners[index].ctaText,
-      ctaLink: dto.ctaLink !== undefined ? dto.ctaLink?.trim() : banners[index].ctaLink,
+        dto.linkUrl !== undefined
+          ? dto.linkUrl.trim() || undefined
+          : banners[index].linkUrl,
+      ctaText:
+        dto.ctaText !== undefined
+          ? dto.ctaText?.trim()
+          : banners[index].ctaText,
+      ctaLink:
+        dto.ctaLink !== undefined
+          ? dto.ctaLink?.trim()
+          : banners[index].ctaLink,
       updatedAt: new Date().toISOString(),
     };
 

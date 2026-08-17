@@ -2,47 +2,47 @@
  * Pagination helper for list queries
  */
 export interface PaginationParams {
-    page?: number;
-    limit?: number;
+  page?: number;
+  limit?: number;
 }
 
 export interface PaginatedResult<T> {
-    data: T[];
-    meta: {
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-        hasNextPage: boolean;
-        hasPreviousPage: boolean;
-    };
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 export function getPaginationParams(params: PaginationParams) {
-    const page = Math.max(1, params.page || 1);
-    const limit = Math.min(100, Math.max(1, params.limit || 10));
-    const skip = (page - 1) * limit;
+  const page = Math.max(1, params.page || 1);
+  const limit = Math.min(100, Math.max(1, params.limit || 10));
+  const skip = (page - 1) * limit;
 
-    return { page, limit, skip };
+  return { page, limit, skip };
 }
 
 export function createPaginatedResult<T>(
-    data: T[],
-    total: number,
-    page: number,
-    limit: number,
+  data: T[],
+  total: number,
+  page: number,
+  limit: number,
 ): PaginatedResult<T> {
-    const totalPages = Math.ceil(total / limit);
+  const totalPages = Math.ceil(total / limit);
 
-    return {
-        data,
-        meta: {
-            total,
-            page,
-            limit,
-            totalPages,
-            hasNextPage: page < totalPages,
-            hasPreviousPage: page > 1,
-        },
-    };
+  return {
+    data,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
 }

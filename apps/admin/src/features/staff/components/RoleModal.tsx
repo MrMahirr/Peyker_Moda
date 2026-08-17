@@ -95,7 +95,7 @@ export const RoleModal = ({ isOpen, onClose, permissions, onSuccess, initialRole
                 if (!resource || !action) return null;
                 return { resource, action };
             })
-            .filter(Boolean) as RoleInput['permissions'];
+            .filter(Boolean) as { resource: string; action: string }[];
 
         try {
             setSaving(true);

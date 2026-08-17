@@ -26,6 +26,7 @@ export interface ProductVariant {
     id: string;
     productId: string;
     sku: string;
+    barcode?: string;
     size?: string;
     color?: string;
     stock: number;

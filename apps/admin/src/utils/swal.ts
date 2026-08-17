@@ -16,7 +16,6 @@ export const swal = MySwal.mixin({
     cancelButtonText: 'İptal',
 });
 
-// Helper for delete confirmations
 export const showDeleteConfirm = (title = 'Emin misiniz?', text = 'Bu işlem geri alınamaz!') => {
     return swal.fire({
         title,
@@ -29,6 +28,32 @@ export const showDeleteConfirm = (title = 'Emin misiniz?', text = 'Bu işlem ger
         customClass: {
             confirmButton: 'bg-red-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-100 transition-all mx-2',
             cancelButton: 'bg-zinc-100 text-zinc-600 font-medium px-4 py-2 rounded-lg hover:bg-zinc-200 focus:ring-4 focus:ring-zinc-100 transition-all mx-2',
+            popup: 'rounded-xl shadow-xl'
+        }
+    });
+};
+
+export const showSuccess = (title: string, text: string) => {
+    return swal.fire({
+        title,
+        text,
+        icon: 'success',
+        confirmButtonText: 'Tamam',
+        customClass: {
+            confirmButton: 'bg-emerald-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-100 transition-all mx-2',
+            popup: 'rounded-xl shadow-xl'
+        }
+    });
+};
+
+export const showError = (title: string, text: string) => {
+    return swal.fire({
+        title,
+        text,
+        icon: 'error',
+        confirmButtonText: 'Tamam',
+        customClass: {
+            confirmButton: 'bg-red-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-100 transition-all mx-2',
             popup: 'rounded-xl shadow-xl'
         }
     });

@@ -67,7 +67,10 @@ describe('AuthService', () => {
       mockPrismaService.user.update.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      const result = await service.validateUser('test@example.com', 'password123');
+      const result = await service.validateUser(
+        'test@example.com',
+        'password123',
+      );
 
       expect(result).toEqual({
         id: mockUser.id,
@@ -91,7 +94,10 @@ describe('AuthService', () => {
       mockPrismaService.user.update.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      const result = await service.validateUser('test@example.com', 'wrong-password');
+      const result = await service.validateUser(
+        'test@example.com',
+        'wrong-password',
+      );
 
       expect(result).toBeNull();
       expect(mockPrismaService.user.update).toHaveBeenCalledWith({
@@ -106,9 +112,9 @@ describe('AuthService', () => {
         lockedUntil: new Date(Date.now() + 60_000),
       });
 
-      await expect(service.validateUser('test@example.com', 'password123')).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.validateUser('test@example.com', 'password123'),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 

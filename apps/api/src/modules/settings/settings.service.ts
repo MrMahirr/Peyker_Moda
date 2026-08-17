@@ -60,28 +60,42 @@ export class SettingsService {
     const map = new Map(rows.map((r) => [r.key, r]));
     const now = new Date();
     const createdAt = rows.length
-      ? rows.reduce((min, r) => (r.createdAt < min ? r.createdAt : min), rows[0].createdAt)
+      ? rows.reduce(
+          (min, r) => (r.createdAt < min ? r.createdAt : min),
+          rows[0].createdAt,
+        )
       : now;
     const updatedAt = rows.length
-      ? rows.reduce((max, r) => (r.updatedAt > max ? r.updatedAt : max), rows[0].updatedAt)
+      ? rows.reduce(
+          (max, r) => (r.updatedAt > max ? r.updatedAt : max),
+          rows[0].updatedAt,
+        )
       : now;
 
     return {
       id: 'default',
       storeName: map.get('storeName')?.value ?? DEFAULT_SETTINGS.storeName,
-      storeAddress: map.get('storeAddress')?.value ?? DEFAULT_SETTINGS.storeAddress,
+      storeAddress:
+        map.get('storeAddress')?.value ?? DEFAULT_SETTINGS.storeAddress,
       storePhone: map.get('storePhone')?.value ?? DEFAULT_SETTINGS.storePhone,
       storeEmail: map.get('storeEmail')?.value ?? DEFAULT_SETTINGS.storeEmail,
       currency: map.get('currency')?.value ?? DEFAULT_SETTINGS.currency,
-      taxRate: this.parseNumber(map.get('taxRate')?.value, DEFAULT_SETTINGS.taxRate),
+      taxRate: this.parseNumber(
+        map.get('taxRate')?.value,
+        DEFAULT_SETTINGS.taxRate,
+      ),
       lowStockThreshold: this.parseNumber(
         map.get('lowStockThreshold')?.value,
         DEFAULT_SETTINGS.lowStockThreshold,
       ),
-      receiptHeader: map.get('receiptHeader')?.value ?? DEFAULT_SETTINGS.receiptHeader,
-      receiptFooter: map.get('receiptFooter')?.value ?? DEFAULT_SETTINGS.receiptFooter,
-      receiptAddress: map.get('receiptAddress')?.value ?? DEFAULT_SETTINGS.receiptAddress,
-      receiptPhone: map.get('receiptPhone')?.value ?? DEFAULT_SETTINGS.receiptPhone,
+      receiptHeader:
+        map.get('receiptHeader')?.value ?? DEFAULT_SETTINGS.receiptHeader,
+      receiptFooter:
+        map.get('receiptFooter')?.value ?? DEFAULT_SETTINGS.receiptFooter,
+      receiptAddress:
+        map.get('receiptAddress')?.value ?? DEFAULT_SETTINGS.receiptAddress,
+      receiptPhone:
+        map.get('receiptPhone')?.value ?? DEFAULT_SETTINGS.receiptPhone,
       receiptTaxRate: this.parseNumber(
         map.get('receiptTaxRate')?.value,
         DEFAULT_SETTINGS.receiptTaxRate,
@@ -91,7 +105,8 @@ export class SettingsService {
         DEFAULT_SETTINGS.receiptShowLogo,
       ),
       storeLogo: map.get('storeLogo')?.value ?? DEFAULT_SETTINGS.storeLogo,
-      storeCoverPhoto: map.get('storeCoverPhoto')?.value ?? DEFAULT_SETTINGS.storeCoverPhoto,
+      storeCoverPhoto:
+        map.get('storeCoverPhoto')?.value ?? DEFAULT_SETTINGS.storeCoverPhoto,
       createdAt,
       updatedAt,
     };
@@ -101,20 +116,32 @@ export class SettingsService {
     const entries: Array<[string, string]> = [];
 
     if (dto.storeName !== undefined) entries.push(['storeName', dto.storeName]);
-    if (dto.storeAddress !== undefined) entries.push(['storeAddress', dto.storeAddress]);
-    if (dto.storePhone !== undefined) entries.push(['storePhone', dto.storePhone]);
-    if (dto.storeEmail !== undefined) entries.push(['storeEmail', dto.storeEmail]);
+    if (dto.storeAddress !== undefined)
+      entries.push(['storeAddress', dto.storeAddress]);
+    if (dto.storePhone !== undefined)
+      entries.push(['storePhone', dto.storePhone]);
+    if (dto.storeEmail !== undefined)
+      entries.push(['storeEmail', dto.storeEmail]);
     if (dto.currency !== undefined) entries.push(['currency', dto.currency]);
-    if (dto.taxRate !== undefined) entries.push(['taxRate', String(dto.taxRate)]);
-    if (dto.lowStockThreshold !== undefined) entries.push(['lowStockThreshold', String(dto.lowStockThreshold)]);
-    if (dto.receiptHeader !== undefined) entries.push(['receiptHeader', dto.receiptHeader]);
-    if (dto.receiptFooter !== undefined) entries.push(['receiptFooter', dto.receiptFooter]);
-    if (dto.receiptAddress !== undefined) entries.push(['receiptAddress', dto.receiptAddress]);
-    if (dto.receiptPhone !== undefined) entries.push(['receiptPhone', dto.receiptPhone]);
-    if (dto.receiptTaxRate !== undefined) entries.push(['receiptTaxRate', String(dto.receiptTaxRate)]);
-    if (dto.receiptShowLogo !== undefined) entries.push(['receiptShowLogo', String(dto.receiptShowLogo)]);
+    if (dto.taxRate !== undefined)
+      entries.push(['taxRate', String(dto.taxRate)]);
+    if (dto.lowStockThreshold !== undefined)
+      entries.push(['lowStockThreshold', String(dto.lowStockThreshold)]);
+    if (dto.receiptHeader !== undefined)
+      entries.push(['receiptHeader', dto.receiptHeader]);
+    if (dto.receiptFooter !== undefined)
+      entries.push(['receiptFooter', dto.receiptFooter]);
+    if (dto.receiptAddress !== undefined)
+      entries.push(['receiptAddress', dto.receiptAddress]);
+    if (dto.receiptPhone !== undefined)
+      entries.push(['receiptPhone', dto.receiptPhone]);
+    if (dto.receiptTaxRate !== undefined)
+      entries.push(['receiptTaxRate', String(dto.receiptTaxRate)]);
+    if (dto.receiptShowLogo !== undefined)
+      entries.push(['receiptShowLogo', String(dto.receiptShowLogo)]);
     if (dto.storeLogo !== undefined) entries.push(['storeLogo', dto.storeLogo]);
-    if (dto.storeCoverPhoto !== undefined) entries.push(['storeCoverPhoto', dto.storeCoverPhoto]);
+    if (dto.storeCoverPhoto !== undefined)
+      entries.push(['storeCoverPhoto', dto.storeCoverPhoto]);
 
     await Promise.all(
       entries.map(([key, value]) =>

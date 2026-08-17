@@ -58,7 +58,7 @@ export const CustomerList = () => {
         {
             header: 'Müşteri Adı',
             accessorKey: 'firstName',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => {
                 const customer = info.row.original;
                 return (
@@ -80,7 +80,7 @@ export const CustomerList = () => {
         {
             header: 'İletişim Bilgileri',
             accessorKey: 'contact',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => (
                 <div className="flex flex-col text-[13px] text-zinc-600 gap-1.5 justify-center py-1">
                     {info.row.original.email && (
@@ -99,7 +99,7 @@ export const CustomerList = () => {
         {
             header: 'Hacim',
             accessorKey: 'totalSpent',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => (
                 <span className="font-bold font-mono text-[15px] text-zinc-900">
                     {formatCurrency(info.row.original.totalSpent || 0)}
@@ -109,7 +109,7 @@ export const CustomerList = () => {
         {
             header: 'Siparişler',
             accessorKey: 'orderCount',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => (
                 <span className="text-[13px] font-semibold text-zinc-700 bg-zinc-100 px-2.5 py-1 rounded-md border border-zinc-200/80 shadow-sm">
                     {info.row.original.orderCount || 0} Adet
@@ -119,7 +119,7 @@ export const CustomerList = () => {
         {
             header: 'İşlemler',
             id: 'actions',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             cell: (info: any) => (
                 <div className="flex justify-end items-center gap-2">
                     <Button

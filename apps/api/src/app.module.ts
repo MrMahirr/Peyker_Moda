@@ -17,6 +17,7 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ProductsModule } from './modules/products/products.module';
 import { VariantsModule } from './modules/variants/variants.module';
+import { BarcodeModule } from './modules/barcode/barcode.module';
 
 // Faz 3: CRM
 import { CustomersModule } from './modules/customers/customers.module';
@@ -109,6 +110,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     CategoriesModule,
     ProductsModule,
     VariantsModule,
+    BarcodeModule,
 
     // Faz 3: CRM
     CustomersModule,

@@ -54,7 +54,7 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
     useEffect(() => {
         if (!isInitialized) return;
 
-        let newVariants: any[] = [];
+        const newVariants: any[] = [];
 
         if (colorGroups.length === 0) {
             setValue('variants', []);
@@ -258,7 +258,7 @@ export const VariantMatrix = ({ form }: VariantMatrixProps) => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-100">
-                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                { }
                                 {getValues('variants').map((_: any, index: number) => (
                                     <tr key={index} className="hover:bg-zinc-50/50 transition-colors">
                                         <td className="p-3 font-medium text-zinc-900">

@@ -121,7 +121,10 @@ export class CreateShipmentDto {
   @IsOptional()
   shippingCost?: number;
 
-  @ApiPropertyOptional({ enum: ShipmentStatus, example: ShipmentStatus.PREPARING })
+  @ApiPropertyOptional({
+    enum: ShipmentStatus,
+    example: ShipmentStatus.PREPARING,
+  })
   @IsEnum(ShipmentStatus)
   @IsOptional()
   status?: ShipmentStatus;

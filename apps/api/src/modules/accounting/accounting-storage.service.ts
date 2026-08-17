@@ -34,7 +34,10 @@ export class AccountingStorageService {
   }
 
   async saveBankAccounts(accounts: AccountingBankAccount[]) {
-    await this.writeJsonSetting(ACCOUNTING_STORAGE_KEYS.BANK_ACCOUNTS, accounts);
+    await this.writeJsonSetting(
+      ACCOUNTING_STORAGE_KEYS.BANK_ACCOUNTS,
+      accounts,
+    );
   }
 
   async getChecks(): Promise<AccountingCheck[]> {
@@ -50,7 +53,10 @@ export class AccountingStorageService {
   }
 
   async saveClosedPeriods(periods: AccountingClosedPeriod[]) {
-    await this.writeJsonSetting(ACCOUNTING_STORAGE_KEYS.CLOSED_PERIODS, periods);
+    await this.writeJsonSetting(
+      ACCOUNTING_STORAGE_KEYS.CLOSED_PERIODS,
+      periods,
+    );
   }
 
   async getZReportSnapshots(): Promise<ZReportSnapshot[]> {

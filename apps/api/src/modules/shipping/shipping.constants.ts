@@ -27,7 +27,9 @@ export function mapCargoStatusToShipmentStatus(
   }
 }
 
-export function getTrackingLocation(status: ShipmentStatusResult['status']): string {
+export function getTrackingLocation(
+  status: ShipmentStatusResult['status'],
+): string {
   switch (status) {
     case 'created':
       return 'Depo';

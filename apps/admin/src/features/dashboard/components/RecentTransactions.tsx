@@ -130,7 +130,7 @@ export const RecentTransactions = () => {
                                             ₺{Number(tx.totalAmount).toLocaleString('tr-TR')}
                                         </td>
                                         <td className="px-6 py-4">
-                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                            { }
                                             <Badge variant={variant as any} dot={variant !== 'neutral'}>
                                                 {getStatusLabel(tx.status)}
                                             </Badge>

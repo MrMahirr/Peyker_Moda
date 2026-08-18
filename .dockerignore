@@ -45,9 +45,8 @@
 !apps/api/README.md
 
 # Database dumps (production'da olmamalı)
-*.sql
-!apps/api/prisma/migrations/**/*.sql
-
+*.dump.sql
+*.sql.gz
 # OS files
 **/.DS_Store
 **/*.pem

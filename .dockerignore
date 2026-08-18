@@ -46,6 +46,7 @@
 
 # Database dumps (production'da olmamalı)
 *.sql
+!apps/api/prisma/migrations/**/*.sql
 
 # OS files
 **/.DS_Store

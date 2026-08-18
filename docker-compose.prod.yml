@@ -201,6 +201,8 @@ services:
         condition: service_started
       storefront:
         condition: service_started
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     restart: unless-stopped
     networks:
       - peyker-network

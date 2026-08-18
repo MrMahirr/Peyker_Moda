@@ -48,6 +48,9 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=${VITE_API_URL}
 
+ARG VITE_SOCKET_URL
+ENV VITE_SOCKET_URL=${VITE_SOCKET_URL}
+
 # Vite production build
 RUN cd apps/admin && npx vite build
 

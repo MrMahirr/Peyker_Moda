@@ -113,12 +113,14 @@ services:
       S3_ACCESS_KEY: ${MINIO_ROOT_USER}
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       S3_BUCKET: ${S3_BUCKET:-peyker-media}
-      S3_REGION: us-east-1
+      S3_REGION: ${S3_REGION:-us-east-1}
       UPLOAD_BASE_URL: ${UPLOAD_BASE_URL:-http://localhost:9000/peyker-media}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@peyker.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
       ADMIN_FIRST_NAME: ${ADMIN_FIRST_NAME:-Admin}
       ADMIN_LAST_NAME: ${ADMIN_LAST_NAME:-Peyker}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -147,6 +149,7 @@ services:
       network: host
       args:
         VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL:-https://peykermoda.com/api}
     container_name: peyker_prod_admin
     restart: unless-stopped
     networks:
@@ -163,6 +166,8 @@ services:
       network: host
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://peykermoda.com}
     container_name: peyker_prod_storefront
     environment:
       NODE_ENV: production

@@ -69,8 +69,8 @@ COPY --from=build --chown=nextjs:nextjs /app/apps/storefront/.next/static ./apps
 COPY --from=build --chown=nextjs:nextjs /app/apps/storefront/public ./apps/storefront/public
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD ["node", "-e", "fetch('http://localhost:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
 
 USER nextjs
 

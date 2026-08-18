@@ -82,8 +82,8 @@ WORKDIR /app/apps/api
 RUN mkdir -p /app/apps/api/uploads && chown nestjs:nestjs /app/apps/api/uploads
 
 # Healthcheck — container orchestrator entegrasyonu
-HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD ["node", "-e", "fetch('http://localhost:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
 
 # Non-root user ile çalıştır
 USER nestjs

@@ -8,6 +8,7 @@ import { useFavorites } from "@/lib/FavoritesContext";
 import { DesktopNavigation } from "./header/DesktopNavigation";
 import { HeaderActions } from "./header/HeaderActions";
 import { HeaderLogo } from "./header/HeaderLogo";
+import { MobileNavigation } from "./header/MobileNavigation";
 import { useHeaderState } from "./header/hooks/useHeaderState";
 
 export default function Header() {
@@ -38,15 +39,11 @@ export default function Header() {
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
-        <button
-          type="button"
-          className={`md:hidden cursor-pointer ${
-            shouldApplyScrolledStyle ? "text-stone-900" : "text-white"
-          }`}
-          aria-label="Mobil menu"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
+        <MobileNavigation 
+          collections={collections}
+          shouldApplyScrolledStyle={shouldApplyScrolledStyle}
+          hasSaleProducts={hasSaleProducts}
+        />
 
         <HeaderLogo shouldApplyScrolledStyle={shouldApplyScrolledStyle} />
 

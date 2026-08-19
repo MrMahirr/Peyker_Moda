@@ -16,6 +16,7 @@ import {
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.set('trust proxy', 1);
 
   const configService = app.get(ConfigService);
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);

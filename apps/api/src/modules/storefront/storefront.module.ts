@@ -11,6 +11,7 @@ import { CustomerJwtStrategy } from './strategies/customer-jwt.strategy';
 import { PageHeaderStorageService } from '../banners/page-header.storage.service';
 import { CollectionContentStorageService } from '../banners/collection-content.storage.service';
 import { BannerStorageService } from '../banners/banner.storage.service';
+import { PriceListsModule } from '../price-lists/price-lists.module';
 
 type JwtExpiresIn = NonNullable<
   NonNullable<JwtModuleOptions['signOptions']>['expiresIn']
@@ -21,6 +22,7 @@ type JwtExpiresIn = NonNullable<
     CampaignsModule,
     InvoicesModule,
     ReturnsModule,
+    PriceListsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

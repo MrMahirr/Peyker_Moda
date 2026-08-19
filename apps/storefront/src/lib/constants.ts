@@ -12,9 +12,14 @@ export const SOCIAL_LINKS = [
     label: 'Instagram'
   },
   {
-    platform: SocialPlatform.PINTEREST,
-    url: 'https://pinterest.com/peykermoda',
-    label: 'Pinterest'
+    platform: 'Location',
+    url: 'https://maps.google.com/?q=Peyker+Moda',
+    label: 'Konum'
+  },
+  {
+    platform: 'Contact',
+    url: 'mailto:iletisim@peykermoda.com',
+    label: 'İletişim'
   }
 ];
 

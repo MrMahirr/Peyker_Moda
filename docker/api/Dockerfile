@@ -90,5 +90,5 @@ USER nestjs
 
 EXPOSE 3000
 
-# Geçici çözüm: Prisma hatasını atlamak için sadece Node.js'i başlatıyoruz
-CMD ["node", "dist/main.js"]
+# Entrypoint: Prisma migrate deploy + app start
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy --schema=./prisma/schema.prisma && node dist/main.js"]

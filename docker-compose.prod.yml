@@ -98,6 +98,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      THROTTLE_LIMIT: 5000
       API_PREFIX: api
       DATABASE_URL: postgresql://${POSTGRES_USER:-peyker_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-peyker_db}?schema=public
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}

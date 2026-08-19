@@ -42,7 +42,7 @@ export function MobileNavigation({
         </button>
       </SheetTrigger>
       
-      <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 flex flex-col bg-white/75 backdrop-blur-xl border-r-white/20 shadow-2xl">
+      <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 flex flex-col bg-white/40 backdrop-blur-xl border-r-white/20 shadow-2xl">
         <SheetHeader className="p-6 border-b border-stone-200/50 text-left">
           <SheetTitle className="text-xl font-bold tracking-tight text-stone-800">Menü</SheetTitle>
         </SheetHeader>

@@ -38,6 +38,8 @@ import {
 import { PageHeaderStorageService } from '../banners/page-header.storage.service';
 import { CollectionContentStorageService } from '../banners/collection-content.storage.service';
 import { BannerStorageService } from '../banners/banner.storage.service';
+import { PriceListsService } from '../price-lists/price-lists.service';
+import { PriceListResponse, PriceListScopeType, PriceListEffectiveStatus, PriceListAdjustmentType } from '../price-lists/price-lists.types';
 
 @Injectable()
 export class StorefrontService {
@@ -54,6 +56,7 @@ export class StorefrontService {
     private bannerStorage: BannerStorageService,
     private invoicesService: InvoicesService,
     private returnsService: ReturnsService,
+    private priceListsService: PriceListsService,
   ) {}
 
   // ========== AUTHENTICATION ==========
@@ -410,6 +413,9 @@ export class StorefrontService {
 
     // Sıralama
     const campaigns = await this.campaignsService.getActiveCampaigns();
+    const allPriceLists = await this.priceListsService.findAll();
+    const activePriceLists = allPriceLists.filter(pl => pl.effectiveStatus === 'ACTIVE');
+
     const productSelect = {
       id: true,
       name: true,
@@ -440,20 +446,21 @@ export class StorefrontService {
         select: productSelect,
       });
 
-      let productsWithDiscounts = this.applyStorefrontCampaigns(
+      let productsWithDiscounts = this.applyStorefrontPricing(
         products,
         campaigns,
+        activePriceLists,
       );
 
       if (query.onSale === 'true') {
         productsWithDiscounts = productsWithDiscounts.filter(
-          (product) => this.getStorefrontPricing(product).discountAmount > 0,
+          (product) => this.calculateBestPrice(product, campaigns, activePriceLists).discountAmount > 0,
         );
       }
 
       productsWithDiscounts.sort((a, b) => {
-        const aPricing = this.getStorefrontPricing(a);
-        const bPricing = this.getStorefrontPricing(b);
+        const aPricing = this.calculateBestPrice(a, campaigns, activePriceLists);
+        const bPricing = this.calculateBestPrice(b, campaigns, activePriceLists);
 
         switch (query.sort) {
           case 'price_asc':
@@ -497,9 +504,10 @@ export class StorefrontService {
       this.prisma.product.count({ where }),
     ]);
 
-    const productsWithDiscounts = this.applyStorefrontCampaigns(
+    const productsWithDiscounts = this.applyStorefrontPricing(
       products,
       campaigns,
+      activePriceLists,
     );
 
     return createPaginatedResult(productsWithDiscounts, total, page, limit);
@@ -508,90 +516,81 @@ export class StorefrontService {
   /**
    * Storefront pricing helpers
    */
-  private applyStorefrontCampaigns(products: any[], campaigns: any[]) {
+  private applyStorefrontPricing(products: any[], campaigns: any[], priceLists: PriceListResponse[]) {
     return products.map((product) => {
-      const applicableCampaign = this.getBestStorefrontCampaign(
-        product,
-        campaigns,
-      );
+      const pricing = this.calculateBestPrice(product, campaigns, priceLists);
 
       return {
         ...product,
-        campaign: applicableCampaign,
+        salePrice: pricing.finalPrice < Number(product.basePrice) ? pricing.finalPrice : product.salePrice,
       };
     });
   }
 
-  private getBestStorefrontCampaign(product: any, campaigns: any[]) {
-    let bestCampaign: any | null = null;
-    let bestPrice = this.getStorefrontPricing({
-      ...product,
-      campaign: null,
-    }).finalPrice;
+  private calculateBestPrice(product: any, campaigns: any[], priceLists: PriceListResponse[]) {
+    const basePrice = Number(product.basePrice ?? 0);
+    const initialSalePrice = product.salePrice !== null && product.salePrice !== undefined
+      ? Number(product.salePrice)
+      : basePrice;
 
+    let bestPrice = initialSalePrice;
+
+    // Check campaigns
     for (const campaign of campaigns) {
       const applies =
         (campaign.productIds as string[])?.includes(product.id) ||
-        (campaign.categoryIds as string[])?.includes(
-          product.category?.id || '',
-        );
+        (campaign.categoryIds as string[])?.includes(product.category?.id || '');
 
-      if (!applies) continue;
-
-      const candidateCampaign = {
-        name: campaign.name,
-        discountType: campaign.discountType,
-        discountValue: campaign.discountValue,
-      };
-      const candidatePrice = this.getStorefrontPricing({
-        ...product,
-        campaign: candidateCampaign,
-      }).finalPrice;
-
-      if (candidatePrice < bestPrice) {
-        bestCampaign = candidateCampaign;
-        bestPrice = candidatePrice;
+      if (applies) {
+        let campaignPrice = basePrice;
+        if (campaign.discountType === 'PERCENTAGE') {
+          campaignPrice = basePrice - (basePrice * (Number(campaign.discountValue) / 100));
+        } else if (campaign.discountType === 'FIXED_AMOUNT') {
+          campaignPrice = basePrice - Number(campaign.discountValue);
+        }
+        
+        campaignPrice = Math.max(0, campaignPrice);
+        if (campaignPrice < bestPrice) bestPrice = campaignPrice;
       }
     }
 
-    return bestCampaign;
-  }
+    // Check price lists
+    for (const pl of priceLists) {
+      const applies = 
+        pl.scopeType === 'ALL_PRODUCTS' ||
+        (pl.scopeType === 'PRODUCT' && pl.productId === product.id) ||
+        (pl.scopeType === 'CATEGORY' && pl.categoryId === product.category?.id);
+        
+      if (applies) {
+        let plPrice = basePrice;
+        if (pl.adjustmentType === 'PERCENTAGE_DISCOUNT') {
+          plPrice = basePrice - (basePrice * (Number(pl.amount) / 100));
+        } else if (pl.adjustmentType === 'FIXED_DISCOUNT') {
+          plPrice = basePrice - Number(pl.amount);
+        } else if (pl.adjustmentType === 'FIXED_PRICE') {
+          plPrice = Number(pl.amount);
+        }
 
-  private getStorefrontPricing(product: any) {
-    const basePrice = Number(product.basePrice ?? 0);
-    const salePrice =
-      product.salePrice !== null && product.salePrice !== undefined
-        ? Number(product.salePrice)
-        : undefined;
-    let finalPrice = salePrice !== undefined ? salePrice : basePrice;
-
-    if (product.campaign) {
-      let campaignDiscount = 0;
-
-      if (product.campaign.discountType === 'PERCENTAGE') {
-        campaignDiscount =
-          basePrice * (Number(product.campaign.discountValue) / 100);
-      } else if (product.campaign.discountType === 'FIXED_AMOUNT') {
-        campaignDiscount = Number(product.campaign.discountValue);
-      }
-
-      const campaignPrice = Math.max(0, basePrice - campaignDiscount);
-      if (campaignPrice < finalPrice) {
-        finalPrice = campaignPrice;
+        plPrice = Math.max(0, plPrice);
+        if (plPrice < bestPrice) bestPrice = plPrice;
       }
     }
 
-    const discountAmount = Math.max(0, basePrice - finalPrice);
+    const discountAmount = Math.max(0, basePrice - bestPrice);
 
     return {
-      finalPrice,
+      finalPrice: bestPrice,
       discountAmount,
       discountPercent: basePrice > 0 ? (discountAmount / basePrice) * 100 : 0,
     };
   }
 
   async getProductBySlug(slug: string) {
-    const product = await this.prisma.product.findUnique({
+    const campaigns = await this.campaignsService.getActiveCampaigns();
+    const allPriceLists = await this.priceListsService.findAll();
+    const activePriceLists = allPriceLists.filter(pl => pl.effectiveStatus === 'ACTIVE');
+
+    let product = await this.prisma.product.findUnique({
       where: { slug, isActive: true },
       include: {
         category: { select: { id: true, name: true, slug: true } },
@@ -635,12 +634,24 @@ export class StorefrontService {
         basePrice: true,
         salePrice: true,
         images: true,
+        category: { select: { id: true, name: true, slug: true } },
       },
     });
 
+    const pricing = this.calculateBestPrice(product, campaigns, activePriceLists);
+    if (pricing.finalPrice < Number(product.basePrice)) {
+      product.salePrice = new Prisma.Decimal(pricing.finalPrice);
+    }
+
+    const relatedProductsWithDiscounts = this.applyStorefrontPricing(
+      relatedProducts,
+      campaigns,
+      activePriceLists,
+    );
+
     return {
       ...product,
-      relatedProducts,
+      relatedProducts: relatedProductsWithDiscounts,
     };
   }
 
@@ -684,6 +695,10 @@ export class StorefrontService {
   // ========== HOME / SETTINGS ==========
 
   async getFavorites(customerId: string) {
+    const campaigns = await this.campaignsService.getActiveCampaigns();
+    const allPriceLists = await this.priceListsService.findAll();
+    const activePriceLists = allPriceLists.filter(pl => pl.effectiveStatus === 'ACTIVE');
+
     const favorites = await this.prisma.favorite.findMany({
       where: { customerId },
       include: {
@@ -695,7 +710,7 @@ export class StorefrontService {
             basePrice: true,
             salePrice: true,
             images: true,
-            category: { select: { name: true } },
+            category: { select: { id: true, name: true, slug: true } },
           },
         },
       },
@@ -705,10 +720,13 @@ export class StorefrontService {
     return favorites.map((fav) => {
       const product = fav.product;
       const images = product.images as string[];
-      const price = Number(product.salePrice || product.basePrice);
-      const compareAtPrice = product.salePrice
+      const pricing = this.calculateBestPrice(product, campaigns, activePriceLists);
+      
+      const price = pricing.finalPrice;
+      const compareAtPrice = price < Number(product.basePrice)
         ? Number(product.basePrice)
         : undefined;
+        
       return {
         id: product.id,
         name: product.name,

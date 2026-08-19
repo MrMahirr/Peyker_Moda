@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { storeApi, StoreUser } from "@/lib/api";
 import { CollectionLink } from "../types";
+import { useSaleProducts } from "@/hooks/useSaleProducts";
 
 export function useHeaderState() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export function useHeaderState() {
   const [user, setUser] = useState<StoreUser | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [collections, setCollections] = useState<CollectionLink[]>([]);
+  const { hasSaleProducts } = useSaleProducts();
 
   const closeSearch = useCallback(() => setIsSearchOpen(false), []);
   const openSearch = useCallback(() => setIsSearchOpen(true), []);
@@ -97,5 +99,6 @@ export function useHeaderState() {
     logout,
     collections,
     shouldApplyScrolledStyle,
+    hasSaleProducts,
   };
 }

@@ -20,9 +20,6 @@ export const metadata: Metadata = {
   description: "Zarif kadın giyim, aksesuar ve en yeni moda trendleri. Ücretsiz kargo ve kolay iade.",
   keywords: "kadın giyim, elbise, aksesuar, moda, online alışveriş, peyker moda",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://peykermoda.com"),
-  alternates: {
-    canonical: "/",
-  },
   robots: {
     index: true,
     follow: true,
@@ -66,7 +63,7 @@ export default function RootLayout({
 }>) {
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "OnlineStore",
+    "@type": ["Organization", "OnlineStore"],
     "name": "Peyker Moda",
     "url": "https://peykermoda.com",
     "logo": "https://peykermoda.com/logo.png",

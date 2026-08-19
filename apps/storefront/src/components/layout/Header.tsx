@@ -23,6 +23,7 @@ export default function Header() {
     logout,
     collections,
     shouldApplyScrolledStyle,
+    hasSaleProducts,
   } = useHeaderState();
 
   return (
@@ -52,6 +53,7 @@ export default function Header() {
         <DesktopNavigation
           collections={collections}
           shouldApplyScrolledStyle={shouldApplyScrolledStyle}
+          hasSaleProducts={hasSaleProducts}
         />
 
         <HeaderActions

@@ -8,10 +8,11 @@ import CategoriesSection from "@/components/home/CategoriesSection";
 import ProductSection from "@/components/home/ProductSection";
 import { storeApi, Product } from "@/lib/api";
 import { resolveProductImages } from "@/lib/utils";
+import { useSaleProducts } from "@/hooks/useSaleProducts";
 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [saleProducts, setSaleProducts] = useState<Product[]>([]);
+  const { saleProducts, loadingSaleProducts } = useSaleProducts();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,14 +27,7 @@ export default function HomePage() {
         sortBy: "newest",
       });
 
-      // Sale products - on sale items
-      const sale = await storeApi.getProducts({
-        onSale: true,
-        limit: 8,
-      });
-
       setFeaturedProducts(featured.products);
-      setSaleProducts(sale.products);
     } catch (error) {
       console.error("Failed to fetch products:", error);
     } finally {
@@ -76,13 +70,15 @@ export default function HomePage() {
           loading={loading}
         />
 
-        <ProductSection
-          title="Sezon İndirimleri"
-          subtitle="Favori parçalarınızda kaçırılmayacak fırsatlar."
-          products={transformProducts(saleProducts)}
-          isSale={true}
-          loading={loading}
-        />
+        {(!loadingSaleProducts && saleProducts.length > 0) && (
+          <ProductSection
+            title="Sezon İndirimleri"
+            subtitle="Favori parçalarınızda kaçırılmayacak fırsatlar."
+            products={transformProducts(saleProducts)}
+            isSale={true}
+            loading={loadingSaleProducts}
+          />
+        )}
       </main>
 
       <Footer />

@@ -13,11 +13,13 @@ import { CollectionLink } from "./types";
 interface DesktopNavigationProps {
   collections: CollectionLink[];
   shouldApplyScrolledStyle: boolean;
+  hasSaleProducts?: boolean;
 }
 
 export function DesktopNavigation({
   collections,
   shouldApplyScrolledStyle,
+  hasSaleProducts = false,
 }: DesktopNavigationProps) {
   return (
     <nav
@@ -29,12 +31,15 @@ export function DesktopNavigation({
       <CollectionsMenu collections={collections} />
       <NavLink href="/giyim">Giyim</NavLink>
       <NavLink href="/aksesuar">Aksesuar</NavLink>
-      <Link
-        href="/indirim"
-        className="hover:text-amber-500 transition-colors relative group font-semibold text-rose-500 hover:text-rose-600"
-      >
-        Indirim
-      </Link>
+      
+      {hasSaleProducts && (
+        <Link
+          href="/indirim"
+          className="hover:text-amber-500 transition-colors relative group font-semibold text-rose-500 hover:text-rose-600"
+        >
+          İndirim
+        </Link>
+      )}
     </nav>
   );
 }

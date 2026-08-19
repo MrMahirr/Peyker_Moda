@@ -11,5 +11,6 @@ import { PriceListsStorageService } from './price-lists-storage.service';
     PriceListsReferenceService,
     PriceListsStorageService,
   ],
+  exports: [PriceListsService],
 })
 export class PriceListsModule {}

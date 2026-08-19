@@ -42,16 +42,16 @@ export function MobileNavigation({
         </button>
       </SheetTrigger>
       
-      <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 flex flex-col">
-        <SheetHeader className="p-6 border-b text-left">
-          <SheetTitle className="text-xl font-bold tracking-tight">Menü</SheetTitle>
+      <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 flex flex-col bg-white/75 backdrop-blur-xl border-r-white/20 shadow-2xl">
+        <SheetHeader className="p-6 border-b border-stone-200/50 text-left">
+          <SheetTitle className="text-xl font-bold tracking-tight text-stone-800">Menü</SheetTitle>
         </SheetHeader>
         
         <div className="flex flex-col p-4 overflow-y-auto flex-1">
           <nav className="flex flex-col gap-2">
             <Link 
               href="/" 
-              className="py-3 px-4 text-base font-medium rounded-md hover:bg-stone-50 transition-colors"
+              className="py-3 px-4 text-base font-medium text-stone-800 rounded-md hover:bg-stone-900/5 transition-colors"
               onClick={closeMenu}
             >
               Ana Sayfa
@@ -60,7 +60,7 @@ export function MobileNavigation({
             {/* Koleksiyonlar Akordiyonu */}
             <div className="flex flex-col">
               <button 
-                className="py-3 px-4 text-base font-medium rounded-md hover:bg-stone-50 transition-colors flex justify-between items-center"
+                className="py-3 px-4 text-base font-medium text-stone-800 rounded-md hover:bg-stone-900/5 transition-colors flex justify-between items-center"
                 onClick={() => setIsCollectionsOpen(!isCollectionsOpen)}
               >
                 Koleksiyonlar
@@ -72,10 +72,10 @@ export function MobileNavigation({
               </button>
               
               {isCollectionsOpen && (
-                <div className="flex flex-col ml-4 border-l-2 border-stone-100 pl-2 mt-1 mb-2 space-y-1">
+                <div className="flex flex-col ml-4 border-l-2 border-stone-900/10 pl-2 mt-1 mb-2 space-y-1">
                   <Link
                     href="/koleksiyonlar/cok-satanlar"
-                    className="py-2 px-4 text-sm font-semibold text-amber-600 rounded-md hover:bg-stone-50 transition-colors"
+                    className="py-2 px-4 text-sm font-semibold text-amber-600 rounded-md hover:bg-stone-900/5 transition-colors"
                     onClick={closeMenu}
                   >
                     Çok Satanlar
@@ -84,7 +84,7 @@ export function MobileNavigation({
                     <Link
                       key={collection.slug}
                       href={`/koleksiyonlar/${collection.slug}`}
-                      className="py-2 px-4 text-sm text-stone-600 rounded-md hover:bg-stone-50 transition-colors"
+                      className="py-2 px-4 text-sm text-stone-700 rounded-md hover:bg-stone-900/5 transition-colors"
                       onClick={closeMenu}
                     >
                       {collection.title}
@@ -96,7 +96,7 @@ export function MobileNavigation({
             
             <Link 
               href="/giyim" 
-              className="py-3 px-4 text-base font-medium rounded-md hover:bg-stone-50 transition-colors"
+              className="py-3 px-4 text-base font-medium text-stone-800 rounded-md hover:bg-stone-900/5 transition-colors"
               onClick={closeMenu}
             >
               Giyim
@@ -104,7 +104,7 @@ export function MobileNavigation({
             
             <Link 
               href="/aksesuar" 
-              className="py-3 px-4 text-base font-medium rounded-md hover:bg-stone-50 transition-colors"
+              className="py-3 px-4 text-base font-medium text-stone-800 rounded-md hover:bg-stone-900/5 transition-colors"
               onClick={closeMenu}
             >
               Aksesuar
@@ -113,7 +113,7 @@ export function MobileNavigation({
             {hasSaleProducts && (
               <Link 
                 href="/indirim" 
-                className="py-3 px-4 text-base font-semibold text-rose-500 rounded-md hover:bg-rose-50 transition-colors"
+                className="py-3 px-4 text-base font-semibold text-rose-600 rounded-md hover:bg-rose-500/10 transition-colors"
                 onClick={closeMenu}
               >
                 İndirim

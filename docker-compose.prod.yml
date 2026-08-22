@@ -209,6 +209,13 @@ services:
         condition: service_started
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+      - /etc/nginx-secrets/staging.htpasswd:/etc/nginx/staging.htpasswd:ro
+    extra_hosts:
+      # Staging container'ları host'un 127.0.0.1'ine bağlı (docker-compose.staging.yml);
+      # bu container'ın kendi loopback'i host'unkiyle aynı değil, bu yüzden host
+      # gateway'i üzerinden erişim gerekiyor.
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     networks:
       - peyker-network

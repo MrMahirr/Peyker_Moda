@@ -78,38 +78,41 @@ async function bootstrap() {
     new TransformInterceptor(),
   );
 
-  // Swagger setup
-  const config = new DocumentBuilder()
-    .setTitle('Peyker Moda API')
-    .setDescription('E-ticaret ve POS sistemi API dokümantasyonu')
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Enter JWT token',
-        in: 'header',
-      },
-      'JWT-auth',
-    )
-    .addTag('Auth', 'Kimlik doğrulama işlemleri')
-    .addTag('Users', 'Kullanıcı yönetimi')
-    .addTag('Categories', 'Kategori yönetimi')
-    .addTag('Products', 'Ürün yönetimi')
-    .addTag('Customers', 'Müşteri yönetimi')
-    .addTag('Orders', 'Sipariş yönetimi')
-    .addTag('POS', 'Satış noktası işlemleri')
-    .addTag('Dashboard', 'Dashboard verileri')
-    .build();
+  // Swagger setup — dev/staging only, never exposed in production
+  const isProduction = configService.get<string>('NODE_ENV') === 'production';
+  if (!isProduction) {
+    const config = new DocumentBuilder()
+      .setTitle('Peyker Moda API')
+      .setDescription('E-ticaret ve POS sistemi API dokümantasyonu')
+      .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Enter JWT token',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
+      .addTag('Auth', 'Kimlik doğrulama işlemleri')
+      .addTag('Users', 'Kullanıcı yönetimi')
+      .addTag('Categories', 'Kategori yönetimi')
+      .addTag('Products', 'Ürün yönetimi')
+      .addTag('Customers', 'Müşteri yönetimi')
+      .addTag('Orders', 'Sipariş yönetimi')
+      .addTag('POS', 'Satış noktası işlemleri')
+      .addTag('Dashboard', 'Dashboard verileri')
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  });
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    });
+  }
 
   // Start server
   const port = configService.get<number>('app.port', 3000);
@@ -118,7 +121,9 @@ async function bootstrap() {
   logger.log(
     `🚀 Application is running on: http://localhost:${port}/${apiPrefix}`,
   );
-  logger.log(`📚 Swagger documentation: http://localhost:${port}/docs`);
+  if (!isProduction) {
+    logger.log(`📚 Swagger documentation: http://localhost:${port}/docs`);
+  }
 }
 
 bootstrap();

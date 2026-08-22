@@ -58,12 +58,18 @@ function LoginPageContent() {
                     client_id: clientId,
                     callback: handleGoogleCallback,
                 });
+                const container = document.getElementById("google-signin-btn");
+                // Google's button needs an exact pixel width; measure the actual
+                // container instead of hardcoding one, so it never overflows on
+                // narrow viewports. 200/400 are Google's documented min/max.
+                const measuredWidth = container?.clientWidth || 382;
+                const width = Math.max(200, Math.min(measuredWidth, 400));
                 google.accounts.id.renderButton(
-                    document.getElementById("google-signin-btn"),
+                    container,
                     {
                         theme: "outline",
                         size: "large",
-                        width: 382, // exact fits max-w-md nicely
+                        width,
                         logo_alignment: "center",
                         text: "signin_with",
                         locale: "tr"

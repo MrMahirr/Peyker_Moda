@@ -16,6 +16,18 @@ export class TransactionsService {
   constructor(private prisma: PrismaService) {}
 
   /**
+   * Bir tarih string'ini (plain "YYYY-MM-DD" ya da tam ISO datetime) o günün
+   * sonuna (23:59:59.999 UTC) ayarlanmış bir Date'e çevirir. String concat
+   * yerine Date manipülasyonu kullanır, çünkü tam ISO string üzerine
+   * 'T23:59:59.999Z' eklemek geçersiz bir tarih üretir.
+   */
+  private endOfDay(dateStr: string): Date {
+    const date = new Date(dateStr);
+    date.setUTCHours(23, 59, 59, 999);
+    return date;
+  }
+
+  /**
    * İşlem listesi
    */
   async findAll(query: TransactionQueryDto) {
@@ -37,7 +49,7 @@ export class TransactionsService {
         where.transactionDate.gte = new Date(query.startDate);
       }
       if (query.endDate) {
-        where.transactionDate.lte = new Date(query.endDate + 'T23:59:59.999Z');
+        where.transactionDate.lte = this.endOfDay(query.endDate);
       }
     }
 
@@ -142,7 +154,7 @@ export class TransactionsService {
   async getSummary(query: ReportQueryDto) {
     const dateFilter = {
       gte: new Date(query.startDate),
-      lte: new Date(query.endDate + 'T23:59:59.999Z'),
+      lte: this.endOfDay(query.endDate),
     };
 
     // Gelir/Gider toplamları
@@ -267,7 +279,7 @@ export class TransactionsService {
   async getSalesReport(query: ReportQueryDto) {
     const dateFilter = {
       gte: new Date(query.startDate),
-      lte: new Date(query.endDate + 'T23:59:59.999Z'),
+      lte: this.endOfDay(query.endDate),
     };
 
     // Siparişler
@@ -331,7 +343,7 @@ export class TransactionsService {
   async getProductsReport(query: ReportQueryDto) {
     const dateFilter = {
       gte: new Date(query.startDate),
-      lte: new Date(query.endDate + 'T23:59:59.999Z'),
+      lte: this.endOfDay(query.endDate),
     };
 
     // En çok satanlar
@@ -420,7 +432,7 @@ export class TransactionsService {
    */
   async getZReport(date: string) {
     const startOfDay = new Date(date);
-    const endOfDay = new Date(date + 'T23:59:59.999Z');
+    const endOfDay = this.endOfDay(date);
 
     const [orders, payments, transactions] = await Promise.all([
       // Siparişler
@@ -511,7 +523,7 @@ export class TransactionsService {
     if (startDate && endDate) {
       where.transactionDate = {
         gte: new Date(startDate),
-        lte: new Date(endDate + 'T23:59:59.999Z'),
+        lte: this.endOfDay(endDate),
       };
     }
 

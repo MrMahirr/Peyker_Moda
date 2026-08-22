@@ -256,7 +256,17 @@ npx prisma generate
 
 ### SSL sertifikası
 
-Let's Encrypt, `certbot` ile alınmış (`peykermoda.com`, `www.peykermoda.com`, `admin.peykermoda.com`), sertifikalar `/etc/letsencrypt/` altında, nginx container'ına salt-okunur mount edilir (`docker-compose.prod.yml`'de `volumes: - /etc/letsencrypt:/etc/letsencrypt:ro`). Yenileme, certbot paketinin kurduğu `/etc/cron.d/certbot` girdisiyle otomatik günlük kontrol edilir; sertifika yenilenince nginx container'ının yeni dosyayı okuması için `docker compose restart nginx` gerekebilir.
+Let's Encrypt, `certbot` ile alınmış — `peykermoda.com`, `www.peykermoda.com`, `admin.peykermoda.com`, `staging.peykermoda.com`, `admin.staging.peykermoda.com` (tek sertifika, hepsi SAN olarak). Sertifikalar `/etc/letsencrypt/` altında, nginx container'ına salt-okunur mount edilir (`docker-compose.prod.yml`'de `volumes: - /etc/letsencrypt:/etc/letsencrypt:ro`).
+
+Yenileme **webroot** yöntemiyle yapılır (host'ta `/var/www/certbot`, nginx container'ına da aynı yol salt-okunur mount edilir; her `HTTP:80` sunucu bloğunda bir `location /.well-known/acme-challenge/ { root /var/www/certbot; }` var) — bu sayede nginx durdurulmadan, downtime'sız yenilenir. Certbot paketinin kurduğu `/etc/cron.d/certbot` girdisi bunu günde iki kez otomatik dener (30 günden az kaldıysa yeniler). Yenilenince nginx'in yeni sertifika dosyasını okuması için `docker exec peyker_prod_nginx nginx -s reload` (tam restart gerekmez).
+
+Yeni bir subdomain sertifikaya eklenecekse:
+```bash
+sudo certbot certonly --webroot -w /var/www/certbot --expand --non-interactive --agree-tos \
+  -m <email> -d peykermoda.com -d www.peykermoda.com -d admin.peykermoda.com \
+  -d staging.peykermoda.com -d admin.staging.peykermoda.com -d <yeni-domain>
+```
+Domain Cloudflare üzerinden proxy'leniyorsa (turuncu bulut), `HTTP:80` isteği doğrulama sırasında HTTPS'e yönlendirilip başarısız olabilir (hedef domain'in henüz geçerli sertifikası olmadığı için) — bu durumda ilgili DNS kaydını geçici olarak "DNS only" (gri bulut) yapıp sertifikayı öyle almak gerekir.
 
 ### Yedekleme
 
@@ -272,6 +282,30 @@ Production'da veritabanı Docker volume'unda (`postgres_data`) kalıcıdır; con
 docker compose -f docker-compose.prod.yml --env-file .env.docker ps
 docker logs --tail 50 peyker_prod_api
 ```
+
+### Staging ortamı (geliştirici test ortamı)
+
+Aynı sunucuda, production'dan tamamen izole (ayrı container, ayrı veritabanı, ayrı `.env`) bir test ortamı çalışır — `dev` branch'ini production'a almadan denemek için.
+
+- **Adresler:** https://staging.peykermoda.com (storefront), https://admin.staging.peykermoda.com (admin) — ikisi de HTTP Basic Auth ile korunur (kimlik bilgileri sunucuda `/home/deploy/staging_basicauth_ONLY.txt`) ve arama motorlarına kapalıdır (`X-Robots-Tag: noindex`).
+- **Proje dizini:** `/var/www/peyker-app-staging` (`dev` branch'inin klonu)
+- **Ortam dosyası:** `.env.staging` (kendi Postgres/Redis/MinIO/JWT secret'ları — production'la hiçbir değeri paylaşmaz)
+- **Container isimleri:** `peyker_staging_*` (`docker-compose.staging.yml` override dosyası, `docker-compose.prod.yml` ile birlikte kullanılır, `container_name` çakışmasını önler)
+- **Ağ mimarisi:** Staging'in kendi nginx'i çalışmaz — production'daki sertleştirilmiş nginx, `peyker_shared` adlı (sunucuda bir kere elle oluşturulan, her iki compose projesinden de bağımsız) paylaşımlı bir Docker ağı üzerinden staging container'larına **container adıyla** ulaşır. Bu, `127.0.0.1`'e bağlı host portlarının farklı bir Docker bridge ağından erişilememesi sorununu (kernel loopback trafiğini bridge'den gelen trafikle aynı saymaz) tamamen ortadan kaldırır.
+
+Deploy:
+
+```bash
+cd /var/www/peyker-app-staging && git pull origin dev
+docker compose -p peyker_staging -f docker-compose.prod.yml -f docker-compose.staging.yml \
+  --env-file .env.staging build api admin storefront
+docker compose -p peyker_staging -f docker-compose.prod.yml -f docker-compose.staging.yml \
+  --env-file .env.staging up -d --force-recreate api admin storefront
+```
+
+(`postgres`/`redis`/`minio` genelde ilk kurulumdan sonra tekrar build/recreate edilmez.) `nginx` servisi **asla** bu komutlara dahil edilmez — production'ın nginx'i her iki ortamı da yönetir.
+
+Sıfırdan aynısını başka bir sunucuda kurmak gerekirse: `docker network create peyker_shared` → `/var/www/peyker-app-staging`'e `dev` branch'ini klonla → `.env.staging` oluştur (yeni, benzersiz secret'larla) → yukarıdaki build/up komutlarını `postgres redis minio api admin storefront` ile çalıştır → migrate+seed → production nginx'ine `staging.` / `admin.staging.` subdomain'leri için server block'ları ekle (`docker/nginx/nginx.conf`'taki mevcut STAGING bölümüne bakın) → certbot ile sertifikayı genişlet (bkz. yukarıdaki SSL bölümü) → `/etc/nginx-secrets/staging.htpasswd` dosyasını oluştur (`openssl passwd -apr1`).
 
 ---
 

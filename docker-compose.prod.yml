@@ -211,14 +211,15 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
       - /etc/nginx-secrets/staging.htpasswd:/etc/nginx/staging.htpasswd:ro
-    extra_hosts:
-      # Staging container'ları host'un 127.0.0.1'ine bağlı (docker-compose.staging.yml);
-      # bu container'ın kendi loopback'i host'unkiyle aynı değil, bu yüzden host
-      # gateway'i üzerinden erişim gerekiyor.
-      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     networks:
       - peyker-network
+      # Staging container'larına (ayrı compose projesi) container adıyla
+      # ulaşabilmek için — 127.0.0.1'e bağlı host portları, farklı bir
+      # Docker bridge ağından gelen trafik için loopback sayılmadığından
+      # çalışmaz; bunun yerine önceden oluşturulmuş, her iki projeden de
+      # bağımsız paylaşımlı bir ağ kullanılır (bkz. README).
+      - peyker_shared
     deploy:
       resources:
         limits:
@@ -241,3 +242,8 @@ volumes:
 networks:
   peyker-network:
     driver: bridge
+  # Prod nginx'in staging container'larına ulaşabilmesi için; her iki
+  # compose projesinden de bağımsız, sunucuda önceden oluşturulmalı:
+  #   docker network create peyker_shared
+  peyker_shared:
+    external: true

@@ -12,8 +12,10 @@
 #     --env-file .env.staging up -d postgres redis minio api admin storefront
 #
 # nginx servisi kasıtlı olarak başlatılmaz — production'daki sertleştirilmiş
-# nginx, staging.peykermoda.com / admin.staging.peykermoda.com isteklerini
-# aşağıdaki 127.0.0.1 portlarına proxy_pass ile yönlendirir (bkz. README).
+# nginx, staging.peykermoda.com / admin.staging.peykermoda.com isteklerini,
+# aşağıdaki servislerin de üye olduğu paylaşımlı "peyker_shared" Docker
+# ağı üzerinden container adlarıyla proxy_pass eder (bkz. README).
+# Sunucuda bir kere oluşturulmalı: docker network create peyker_shared
 
 services:
   postgres:
@@ -24,24 +26,27 @@ services:
 
   minio:
     container_name: peyker_staging_minio
-    # Base compose file already sets ports for minio; Compose merges list
-    # fields by appending rather than replacing, so this must be reset
-    # explicitly or it collides with production's 9000/9001 binding.
+    # Host'a yayınlanan portlar sadece geliştiricinin SSH tüneliyle MinIO
+    # konsoluna bakabilmesi için (127.0.0.1 = sadece sunucudan erişilir).
+    # Base dosya zaten ports tanımlıyor; Compose liste alanlarını
+    # değiştirmek yerine birleştirdiği için burada sıfırlamak gerekiyor.
     ports: !override
       - "127.0.0.1:9002:9000"
       - "127.0.0.1:9003:9001"
+    networks:
+      - peyker_shared
 
   api:
     container_name: peyker_staging_api
-    ports:
-      - "127.0.0.1:4000:3000"
+    networks:
+      - peyker_shared
 
   admin:
     container_name: peyker_staging_admin
-    ports:
-      - "127.0.0.1:4001:80"
+    networks:
+      - peyker_shared
 
   storefront:
     container_name: peyker_staging_storefront
-    ports:
-      - "127.0.0.1:4002:3000"
+    networks:
+      - peyker_shared

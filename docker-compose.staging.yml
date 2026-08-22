@@ -24,7 +24,10 @@ services:
 
   minio:
     container_name: peyker_staging_minio
-    ports:
+    # Base compose file already sets ports for minio; Compose merges list
+    # fields by appending rather than replacing, so this must be reset
+    # explicitly or it collides with production's 9000/9001 binding.
+    ports: !override
       - "127.0.0.1:9002:9000"
       - "127.0.0.1:9003:9001"
 

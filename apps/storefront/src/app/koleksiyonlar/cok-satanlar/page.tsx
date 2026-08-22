@@ -94,7 +94,7 @@ export default function BestSellersPage() {
       <div className="relative h-[50vh] bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-40 grayscale transition-all duration-700" 
-          style={{ backgroundImage: `url('${headerData?.imageUrl || 'https://images.unsplash.com/photo-1569388330292-79cc1ec67270?q=80&w=2000&auto=format&fit=crop'}')` }}
+          style={{ backgroundImage: `url('${headerData?.imageUrl || '/peyker-moda-kapak1.png'}')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent" />
 

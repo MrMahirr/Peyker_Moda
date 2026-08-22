@@ -81,7 +81,7 @@ export const InventoryTable = () => {
                                 const stockStatus = calculateStatus(product.totalStock);
                                 const defaultImage = product.images && product.images.length > 0 
                                     ? (product.images[0].startsWith('http') ? product.images[0] : `${(import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api'}/uploads/${product.images[0]}`) 
-                                    : 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=150&auto=format&fit=crop&sepia=100'; // Default placeholder
+                                    : '/peyker-moda-kapak3.png'; // Default placeholder
 
                                 return (
                                     <tr

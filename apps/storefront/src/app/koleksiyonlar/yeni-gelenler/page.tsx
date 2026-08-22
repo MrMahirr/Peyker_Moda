@@ -108,7 +108,7 @@ export default function NewArrivalsPage() {
         {/* Sağ Taraf: Büyük Görsel */}
         <div className="w-full md:w-1/2 h-[50vh] md:h-full relative">
           <Image
-            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2000&auto=format&fit=crop"
+            src="/peyker-moda-kapak1.png"
             alt="New Season Fashion"
             fill
             className="object-cover"

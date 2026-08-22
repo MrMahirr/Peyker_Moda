@@ -28,8 +28,7 @@ export const collectionsDB: Record<string, CollectionDbEntry> = {
       subtitle: "Soğuk günlerin sıcak ve zarif dokunuşu.",
       description:
         "Doğanın dinginliğinden ilham alan, kaşmir dokular ve toprak tonlarının hakim olduğu yeni sezon seçkisi.",
-      coverImage:
-        "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?q=80&w=2000&auto=format&fit=crop",
+      coverImage: "/peyker-moda-kapak1.png",
       accentColor: "bg-amber-600",
     },
     products: [
@@ -38,8 +37,7 @@ export const collectionsDB: Record<string, CollectionDbEntry> = {
         name: "Kaşmir Oversize Palto",
         price: 8500,
         oldPrice: null,
-        image:
-          "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=800&auto=format&fit=crop",
+        image: "",
         description: "Soğuk havalarda stilinizden ödün vermeyin.",
         category: "Dış Giyim",
       },
@@ -48,8 +46,7 @@ export const collectionsDB: Record<string, CollectionDbEntry> = {
         name: "Yünlü Triko Takım",
         price: 3200,
         oldPrice: null,
-        image:
-          "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=800&auto=format&fit=crop",
+        image: "",
         description: "Ev konforunu sokağa taşıyan şıklık.",
         category: "Triko",
       },
@@ -61,8 +58,7 @@ export const collectionsDB: Record<string, CollectionDbEntry> = {
       title: "Yeni Gelenler",
       subtitle: "Sezonun en taze parçaları burada.",
       description: "Podyumlardan sokağa taşınan en yeni trendler.",
-      coverImage:
-        "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2000&auto=format&fit=crop",
+      coverImage: "/peyker-moda-kapak1.png",
       accentColor: "bg-rose-600",
     },
     products: [
@@ -72,8 +68,7 @@ export const collectionsDB: Record<string, CollectionDbEntry> = {
         name: "Drapeli Saten Elbise",
         price: 3250,
         oldPrice: null,
-        image:
-          "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=800&auto=format&fit=crop",
+        image: "",
         category: "Elbise",
         description: "Gece davetlerinin vazgeçilmezi.",
       },

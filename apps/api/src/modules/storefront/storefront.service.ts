@@ -346,9 +346,7 @@ export class StorefrontService {
       title: collection.name,
       subtitle: 'Yeni Sezon Koleksiyonu',
       description: 'Modern ve şık tasarımlarla tarzınızı yansıtın.',
-      coverImage:
-        collection.imageUrl ||
-        'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
+      coverImage: collection.imageUrl || '/peyker-moda-kapak1.png',
       accentColor: 'bg-amber-500',
       categorySlug: collection.slug || 'giyim',
     };
@@ -733,7 +731,7 @@ export class StorefrontService {
         slug: product.slug,
         price,
         compareAtPrice,
-        image: images?.[0] || 'https://via.placeholder.com/300',
+        image: images?.[0] || '',
         category: product.category?.name || 'Giyim',
         inStock: true,
       };

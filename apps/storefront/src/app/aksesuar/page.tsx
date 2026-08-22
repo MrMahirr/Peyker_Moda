@@ -103,7 +103,7 @@ export default function AccessoriesPage() {
         <div
           className="absolute inset-0 bg-cover bg-center opacity-40 transition-all duration-700"
           style={{
-            backgroundImage: `url('${headerData?.imageUrl || "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=2000&auto=format&fit=crop"}')`,
+            backgroundImage: `url('${headerData?.imageUrl || "/peyker-moda-kapak1.png"}')`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-900 to-transparent" />

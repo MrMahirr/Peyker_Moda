@@ -68,6 +68,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+# Next.js standalone server.js falls back to process.env.HOSTNAME, which Docker
+# auto-sets to the container ID — binding only to that interface, not loopback.
+# Force it to bind all interfaces so localhost healthchecks succeed.
+ENV HOSTNAME=0.0.0.0
 
 # Next.js standalone output kopyala
 COPY --from=build --chown=nextjs:nextjs /app/apps/storefront/.next/standalone ./

@@ -9,27 +9,15 @@ import { ArrowDown, ArrowRight, Loader2, Sparkles } from 'lucide-react';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { storeApi, Product } from "@/lib/api";
+import { storeApi, CollectionData } from "@/lib/api";
 import { fadeInUp, formatPrice, resolveProductImages } from "@/lib/utils";
-
-interface CollectionData {
-  id: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  coverImage: string;
-  accentColor: string;
-  categorySlug?: string;
-}
 
 export default function DynamicCollectionPage() {
   const params = useParams();
   const slug = params.slug as string;
 
-  const [products, setProducts] = useState<Product[]>([]);
   const [collection, setCollection] = useState<CollectionData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [productsLoading, setProductsLoading] = useState(true);
 
   useEffect(() => {
     if (slug) {
@@ -41,10 +29,7 @@ export default function DynamicCollectionPage() {
     setLoading(true);
     try {
       const data = await storeApi.getCollectionBySlug(slug);
-      if (data) {
-        setCollection(data);
-        fetchProducts(data.categorySlug);
-      }
+      setCollection(data);
     } catch (error) {
       console.error('Failed to fetch collection metadata:', error);
     } finally {
@@ -52,20 +37,7 @@ export default function DynamicCollectionPage() {
     }
   };
 
-  const fetchProducts = async (categorySlug?: string) => {
-    setProductsLoading(true);
-    try {
-      const result = await storeApi.getProducts({
-        categorySlug: categorySlug,
-        limit: 12,
-      });
-      setProducts(result.products);
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-    } finally {
-      setProductsLoading(false);
-    }
-  };
+  const products = collection?.products || [];
 
   if (loading) {
     return (
@@ -120,9 +92,6 @@ export default function DynamicCollectionPage() {
           <h1 className="text-6xl md:text-9xl font-serif font-bold mb-6 drop-shadow-lg leading-tight">
             {collection.title}
           </h1>
-          <p className="text-xl md:text-2xl font-light text-stone-200 mb-10 max-w-2xl mx-auto">
-            {collection.subtitle}
-          </p>
           <div className="animate-bounce mt-10">
             <ArrowDown className="w-8 h-8 mx-auto text-white/50" />
           </div>
@@ -147,11 +116,7 @@ export default function DynamicCollectionPage() {
 
         {/* --- PRODUCT LOOKBOOK --- */}
         <section className="container mx-auto px-4 md:px-8 pb-32">
-          {productsLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
-            </div>
-          ) : products.length === 0 ? (
+          {products.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-stone-500">Bu koleksiyonda henüz ürün bulunmuyor.</p>
             </div>

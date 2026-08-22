@@ -38,12 +38,18 @@ export function ProductImageArea({
 
       <FavoriteButton favorited={favorited} onToggle={onFavoriteToggle} />
 
-      <Image
-        src={product.image}
-        alt={product.name}
-        fill
-        className="object-cover transition-transform duration-700 group-hover:scale-105"
-      />
+      {product.image ? (
+        <Image
+          src={product.image}
+          alt={product.name}
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-stone-400">
+          Görsel Yok
+        </div>
+      )}
 
       <div className="absolute inset-x-0 bottom-0 z-20 translate-y-full bg-gradient-to-t from-black/50 to-transparent p-4 transition-transform duration-300 group-hover:translate-y-0">
         <Button

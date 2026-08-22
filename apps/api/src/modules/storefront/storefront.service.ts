@@ -333,24 +333,52 @@ export class StorefrontService {
   }
 
   async getCollectionBySlug(slug: string) {
-    const contents =
-      await this.collectionContentStorage.getCollectionContents();
-    const collection = contents.find((c) => c.slug === slug || c.id === slug);
+    const collection = await this.prisma.collection.findUnique({
+      where: { slug },
+      include: {
+        products: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            basePrice: true,
+            salePrice: true,
+            images: true,
+            category: { select: { id: true, name: true, slug: true } },
+            variants: {
+              where: { stock: { gt: 0 } },
+              select: { id: true, size: true, color: true, stock: true },
+              take: 5,
+            },
+            _count: { select: { variants: true } },
+          },
+        },
+      },
+    });
 
     if (!collection || !collection.isActive) {
       throw new NotFoundException('Koleksiyon bulunamadı');
     }
 
+    const campaigns = await this.campaignsService.getActiveCampaigns();
+    const allPriceLists = await this.priceListsService.findAll();
+    const activePriceLists = allPriceLists.filter(
+      (pl) => pl.effectiveStatus === 'ACTIVE',
+    );
+
     return {
       id: collection.id,
       title: collection.name,
-      subtitle: 'Yeni Sezon Koleksiyonu',
-      description: 'Modern ve şık tasarımlarla tarzınızı yansıtın.',
-      coverImage:
-        collection.imageUrl ||
-        'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000',
+      description: collection.description || '',
+      coverImage: collection.imageUrl || '/peyker-moda-kapak1.png',
       accentColor: 'bg-amber-500',
-      categorySlug: collection.slug || 'giyim',
+      products: this.applyStorefrontPricing(
+        collection.products,
+        campaigns,
+        activePriceLists,
+      ),
     };
   }
 
@@ -733,7 +761,7 @@ export class StorefrontService {
         slug: product.slug,
         price,
         compareAtPrice,
-        image: images?.[0] || 'https://via.placeholder.com/300',
+        image: images?.[0] || '',
         category: product.category?.name || 'Giyim',
         inStock: true,
       };

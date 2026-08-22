@@ -4,8 +4,7 @@ export const featuredProducts = [
     name: "İpek Saten Midi Elbise",
     price: 2450,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1612336307429-8a898d10e223?q=80&w=800&auto=format&fit=crop",
+    image: "",
     tag: "Yeni",
   },
   {
@@ -13,8 +12,7 @@ export const featuredProducts = [
     name: "Oversize Kaşe Kaban",
     price: 4800,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=800&auto=format&fit=crop",
+    image: "",
     tag: "",
   },
   {
@@ -22,8 +20,7 @@ export const featuredProducts = [
     name: "Triko Kazak Bej",
     price: 1200,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=800&auto=format&fit=crop",
+    image: "",
     tag: "Çok Satan",
   },
   {
@@ -31,8 +28,7 @@ export const featuredProducts = [
     name: "Dokulu Midi Etek",
     price: 1850,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1582142388613-2d1e2e4244db?q=80&w=800&auto=format&fit=crop",
+    image: "",
     tag: "",
   },
 ];
@@ -43,8 +39,7 @@ export const saleProducts = [
     name: "Kruvaze Yaka Ceket",
     price: 2100,
     oldPrice: 3500,
-    image:
-      "https://images.unsplash.com/photo-1548624313-0396c75e4b1a?q=80&w=800&auto=format&fit=crop",
+    image: "",
     tag: "İndirim",
   },
   {
@@ -52,8 +47,7 @@ export const saleProducts = [
     name: "Pileli Mini Etek Siyah",
     price: 750,
     oldPrice: 1250,
-    image:
-      "https://images.unsplash.com/photo-1582142388613-2d1e2e4244db?q=80&w=800&auto=format&fit=crop",
+    image: "",
     tag: "Fırsat",
   },
   {
@@ -61,8 +55,7 @@ export const saleProducts = [
     name: "Balon Kol Bluz",
     price: 890,
     oldPrice: 1490,
-    image:
-      "https://images.unsplash.com/photo-1603519434464-60740ae0d80f?q=80&w=800&auto=format&fit=crop",
+    image: "",
     tag: "İndirim",
   },
   {
@@ -70,8 +63,7 @@ export const saleProducts = [
     name: "Wide Leg Pantolon",
     price: 1350,
     oldPrice: 2200,
-    image:
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=800&auto=format&fit=crop",
+    image: "",
     tag: "",
   },
 ];
@@ -82,8 +74,7 @@ export const allProducts = [
     name: "İpek Saten Midi Elbise",
     price: 2450,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1612336307429-8a898d10e223?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Elbiseler",
     color: "black",
     size: "M",
@@ -94,8 +85,7 @@ export const allProducts = [
     name: "Oversize Kaşe Kaban",
     price: 4800,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Dış Giyim",
     color: "brown",
     size: "L",
@@ -106,8 +96,7 @@ export const allProducts = [
     name: "Triko Kazak Bej",
     price: 1200,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Triko",
     color: "beige",
     size: "S",
@@ -118,8 +107,7 @@ export const allProducts = [
     name: "Dokulu Midi Etek",
     price: 1850,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1582142388613-2d1e2e4244db?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Etek",
     color: "black",
     size: "M",
@@ -130,8 +118,7 @@ export const allProducts = [
     name: "Kruvaze Yaka Ceket",
     price: 2100,
     oldPrice: 3500,
-    image:
-      "https://images.unsplash.com/photo-1548624313-0396c75e4b1a?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Dış Giyim",
     color: "gray",
     size: "M",
@@ -142,8 +129,7 @@ export const allProducts = [
     name: "Pileli Mini Etek Siyah",
     price: 750,
     oldPrice: 1250,
-    image:
-      "https://images.unsplash.com/photo-1582142388613-2d1e2e4244db?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Etek",
     color: "black",
     size: "S",
@@ -154,8 +140,7 @@ export const allProducts = [
     name: "Balon Kol Bluz",
     price: 890,
     oldPrice: 1490,
-    image:
-      "https://images.unsplash.com/photo-1603519434464-60740ae0d80f?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Gömlek & Bluz",
     color: "white",
     size: "L",
@@ -166,8 +151,7 @@ export const allProducts = [
     name: "Wide Leg Pantolon",
     price: 1350,
     oldPrice: 2200,
-    image:
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Pantolon",
     color: "blue",
     size: "M",
@@ -178,8 +162,7 @@ export const allProducts = [
     name: "Keten Gömlek Elbise",
     price: 1950,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Elbiseler",
     color: "white",
     size: "S",
@@ -193,8 +176,7 @@ export const accessoryProducts = [
     name: "Gold Zincir Kolye",
     price: 850,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Kolye",
     color: "gold",
     tag: "Yeni",
@@ -204,8 +186,7 @@ export const accessoryProducts = [
     name: "İnci Detaylı Küpe",
     price: 450,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Küpe",
     color: "white",
     tag: "",
@@ -215,8 +196,7 @@ export const accessoryProducts = [
     name: "Deri Omuz Çantası",
     price: 3200,
     oldPrice: 4500,
-    image:
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Çanta",
     color: "black",
     tag: "İndirim",
@@ -226,8 +206,7 @@ export const accessoryProducts = [
     name: "Vintage Güneş Gözlüğü",
     price: 1250,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Gözlük",
     color: "brown",
     tag: "Trend",
@@ -237,8 +216,7 @@ export const accessoryProducts = [
     name: "İpek Fular",
     price: 650,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1586078320696-6113b2fe99d8?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Şal & Fular",
     color: "multi",
     tag: "",
@@ -248,8 +226,7 @@ export const accessoryProducts = [
     name: "Minimalist Altın Yüzük",
     price: 950,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Yüzük",
     color: "gold",
     tag: "Çok Satan",
@@ -259,8 +236,7 @@ export const accessoryProducts = [
     name: "Hasır Şapka",
     price: 550,
     oldPrice: 800,
-    image:
-      "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Şapka",
     color: "beige",
     tag: "İndirim",
@@ -270,8 +246,7 @@ export const accessoryProducts = [
     name: "Zincir Kemer",
     price: 780,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1616147416348-73b37805903b?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Kemer",
     color: "gold",
     tag: "",
@@ -284,8 +259,7 @@ export const discountedProducts = [
     name: "Kruvaze Yaka Ceket",
     price: 2100,
     oldPrice: 3500,
-    image:
-      "https://images.unsplash.com/photo-1548624313-0396c75e4b1a?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Dış Giyim",
     tag: " %40 İndirim",
   },
@@ -294,8 +268,7 @@ export const discountedProducts = [
     name: "Deri Omuz Çantası",
     price: 3200,
     oldPrice: 4500,
-    image:
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Çanta",
     tag: "Fırsat",
   },
@@ -304,8 +277,7 @@ export const discountedProducts = [
     name: "Pileli Mini Etek",
     price: 750,
     oldPrice: 1250,
-    image:
-      "https://images.unsplash.com/photo-1582142388613-2d1e2e4244db?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Etek",
     tag: "Son Adet",
   },
@@ -314,8 +286,7 @@ export const discountedProducts = [
     name: "Balon Kol Bluz",
     price: 890,
     oldPrice: 1490,
-    image:
-      "https://images.unsplash.com/photo-1603519434464-60740ae0d80f?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Bluz",
     tag: "%40 İndirim",
   },
@@ -324,8 +295,7 @@ export const discountedProducts = [
     name: "Hasır Şapka",
     price: 550,
     oldPrice: 800,
-    image:
-      "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Aksesuar",
     tag: "Yaz İndirimi",
   },
@@ -334,8 +304,7 @@ export const discountedProducts = [
     name: "Kadife Gece Elbisesi",
     price: 3100,
     oldPrice: 5200,
-    image:
-      "https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Elbise",
     tag: "Büyük Fırsat",
   },
@@ -344,8 +313,7 @@ export const discountedProducts = [
     name: "Süet Çizme",
     price: 2800,
     oldPrice: 4200,
-    image:
-      "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Ayakkabı",
     tag: "Kış Sonu",
   },
@@ -354,8 +322,7 @@ export const discountedProducts = [
     name: "İpek Şal",
     price: 450,
     oldPrice: 850,
-    image:
-      "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Aksesuar",
     tag: "%50'ye Varan",
   },
@@ -367,8 +334,7 @@ export const newArrivals = [
     name: "Drapeli Saten Elbise",
     price: 3250,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Elbise",
     tag: "Haftanın Yıldızı",
   },
@@ -377,8 +343,7 @@ export const newArrivals = [
     name: "Crop Blazer Ceket",
     price: 2600,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Ceket",
     tag: "Yeni",
   },
@@ -387,8 +352,7 @@ export const newArrivals = [
     name: "Yüksek Bel Palazzo",
     price: 1800,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Pantolon",
     tag: "Yeni",
   },
@@ -397,8 +361,7 @@ export const newArrivals = [
     name: "Gold Detaylı Kemer",
     price: 650,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1616147416348-73b37805903b?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Aksesuar",
     tag: "",
   },
@@ -407,8 +370,7 @@ export const newArrivals = [
     name: "Asimetrik Kesim Etek",
     price: 1450,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Etek",
     tag: "Trend",
   },
@@ -417,8 +379,7 @@ export const newArrivals = [
     name: "İpek Şifon Bluz",
     price: 1950,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1604176354204-9268737828c9?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Bluz",
     tag: "Yeni",
   },
@@ -430,8 +391,7 @@ export const bestSellers = [
     name: "Zincir Detaylı Triko",
     price: 1450,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1624422262071-86f212261a8a?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Triko",
     tag: "#1 En Çok Satan",
     rating: 5,
@@ -442,8 +402,7 @@ export const bestSellers = [
     name: "Vegan Deri Pantolon",
     price: 1800,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1551163943-3f6a29e3945d?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Pantolon",
     tag: "#2 Popüler",
     rating: 4.9,
@@ -454,8 +413,7 @@ export const bestSellers = [
     name: "Kaşmir Karışımlı Palto",
     price: 5200,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1544266395-58022731885b?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Dış Giyim",
     tag: "#3 Popüler",
     rating: 4.8,
@@ -466,8 +424,7 @@ export const bestSellers = [
     name: "Baget Çanta Siyah",
     price: 2100,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Çanta",
     tag: "Trend",
     rating: 4.7,
@@ -478,8 +435,7 @@ export const bestSellers = [
     name: "Basic Beyaz Gömlek",
     price: 950,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Gömlek",
     tag: "Klasik",
     rating: 4.9,
@@ -490,8 +446,7 @@ export const bestSellers = [
     name: "Minimalist Gold Küpe",
     price: 450,
     oldPrice: null,
-    image:
-      "https://images.unsplash.com/photo-1630019852942-e5e1237d6d49?q=80&w=800&auto=format&fit=crop",
+    image: "",
     category: "Aksesuar",
     tag: "Çok Satan",
     rating: 4.8,

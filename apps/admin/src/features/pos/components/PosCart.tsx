@@ -81,7 +81,7 @@ export const PosCart = ({
                         return (
                         <div key={item.id} className="flex gap-3 bg-white border border-zinc-200/60 rounded-xl p-3 shadow-sm">
                             <div className="flex-shrink-0">
-                                <img src={item.image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&auto=format&fit=crop"} alt={item.name} className="h-14 w-14 object-cover rounded-lg" />
+                                <img src={item.image || "/peyker-moda-kapak3.png"} alt={item.name} className="h-14 w-14 object-cover rounded-lg" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between">

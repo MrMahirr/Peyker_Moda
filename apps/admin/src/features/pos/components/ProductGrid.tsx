@@ -144,7 +144,7 @@ export const PosProductGrid = () => {
               >
                 <div className="aspect-[4/5] bg-zinc-100 relative overflow-hidden">
                   <img
-                    src={product.image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&auto=format&fit=crop"}
+                    src={product.image || "/peyker-moda-kapak3.png"}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                   />

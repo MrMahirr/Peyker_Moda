@@ -68,7 +68,7 @@ export const ProductDetailPage = () => {
     }, [product?.id]);
 
     const images = useMemo(() => product?.images ?? [], [product]);
-    const activeImage = resolveImageUrl(images[activeImageIndex]) || 'https://via.placeholder.com/640x800?text=No+Image';
+    const activeImage = resolveImageUrl(images[activeImageIndex]) || '/peyker-moda-kapak3.png';
 
     if (loading) {
         return (
@@ -171,7 +171,7 @@ export const ProductDetailPage = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     {(images.length ? images : [undefined]).map((img, idx) => {
-                                        const url = resolveImageUrl(img) || 'https://via.placeholder.com/120x160?text=No+Image';
+                                        const url = resolveImageUrl(img) || '/peyker-moda-kapak3.png';
                                         const isActive = idx === activeImageIndex;
                                         return (
                                             <button

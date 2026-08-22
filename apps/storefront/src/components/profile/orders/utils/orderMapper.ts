@@ -112,7 +112,7 @@ export const transformOrder = (apiOrder: ApiOrder): Order => {
             name: item.productName || item.variant?.product?.name || "Urun",
             image:
               item.variant?.product?.images?.[0] ||
-              "https://via.placeholder.com/300",
+              "/peyker-moda-kapak3.png",
             price: toMoney(item.unitPrice),
             quantity: item.quantity || 1,
             returnableQuantity: returnableItem?.returnableQuantity || 0,

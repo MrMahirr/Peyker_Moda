@@ -102,7 +102,7 @@ export class TransactionsController {
     return this.transactionsService.getSummary(query);
   }
 
-  @Get('reports/sales')
+  @Get('transactions/reports/sales')
   @Roles('admin', 'manager')
   @ApiOperation({ summary: 'Satış raporu' })
   async getSalesReport(@Query() query: ReportQueryDto) {

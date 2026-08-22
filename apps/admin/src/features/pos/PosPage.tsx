@@ -277,7 +277,7 @@ export const PosPage = () => {
                 >
                   <div className="flex-shrink-0">
                     <img
-                      src={item.image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&auto=format&fit=crop"}
+                      src={item.image || "/peyker-moda-kapak3.png"}
                       alt={item.name}
                       className="h-16 w-16 object-cover rounded-lg bg-zinc-50 border border-zinc-100"
                     />

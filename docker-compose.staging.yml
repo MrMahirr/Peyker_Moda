@@ -1,0 +1,44 @@
+# ============================================
+# Peyker Moda — Staging Override
+# ============================================
+# docker-compose.prod.yml ile birlikte kullanılır; aynı sunucuda,
+# production'dan tamamen izole (ayrı container/volume/veritabanı) bir
+# test ortamı çalıştırmak içindir. Bu dosya production'a hiçbir etki
+# yapmaz — sadece staging deploy komutunda ek olarak verilir.
+#
+# Kullanım:
+#   docker compose -p peyker_staging \
+#     -f docker-compose.prod.yml -f docker-compose.staging.yml \
+#     --env-file .env.staging up -d postgres redis minio api admin storefront
+#
+# nginx servisi kasıtlı olarak başlatılmaz — production'daki sertleştirilmiş
+# nginx, staging.peykermoda.com / admin.staging.peykermoda.com isteklerini
+# aşağıdaki 127.0.0.1 portlarına proxy_pass ile yönlendirir (bkz. README).
+
+services:
+  postgres:
+    container_name: peyker_staging_db
+
+  redis:
+    container_name: peyker_staging_redis
+
+  minio:
+    container_name: peyker_staging_minio
+    ports:
+      - "127.0.0.1:9002:9000"
+      - "127.0.0.1:9003:9001"
+
+  api:
+    container_name: peyker_staging_api
+    ports:
+      - "127.0.0.1:4000:3000"
+
+  admin:
+    container_name: peyker_staging_admin
+    ports:
+      - "127.0.0.1:4001:80"
+
+  storefront:
+    container_name: peyker_staging_storefront
+    ports:
+      - "127.0.0.1:4002:3000"

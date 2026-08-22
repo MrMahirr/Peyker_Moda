@@ -3,6 +3,7 @@ import { mapProduct } from "./productMapper";
 import {
   AttributeResponse,
   CollectionData,
+  CollectionSummary,
   Product,
   ProductListResult,
   ProductQueryParams,
@@ -117,6 +118,17 @@ export const productService = {
       );
     } catch (error) {
       console.error("Failed to fetch new arrivals:", error);
+      return [];
+    }
+  },
+
+  async getCollections(): Promise<CollectionSummary[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/store/collections`);
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error("Failed to fetch collections:", error);
       return [];
     }
   },

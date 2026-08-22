@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/home/HeroSection";
-import CategoriesSection from "@/components/home/CategoriesSection";
+import CollectionsSection from "@/components/home/CollectionsSection";
 import ProductSection from "@/components/home/ProductSection";
 import { storeApi, Product } from "@/lib/api";
 import { resolveProductImages } from "@/lib/utils";
@@ -60,7 +60,7 @@ export default function HomePage() {
       <main>
         <HeroSection />
 
-        <CategoriesSection />
+        <CollectionsSection />
 
         <ProductSection
           title="Öne Çıkan Parçalar"

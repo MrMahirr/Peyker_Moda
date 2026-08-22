@@ -19,7 +19,6 @@ export interface Collection {
 
 export interface CreateCollectionDto {
     name: string;
-    slug?: string;
     description?: string;
     imageUrl?: string;
     order?: number;

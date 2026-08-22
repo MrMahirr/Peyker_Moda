@@ -7,14 +7,6 @@ export class CreateCollectionDto {
   name: string;
 
   @ApiPropertyOptional({
-    example: 'yaz-2026',
-    description: 'Koleksiyonun URL adresi (belirtilmezse isimden otomatik üretilir)',
-  })
-  @IsString()
-  @IsOptional()
-  slug?: string;
-
-  @ApiPropertyOptional({
     example: 'Yazın en taze parçaları bu koleksiyonda.',
     description: 'Koleksiyon açıklaması',
   })
@@ -47,11 +39,6 @@ export class UpdateCollectionDto {
   @IsString()
   @IsOptional()
   name?: string;
-
-  @ApiPropertyOptional({ example: 'yaz-2026' })
-  @IsString()
-  @IsOptional()
-  slug?: string;
 
   @ApiPropertyOptional({ example: 'Yazın en taze parçaları bu koleksiyonda.' })
   @IsString()

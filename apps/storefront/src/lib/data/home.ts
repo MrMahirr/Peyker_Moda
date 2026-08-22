@@ -22,7 +22,7 @@ export const heroSlides = [
   },
 ];
 
-export const categories = [
+export const collectionsFallback = [
   {
     name: "Elbiseler",
     image: "/peyker-moda-kapak3.png",

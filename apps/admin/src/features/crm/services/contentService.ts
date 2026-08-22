@@ -1,5 +1,5 @@
 import api from '../../../lib/axios';
-import { Banner, CollectionContent, PageHeader, PageSlug } from '../types/content.types';
+import { Banner, PageHeader, PageSlug } from '../types/content.types';
 
 export const bannerService = {
   getAll: async () => {
@@ -16,25 +16,6 @@ export const bannerService = {
   },
   delete: async (id: string) => {
     const response = await api.delete(`/banners/${id}`);
-    return response.data.data;
-  }
-};
-
-export const collectionContentService = {
-  getAll: async () => {
-    const response = await api.get('/banners/collection-content/all');
-    return response.data.data;
-  },
-  create: async (data: Partial<CollectionContent>) => {
-    const response = await api.post('/banners/collection-content', data);
-    return response.data.data;
-  },
-  update: async (id: string, data: Partial<CollectionContent>) => {
-    const response = await api.patch(`/banners/collection-content/${id}`, data);
-    return response.data.data;
-  },
-  delete: async (id: string) => {
-    const response = await api.delete(`/banners/collection-content/${id}`);
     return response.data.data;
   }
 };

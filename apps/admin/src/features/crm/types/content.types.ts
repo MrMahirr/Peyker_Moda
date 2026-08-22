@@ -12,16 +12,6 @@ export interface Banner {
   updatedAt: string;
 }
 
-export interface CollectionContent {
-  id: string;
-  name: string;
-  imageUrl: string;
-  slug?: string;
-  position: number;
-  isActive: boolean;
-  updatedAt: string;
-}
-
 export interface PageHeader {
   id: string;
   pageSlug: string;

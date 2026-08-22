@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "./config";
-import { BannerContent, CollectionContent, PageHeaderContent } from "./types";
+import { BannerContent, PageHeaderContent } from "./types";
 
 export const contentService = {
   async getBanners(position?: string): Promise<BannerContent[]> {
@@ -27,14 +27,4 @@ export const contentService = {
     }
   },
 
-  async getCollectionContent(): Promise<CollectionContent[]> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/store/collection-content`);
-      const data = await response.json();
-      return data.data || [];
-    } catch (error) {
-      console.error("Failed to fetch collection content:", error);
-      return [];
-    }
-  },
 };

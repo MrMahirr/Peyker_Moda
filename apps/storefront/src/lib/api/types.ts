@@ -232,13 +232,11 @@ export interface PageHeaderContent {
   isActive: boolean;
 }
 
-export interface CollectionContent {
+export interface CollectionSummary {
   id: string;
   name: string;
-  imageUrl: string;
-  slug?: string;
-  position: number;
-  isActive: boolean;
+  slug: string;
+  imageUrl?: string;
 }
 
 export interface AttributeResponse {

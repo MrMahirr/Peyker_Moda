@@ -15,7 +15,6 @@ import { Roles } from '../../common/decorators';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { BannersService } from './banners.service';
 import { PageHeadersService } from './page-headers.service';
-import { CollectionContentService } from './collection-content.service';
 import { BannerQueryDto, CreateBannerDto, UpdateBannerDto } from './dto';
 
 @ApiTags('Banners')
@@ -24,7 +23,6 @@ export class BannersController {
   constructor(
     private readonly bannersService: BannersService,
     private readonly pageHeadersService: PageHeadersService,
-    private readonly collectionContentService: CollectionContentService,
   ) {}
 
   @Get()
@@ -89,42 +87,5 @@ export class BannersController {
     @Body() dto: any,
   ) {
     return this.pageHeadersService.upsert(pageSlug, dto);
-  }
-
-  // --- COLLECTION CONTENT ---
-  @Get('collection-content/all')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'manager')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Koleksiyon içerikleri listesi (Admin)' })
-  async getAllCollectionContents() {
-    return this.collectionContentService.findAll(true);
-  }
-
-  @Post('collection-content')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'manager')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Koleksiyon içeriği ekle' })
-  async createCollectionContent(@Body() dto: any) {
-    return this.collectionContentService.create(dto);
-  }
-
-  @Patch('collection-content/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'manager')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Koleksiyon içeriği güncelle' })
-  async updateCollectionContent(@Param('id') id: string, @Body() dto: any) {
-    return this.collectionContentService.update(id, dto);
-  }
-
-  @Delete('collection-content/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Koleksiyon içeriği sil' })
-  async removeCollectionContent(@Param('id') id: string) {
-    return this.collectionContentService.remove(id);
   }
 }

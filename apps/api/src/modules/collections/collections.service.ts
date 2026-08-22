@@ -82,21 +82,19 @@ export class CollectionsService {
    * Yeni koleksiyon oluştur
    */
   async create(dto: CreateCollectionDto) {
-    const slug = slugify(dto.slug || dto.name);
+    const slug = slugify(dto.name);
 
     const existing = await this.prisma.collection.findUnique({
       where: { slug },
     });
 
     if (existing) {
-      throw new ConflictException('Bu URL ile bir koleksiyon zaten mevcut');
+      throw new ConflictException('Bu isimde bir koleksiyon zaten mevcut');
     }
-
-    const { slug: _ignoredSlug, ...rest } = dto;
 
     const collection = await this.prisma.collection.create({
       data: {
-        ...rest,
+        ...dto,
         slug,
       },
     });
@@ -114,15 +112,15 @@ export class CollectionsService {
 
     const data: any = { ...dto };
 
-    if (dto.slug || dto.name) {
-      const slug = slugify(dto.slug || dto.name!);
+    if (dto.name) {
+      const slug = slugify(dto.name);
 
       const existing = await this.prisma.collection.findFirst({
         where: { slug, NOT: { id } },
       });
 
       if (existing) {
-        throw new ConflictException('Bu URL ile bir koleksiyon zaten mevcut');
+        throw new ConflictException('Bu isimde bir koleksiyon zaten mevcut');
       }
 
       data.slug = slug;

@@ -36,10 +36,10 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PageHeaderStorageService } from '../banners/page-header.storage.service';
-import { CollectionContentStorageService } from '../banners/collection-content.storage.service';
 import { BannerStorageService } from '../banners/banner.storage.service';
 import { PriceListsService } from '../price-lists/price-lists.service';
 import { PriceListResponse, PriceListScopeType, PriceListEffectiveStatus, PriceListAdjustmentType } from '../price-lists/price-lists.types';
+import { CollectionsService } from '../collections/collections.service';
 
 @Injectable()
 export class StorefrontService {
@@ -52,11 +52,11 @@ export class StorefrontService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private pageHeaderStorage: PageHeaderStorageService,
-    private collectionContentStorage: CollectionContentStorageService,
     private bannerStorage: BannerStorageService,
     private invoicesService: InvoicesService,
     private returnsService: ReturnsService,
     private priceListsService: PriceListsService,
+    private collectionsService: CollectionsService,
   ) {}
 
   // ========== AUTHENTICATION ==========
@@ -269,12 +269,19 @@ export class StorefrontService {
     return header || null;
   }
 
-  async getCollectionContent() {
-    const contents =
-      await this.collectionContentStorage.getCollectionContents();
-    return contents
-      .filter((c) => c.isActive)
-      .sort((a, b) => a.position - b.position);
+  /**
+   * Ana sayfada gösterilecek aktif koleksiyonlar (kapak görseli + link için)
+   */
+  async getActiveCollections() {
+    const collections = await this.collectionsService.findAll({
+      isActive: true,
+    });
+    return collections.map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      imageUrl: c.imageUrl,
+    }));
   }
 
   // ========== CATEGORIES ==========

@@ -4,8 +4,6 @@ import { BannersService } from './banners.service';
 import { BannerStorageService } from './banner.storage.service';
 import { PageHeadersService } from './page-headers.service';
 import { PageHeaderStorageService } from './page-header.storage.service';
-import { CollectionContentService } from './collection-content.service';
-import { CollectionContentStorageService } from './collection-content.storage.service';
 
 @Module({
   controllers: [BannersController],
@@ -14,8 +12,6 @@ import { CollectionContentStorageService } from './collection-content.storage.se
     BannerStorageService,
     PageHeadersService,
     PageHeaderStorageService,
-    CollectionContentService,
-    CollectionContentStorageService,
   ],
 })
 export class BannersModule {}

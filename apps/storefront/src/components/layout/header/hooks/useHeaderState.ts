@@ -57,16 +57,13 @@ export function useHeaderState() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const apiCollections = await storeApi.getCollectionContent();
+        const apiCollections = await storeApi.getCollections();
         if (apiCollections && apiCollections.length > 0) {
           setCollections(
-            apiCollections
-              .filter((collection) => collection.isActive)
-              .sort((a, b) => a.position - b.position)
-              .map((collection) => ({
-                slug: collection.slug || "",
-                title: collection.name,
-              })),
+            apiCollections.map((collection) => ({
+              slug: collection.slug,
+              title: collection.name,
+            })),
           );
           return;
         }

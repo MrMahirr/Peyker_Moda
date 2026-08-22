@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 import { fadeInUp } from "@/lib/utils";
 
-export function CategoriesHeader() {
+export function CollectionsHeader() {
   return (
     <motion.div
       initial="hidden"

@@ -9,9 +9,9 @@ import { InvoicesModule } from '../invoices/invoices.module';
 import { ReturnsModule } from '../returns/returns.module';
 import { CustomerJwtStrategy } from './strategies/customer-jwt.strategy';
 import { PageHeaderStorageService } from '../banners/page-header.storage.service';
-import { CollectionContentStorageService } from '../banners/collection-content.storage.service';
 import { BannerStorageService } from '../banners/banner.storage.service';
 import { PriceListsModule } from '../price-lists/price-lists.module';
+import { CollectionsModule } from '../collections/collections.module';
 
 type JwtExpiresIn = NonNullable<
   NonNullable<JwtModuleOptions['signOptions']>['expiresIn']
@@ -23,6 +23,7 @@ type JwtExpiresIn = NonNullable<
     InvoicesModule,
     ReturnsModule,
     PriceListsModule,
+    CollectionsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -42,7 +43,6 @@ type JwtExpiresIn = NonNullable<
     StorefrontService,
     CustomerJwtStrategy,
     PageHeaderStorageService,
-    CollectionContentStorageService,
     BannerStorageService,
   ],
   exports: [StorefrontService],

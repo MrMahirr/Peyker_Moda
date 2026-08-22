@@ -1,4 +1,4 @@
-export { categories, heroSlides } from "./data/home";
+export { collectionsFallback, heroSlides } from "./data/home";
 export {
   accessoryProducts,
   allProducts,

@@ -16,7 +16,6 @@ export const CollectionList = () => {
     const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
     const [formData, setFormData] = useState({
         name: '',
-        slug: '',
         description: '',
         imageUrl: '',
         isActive: true,
@@ -39,7 +38,7 @@ export const CollectionList = () => {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', slug: '', description: '', imageUrl: '', isActive: true });
+        setFormData({ name: '', description: '', imageUrl: '', isActive: true });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +46,6 @@ export const CollectionList = () => {
         try {
             const payload: CreateCollectionDto = {
                 name: formData.name,
-                slug: formData.slug || undefined,
                 description: formData.description || undefined,
                 imageUrl: formData.imageUrl || undefined,
                 isActive: formData.isActive,
@@ -74,7 +72,6 @@ export const CollectionList = () => {
         setEditingCollection(collection);
         setFormData({
             name: collection.name,
-            slug: collection.slug,
             description: collection.description || '',
             imageUrl: collection.imageUrl || '',
             isActive: collection.isActive,
@@ -125,19 +122,17 @@ export const CollectionList = () => {
                 <div className="bg-surface rounded-xl border border-zinc-200/80 p-6 shadow-sm">
                     <h3 className="font-semibold text-zinc-900 mb-5">{editingCollection ? 'Koleksiyon Düzenle' : 'Yeni Koleksiyon Oluştur'}</h3>
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
                             <Input
                                 label="Koleksiyon Adı"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 required
                             />
-                            <Input
-                                label="URL (slug)"
-                                value={formData.slug}
-                                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                placeholder="Boş bırakılırsa isimden otomatik üretilir"
-                            />
+                            <p className="text-[11px] text-zinc-400 mt-1.5">
+                                Koleksiyonun URL adresi (/koleksiyonlar/...) bu isimden otomatik oluşturulur.
+                                {editingCollection && <span className="font-medium text-zinc-500"> Mevcut: /koleksiyonlar/{editingCollection.slug}</span>}
+                            </p>
                         </div>
                         <Input
                             label="Açıklama"

@@ -108,11 +108,11 @@ export class StorefrontController {
     return this.storefrontService.getPageHeader(pageSlug);
   }
 
-  @Get('collection-content')
+  @Get('collections')
   @PublicStoreReadThrottle
-  @ApiOperation({ summary: 'Koleksiyonları keşfet içeriği' })
-  async getCollectionContent() {
-    return this.storefrontService.getCollectionContent();
+  @ApiOperation({ summary: 'Ana sayfa için aktif koleksiyon listesi' })
+  async getCollections() {
+    return this.storefrontService.getActiveCollections();
   }
 
   // ========== CATEGORIES ==========

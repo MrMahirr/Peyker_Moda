@@ -111,27 +111,43 @@ model Category {
   @@map("categories")
 }
 
-model Product {
+model Collection {
   id          String     @id @default(uuid())
   name        String
   slug        String     @unique
   description String?
-  sku         String     @unique
-  barcode     String?    @unique
-  basePrice   Decimal    @db.Decimal(10, 2)
-  salePrice   Decimal?   @db.Decimal(10, 2)
-  cost        Decimal?   @db.Decimal(10, 2)
-  categoryId  String
-  brand       String?
-  images      Json?      @default("[]")
-  viewCount   Int        @default(0)
+  imageUrl    String?
+  order       Int        @default(0)
   isActive    Boolean    @default(true)
-  isFeatured  Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  products    Product[]
+
+  @@map("collections")
+}
+
+model Product {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  description String?
+  sku         String       @unique
+  barcode     String?      @unique
+  basePrice   Decimal      @db.Decimal(10, 2)
+  salePrice   Decimal?     @db.Decimal(10, 2)
+  cost        Decimal?     @db.Decimal(10, 2)
+  categoryId  String
+  brand       String?
+  images      Json?        @default("[]")
+  viewCount   Int          @default(0)
+  isActive    Boolean      @default(true)
+  isFeatured  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   favorites   Favorite[]
-  category    Category   @relation(fields: [categoryId], references: [id])
+  category    Category     @relation(fields: [categoryId], references: [id])
   variants    Variant[]
+  collections Collection[]
 
   @@index([categoryId])
   @@index([barcode])

@@ -15,6 +15,7 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 
 // Faz 2: Catalog
 import { CategoriesModule } from './modules/categories/categories.module';
+import { CollectionsModule } from './modules/collections/collections.module';
 import { ProductsModule } from './modules/products/products.module';
 import { VariantsModule } from './modules/variants/variants.module';
 import { BarcodeModule } from './modules/barcode/barcode.module';
@@ -108,6 +109,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 
     // Faz 2: Catalog
     CategoriesModule,
+    CollectionsModule,
     ProductsModule,
     VariantsModule,
     BarcodeModule,

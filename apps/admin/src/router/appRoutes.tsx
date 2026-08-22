@@ -7,6 +7,8 @@ import { CatalogPage } from '@/features/catalog/CatalogPage';
 import { AddProductPage } from '@/features/catalog/AddProductPage';
 import { ProductDetailPage } from '@/features/catalog/ProductDetailPage';
 import { CategoryList } from '@/features/catalog/components/CategoryList';
+import { CollectionList } from '@/features/catalog/components/CollectionList';
+import { CollectionProducts } from '@/features/catalog/components/CollectionProducts';
 import { PosLayout } from '@/components/layout/PosLayout';
 import { PosPage } from '@/features/pos/PosPage';
 import { CRMPage } from '@/features/crm/CRMPage';
@@ -76,6 +78,8 @@ export const AppRoutes = () => {
                 { path: 'catalog/:id/edit', element: <RequireRole allowedRoles={['admin', 'manager']}><AddProductPage /></RequireRole> },
                 { path: 'catalog/:id', element: <RequireRole allowedRoles={['admin', 'manager']}><ProductDetailPage /></RequireRole> },
                 { path: 'catalog/categories', element: <RequireRole allowedRoles={['admin', 'manager']}><CategoryList /></RequireRole> },
+                { path: 'catalog/collections', element: <RequireRole allowedRoles={['admin', 'manager']}><CollectionList /></RequireRole> },
+                { path: 'catalog/collections/:id/products', element: <RequireRole allowedRoles={['admin', 'manager']}><CollectionProducts /></RequireRole> },
                 {
                     path: 'sales',
                     children: [

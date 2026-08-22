@@ -16,6 +16,7 @@ export const navigation = [
     children: [
       { title: "Ürünler", path: "/catalog" },
       { title: "Kategoriler", path: "/catalog/categories" },
+      { title: "Koleksiyonlar", path: "/catalog/collections" },
       { title: "Yeni Ürün", path: "/catalog/new" },
     ],
   },

@@ -171,12 +171,10 @@ export interface TrackedOrder {
 export interface CollectionData {
   id: string;
   title: string;
-  subtitle: string;
   description: string;
   coverImage: string;
   accentColor: string;
-  categorySlug?: string;
-  products?: Product[];
+  products: Product[];
 }
 
 export interface CardInfo {

@@ -43,13 +43,13 @@ peyker-moda/
 
 ## Teknolojiler
 
-| Katman | Teknolojiler |
-| --- | --- |
-| API | NestJS 11, Prisma 5, PostgreSQL 18, Redis 8, MinIO (S3 uyumlu), Socket.IO, Swagger |
-| Admin | React 19, Vite 7, TypeScript, Tailwind CSS, React Router, TanStack Table |
-| Storefront | Next.js 16, React 19, Tailwind CSS, Radix UI, Framer Motion |
-| Monorepo | pnpm workspace, Turborepo |
-| Altyapı | Docker, Docker Compose, Nginx (reverse proxy + TLS), Let's Encrypt |
+| Katman     | Teknolojiler                                                                       |
+| ---------- | ---------------------------------------------------------------------------------- |
+| API        | NestJS 11, Prisma 5, PostgreSQL 18, Redis 8, MinIO (S3 uyumlu), Socket.IO, Swagger |
+| Admin      | React 19, Vite 7, TypeScript, Tailwind CSS, React Router, TanStack Table           |
+| Storefront | Next.js 16, React 19, Tailwind CSS, Radix UI, Framer Motion                        |
+| Monorepo   | pnpm workspace, Turborepo                                                          |
+| Altyapı   | Docker, Docker Compose, Nginx (reverse proxy + TLS), Let's Encrypt                 |
 
 ## Özellikler / Modüller
 
@@ -123,13 +123,13 @@ pnpm --filter admin run dev               # sadece admin
 pnpm --filter storefront run dev          # sadece storefront
 ```
 
-| Uygulama | Adres |
-| --- | --- |
-| API | http://localhost:3000/api |
-| Swagger | http://localhost:3000/docs (yalnızca `NODE_ENV !== production`) |
-| Admin | http://localhost:5173 |
-| Storefront | http://localhost:3500 |
-| MinIO Console | http://localhost:9001 |
+| Uygulama      | Adres                                                             |
+| ------------- | ----------------------------------------------------------------- |
+| API           | http://localhost:3000/api                                         |
+| Swagger       | http://localhost:3000/docs (yalnızca`NODE_ENV !== production`) |
+| Admin         | http://localhost:5173                                             |
+| Storefront    | http://localhost:3500                                             |
+| MinIO Console | http://localhost:9001                                             |
 
 ### Komutlar
 
@@ -161,7 +161,7 @@ Değişiklik yapmadan önce **her zaman** ilgili paket(ler)de `tsc --noEmit` ça
 
 ### Sunucu
 
-- **Sağlayıcı/IP:** `45.88.139.52` (Ubuntu 22.04 LTS)
+- **Sağlayıcı/IP:** ********* (Ubuntu 22.04 LTS)
 - **DNS/CDN:** Cloudflare proxy arkasında (`peykermoda.com`, `www.peykermoda.com`, `admin.peykermoda.com`)
 - **Proje dizini:** `/var/www/peyker-app` (bu reponun `master` branch'inin klonu)
 - **Erişim:** `deploy` kullanıcısı, **sadece SSH anahtarıyla** (parola girişi ve doğrudan `root` girişi kapalı)
@@ -169,15 +169,15 @@ Değişiklik yapmadan önce **her zaman** ilgili paket(ler)de `tsc --noEmit` ça
 
 ### Güvenlik sertleştirmesi (bir kez, sunucu ilk kurulurken yapıldı)
 
-| Katman | Durum |
-| --- | --- |
-| SSH | `PermitRootLogin no`, `PasswordAuthentication no`, sadece `deploy` kullanıcısı + anahtar |
-| Firewall (UFW) | Sadece `22` (SSH), `80`, `443` açık; her şey varsayılan reddediliyor |
-| fail2ban | SSH için aktif, tekrarlayan başarısız girişleri otomatik banluyor |
-| Otomatik güncelleme | `unattended-upgrades` aktif (güvenlik yamaları) |
-| MinIO | Container portları (`9000`/`9001`) sadece `127.0.0.1`'e bağlı, dışarıya kapalı |
-| Nginx | `server_tokens off`, güvenlik header'ları (`X-Frame-Options`, `X-Content-Type-Options`, vb.), rate limiting (`limit_req`) |
-| API | Swagger (`/docs`) sadece `NODE_ENV !== production` iken açılıyor; production'da tamamen kapalı |
+| Katman               | Durum                                                                                                                               |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| SSH                  | `PermitRootLogin no`, `PasswordAuthentication no`, sadece `deploy` kullanıcısı + anahtar                                   |
+| Firewall (UFW)       | Sadece`22` (SSH), `80`, `443` açık; her şey varsayılan reddediliyor                                                       |
+| fail2ban             | SSH için aktif, tekrarlayan başarısız girişleri otomatik banluyor                                                              |
+| Otomatik güncelleme | `unattended-upgrades` aktif (güvenlik yamaları)                                                                                 |
+| MinIO                | Container portları (`9000`/`9001`) sadece `127.0.0.1`'e bağlı, dışarıya kapalı                                         |
+| Nginx                | `server_tokens off`, güvenlik header'ları (`X-Frame-Options`, `X-Content-Type-Options`, vb.), rate limiting (`limit_req`) |
+| API                  | Swagger (`/docs`) sadece `NODE_ENV !== production` iken açılıyor; production'da tamamen kapalı                              |
 
 Sıfırdan sunucu kurulumu gerekirse (felaket kurtarma): yeni Ubuntu 22.04 sunucuda `deploy` kullanıcısı oluşturup SSH anahtarı ekleyin, `ufw`/`fail2ban`/`unattended-upgrades` kurup yukarıdaki kurallarla yapılandırın, Docker Engine + Compose plugin'i resmi script ile kurun, `certbot certonly --standalone` ile SSL sertifikası alın (port 80 boşken), sonra aşağıdaki "İlk deploy" adımlarını izleyin.
 
@@ -185,35 +185,35 @@ Sıfırdan sunucu kurulumu gerekirse (felaket kurtarma): yeni Ubuntu 22.04 sunuc
 
 Sunucuda `/var/www/peyker-app/.env.docker` dosyası bulunur (**git'e commit edilmez**, `.gitignore`'da). Şablonu `.env.docker.example`'da:
 
-| Değişken | Açıklama |
-| --- | --- |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Veritabanı kimlik bilgileri |
-| `REDIS_PASSWORD` | Redis parolası |
-| `JWT_SECRET` | En az 64 byte random hex (`node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`) |
-| `JWT_EXPIRES_IN` / `JWT_REFRESH_EXPIRES_IN` | Token ömürleri |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth (Google ile giriş) |
-| `CORS_ORIGIN` | Virgülle ayrılmış izinli origin'ler (`https://peykermoda.com,https://admin.peykermoda.com`) |
-| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` | MinIO (S3) kimlik bilgileri |
-| `S3_BUCKET` / `S3_REGION` | `peyker-media` / `us-east-1` |
-| `UPLOAD_BASE_URL` | `https://peykermoda.com/media` |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_FIRST_NAME` / `ADMIN_LAST_NAME` | İlk seed'de oluşturulan admin hesabı |
-| `VITE_API_URL` / `VITE_SOCKET_URL` | Admin build-time değişkenleri |
-| `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_GOOGLE_CLIENT_ID` / `NEXT_PUBLIC_SITE_URL` | Storefront build-time değişkenleri |
-| `NGINX_HTTP_PORT` / `NGINX_HTTPS_PORT` | Varsayılan `80` / `443` |
+| Değişken                                                                            | Açıklama                                                                                              |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB`                           | Veritabanı kimlik bilgileri                                                                            |
+| `REDIS_PASSWORD`                                                                    | Redis parolası                                                                                         |
+| `JWT_SECRET`                                                                        | En az 64 byte random hex (`node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`) |
+| `JWT_EXPIRES_IN` / `JWT_REFRESH_EXPIRES_IN`                                       | Token ömürleri                                                                                        |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`                                       | Google OAuth (Google ile giriş)                                                                        |
+| `CORS_ORIGIN`                                                                       | Virgülle ayrılmış izinli origin'ler (`https://peykermoda.com,https://admin.peykermoda.com`)       |
+| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD`                                         | MinIO (S3) kimlik bilgileri                                                                             |
+| `S3_BUCKET` / `S3_REGION`                                                         | `peyker-media` / `us-east-1`                                                                        |
+| `UPLOAD_BASE_URL`                                                                   | `https://peykermoda.com/media`                                                                        |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_FIRST_NAME` / `ADMIN_LAST_NAME`     | İlk seed'de oluşturulan admin hesabı                                                                 |
+| `VITE_API_URL` / `VITE_SOCKET_URL`                                                | Admin build-time değişkenleri                                                                         |
+| `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_GOOGLE_CLIENT_ID` / `NEXT_PUBLIC_SITE_URL` | Storefront build-time değişkenleri                                                                    |
+| `NGINX_HTTP_PORT` / `NGINX_HTTPS_PORT`                                            | Varsayılan`80` / `443`                                                                             |
 
 ⚠️ Tüm parola/secret alanları production'da **benzersiz ve rastgele** olmalı — hiçbir değer bu repodaki veya geliştirme ortamındaki değerlerle aynı olmamalı.
 
 ### Docker Compose servisleri (`docker-compose.prod.yml`)
 
-| Servis | Container adı | Bellek limiti | Dışa açık port |
-| --- | --- | --- | --- |
-| `postgres` | `peyker_prod_db` | 512M | — (iç ağ) |
-| `redis` | `peyker_prod_redis` | 256M | — (iç ağ) |
-| `minio` | `peyker_prod_minio` | 512M | `127.0.0.1:9000-9001` |
-| `api` | `peyker_prod_api` | 512M | — (nginx üzerinden) |
-| `admin` | `peyker_prod_admin` | 128M | — (nginx üzerinden) |
-| `storefront` | `peyker_prod_storefront` | 256M | — (nginx üzerinden) |
-| `nginx` | `peyker_prod_nginx` | 128M | `80`, `443` |
+| Servis         | Container adı             | Bellek limiti | Dışa açık port      |
+| -------------- | -------------------------- | ------------- | ----------------------- |
+| `postgres`   | `peyker_prod_db`         | 512M          | — (iç ağ)            |
+| `redis`      | `peyker_prod_redis`      | 256M          | — (iç ağ)            |
+| `minio`      | `peyker_prod_minio`      | 512M          | `127.0.0.1:9000-9001` |
+| `api`        | `peyker_prod_api`        | 512M          | — (nginx üzerinden)   |
+| `admin`      | `peyker_prod_admin`      | 128M          | — (nginx üzerinden)   |
+| `storefront` | `peyker_prod_storefront` | 256M          | — (nginx üzerinden)   |
+| `nginx`      | `peyker_prod_nginx`      | 128M          | `80`, `443`         |
 
 Tüm servisler `peyker-network` adlı izole bir Docker bridge ağında; dışarıya sadece nginx'in 80/443 portları ve MinIO'nun localhost-only portları açık.
 
@@ -261,11 +261,13 @@ Let's Encrypt, `certbot` ile alınmış — `peykermoda.com`, `www.peykermoda.co
 Yenileme **webroot** yöntemiyle yapılır (host'ta `/var/www/certbot`, nginx container'ına da aynı yol salt-okunur mount edilir; her `HTTP:80` sunucu bloğunda bir `location /.well-known/acme-challenge/ { root /var/www/certbot; }` var) — bu sayede nginx durdurulmadan, downtime'sız yenilenir. Certbot paketinin kurduğu `/etc/cron.d/certbot` girdisi bunu günde iki kez otomatik dener (30 günden az kaldıysa yeniler). Yenilenince nginx'in yeni sertifika dosyasını okuması için `docker exec peyker_prod_nginx nginx -s reload` (tam restart gerekmez).
 
 Yeni bir subdomain sertifikaya eklenecekse:
+
 ```bash
 sudo certbot certonly --webroot -w /var/www/certbot --expand --non-interactive --agree-tos \
   -m <email> -d peykermoda.com -d www.peykermoda.com -d admin.peykermoda.com \
   -d staging.peykermoda.com -d admin.staging.peykermoda.com -d <yeni-domain>
 ```
+
 Domain Cloudflare üzerinden proxy'leniyorsa (turuncu bulut), `HTTP:80` isteği doğrulama sırasında HTTPS'e yönlendirilip başarısız olabilir (hedef domain'in henüz geçerli sertifikası olmadığı için) — bu durumda ilgili DNS kaydını geçici olarak "DNS only" (gri bulut) yapıp sertifikayı öyle almak gerekir.
 
 ### Yedekleme

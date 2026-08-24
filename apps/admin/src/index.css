@@ -125,4 +125,18 @@ select:disabled {
     min-height: auto !important;
     box-shadow: none !important;
   }
+
+  /* #printable-receipt yukarıda position:absolute yapılıyor; üst (ata)
+     kutulardan birinde transform/overflow varsa o kutu containing block
+     olur ve fişi kendi (içerik akış dışı kaldığı için genelde 0 yükseklikteki)
+     sınırlarına kırparak "boş fiş" basılmasına yol açar. Bu kuralla o tür
+     sarmalayıcı kutulardaki transform/overflow/gölge etkisini yazdırma
+     sırasında iptal ediyoruz. */
+  .print-reset {
+    overflow: visible !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
 }

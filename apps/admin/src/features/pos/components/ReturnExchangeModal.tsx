@@ -180,12 +180,15 @@ export const ReturnExchangeModal = ({
       let result = await ordersService.getAll({ search: query, limit: 5 });
       let orders = result.data || [];
 
-      // Fiş barkodu taranınca sadece rakamlar gelir (örn. "26082404321"),
-      // ama gerçek fiş no'da tire var ("PM-260824-04321") — düz "contains"
-      // araması bunu bulamaz. Sorgu tamamen 11 haneli rakamsa (PM-YYMMDD-NNNNN
-      // formatının rakam kısmı), tireli halini yeniden kurup fallback olarak
-      // deniyoruz. Doğrudan arama (telefon/isim/tireli fiş no dahil) zaten
-      // önce denendiği için bu, yanlış pozitif riski taşımıyor.
+      // Sipariş numarası artık sistemde her yerde sadece rakamlardan oluşuyor
+      // (bkz. api/helpers.util.ts generateOrderNumber), yani normal akışta
+      // doğrudan arama (yukarıda) zaten eşleşir ve bu blok hiç tetiklenmez.
+      // Bu sadece FORMAT DEĞİŞİKLİĞİNDEN ÖNCE oluşturulmuş eski siparişler
+      // için bir geriye dönük uyumluluk yolu: onların orderNumber'ı hâlâ eski
+      // "PM-YYMMDD-NNNNN" (tireli) formatta DB'de duruyor, düz "contains"
+      // araması taranan rakam dizisiyle bunu bulamaz. Doğrudan arama
+      // (telefon/isim/eski tireli fiş no dahil) zaten önce denendiği için
+      // bu, yanlış pozitif riski taşımıyor.
       const digitsOnly = query.replace(/\D/g, "");
       const reconstructed =
         orders.length === 0 && /^\d{11}$/.test(digitsOnly)

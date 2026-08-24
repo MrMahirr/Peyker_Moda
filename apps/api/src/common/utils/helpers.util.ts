@@ -9,10 +9,15 @@ export function generateRandomString(length: number = 32): string {
 
 /**
  * Generate order number
- * Format: PM-YYMMDD-XXXXX
- * Not: fiş barkodunun (Receipt.tsx) 45mm'lik termal kağıda güvenilir
- * taranabilir kalması için sipariş numarası kısa tutuluyor — yıl 4 yerine
- * 2 haneli.
+ * Format: YYMMDDXXXXX (11 haneli, sadece rakam — önek/tire yok)
+ * Not: Bu değer sistemde HER YERDE (admin Siparişler sayfası, POS fişi,
+ * fiş barkodu, e-postalar, faturalar) aynı şekilde kullanılıyor — ayrı bir
+ * "kısaltılmış görünüm" yok. Sadece rakamlardan oluşması iki sebepten:
+ * (1) POS fişinin 45mm'lik termal barkodunun güvenilir taranabilmesi için
+ * kısa olması gerekiyor, (2) fiş üzerindeki barkodu okutunca çıkan değerin,
+ * Fiş No'da ve admin panelindeki sipariş numarasında yazan değerle birebir
+ * aynı olması gerekiyor — harf/tire içeren bir format bu ikisini birbirinden
+ * ayırırdı.
  */
 export function generateOrderNumber(): string {
   const date = new Date();
@@ -20,7 +25,7 @@ export function generateOrderNumber(): string {
   const random = Math.floor(Math.random() * 100000)
     .toString()
     .padStart(5, '0');
-  return `PM-${dateStr}-${random}`;
+  return `${dateStr}${random}`;
 }
 
 /**

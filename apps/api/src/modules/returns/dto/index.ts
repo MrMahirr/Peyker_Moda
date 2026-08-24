@@ -228,13 +228,13 @@ export class ReturnQueryDto {
   @IsOptional()
   source?: OrderSource;
 
-  @ApiPropertyOptional({ example: 'ORD-2026' })
+  @ApiPropertyOptional({ example: '26082404321' })
   @IsString()
   @IsOptional()
   orderNumber?: string;
 
   @ApiPropertyOptional({
-    example: 'ORD-2026 or customer phone',
+    example: '26082404321 or customer phone',
     description: 'Search by order number or customer identity fields',
   })
   @IsString()

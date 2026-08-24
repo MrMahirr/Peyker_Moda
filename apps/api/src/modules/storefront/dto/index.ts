@@ -215,7 +215,7 @@ export class GoogleLoginDto {
 }
 
 export class TrackOrderDto {
-  @ApiProperty({ example: 'ORD-2026-XYZ' })
+  @ApiProperty({ example: '26082404321' })
   @IsString()
   orderNumber: string;
 

@@ -175,7 +175,7 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
   if (isSuccess) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4">
-        <div className="w-full max-w-lg h-[90vh] sm:h-auto max-h-[90vh] flex flex-col bg-zinc-100 rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20 print:overflow-visible">
+        <div className="w-full max-w-lg h-[90vh] sm:h-auto max-h-[90vh] flex flex-col bg-zinc-100 rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20 print-reset">
           {/* Success Header */}
           <div className="bg-white p-8 text-center shrink-0 shadow-sm relative z-10">
             <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-500 ring-4 ring-emerald-50/50">
@@ -209,16 +209,18 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
           </div>
 
           {/* Receipt Preview Area (Scrollable) */}
-          <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-zinc-100/80 bg-blend-soft-light hide-scrollbar print:overflow-visible">
+          <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-zinc-100/80 bg-blend-soft-light hide-scrollbar print-reset">
             {/*
-              print:transform-none + print:overflow-visible: bu sarmalayıcıdaki
+              .print-reset (bkz. index.css @media print): bu sarmalayıcıdaki
               scale-95 dönüşümü ve overflow-hidden, global @media print kuralının
               #printable-receipt'e uyguladığı position:absolute için konteyner
               (containing block) oluşturup fişi bu kutunun (içerik olmadığı için
-              0 yükseklikteki) sınırlarına kırpıyordu — fiş "basılmıyor" gibi
-              görünmesinin asıl sebebi buydu.
+              0 yükseklikteki) sınırlarına kırpıyordu — "boş fiş" basılmasının
+              asıl sebebi buydu. Not: Tailwind'in print: varyantı bu projedeki
+              Tailwind v4 kurulumunda derlenmiyor (compiled CSS'te hiç yok),
+              o yüzden düz CSS sınıfı kullanılıyor.
             */}
-            <div className="shadow-2xl rounded-sm overflow-hidden pointer-events-none select-none origin-top transition-transform scale-95 border border-zinc-200/50 print:overflow-visible print:transform-none print:shadow-none print:border-none print:rounded-none">
+            <div className="shadow-2xl rounded-sm overflow-hidden pointer-events-none select-none origin-top transition-transform scale-95 border border-zinc-200/50 print-reset">
               <Receipt
                 cart={receiptCart}
                 total={total}

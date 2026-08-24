@@ -67,7 +67,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           JsBarcode(barcodeRef.current, barcodeValue, {
             format: "CODE128",
             lineColor: "#000",
-            width: 1.3,
+            width: 1.4,
             height: 44,
             displayValue: true,
             fontSize: 10,
@@ -235,19 +235,22 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
               max-height sadece taşarsa oranı KORUYARAK küçültür — zorla
               yatay/dikey esnetme (önceki preserveAspectRatio="none")
               çubukların birbirine yakınlaşıp yer yer birleşmesine
-              ("iç içe geçme") yol açıyordu. maxWidth %90 (tam %100 değil):
-              yazıcının gerçek basılabilir genişliği kağıdın nominal 45mm'inden
-              biraz dar kalabiliyor (bkz. ürün etiketlerindeki aynı ders) —
-              bu pay, yazıcının barkodu kendi tarafında yeniden ölçeklemek
-              zorunda kalmamasını (ve bu yüzden çubukların bulanıklaşıp
-              birleşmesini) önlüyor. */}
+              ("iç içe geçme") yol açıyordu.
+              -mx-2 + calc(100% + 1rem): sarmalayıcı, fişin kendi yan
+              padding'ini (p-2 = 8px x2) iptal ederek kağıdın tüm 45mm'ine
+              yayılıyor — barkoda sağdan/soldan daha fazla alan kalıyor.
+              maxWidth %96 (tam %100 değil): yazıcının gerçek basılabilir
+              genişliği kağıdın nominal 45mm'inden biraz dar kalabiliyor
+              (bkz. ürün etiketlerindeki aynı ders) — bu küçük pay, yazıcının
+              barkodu kendi tarafında yeniden ölçekleyip çubukları
+              bulanıklaştırıp birleştirmesini önlüyor. */}
           <div
-            className="mt-2 w-full flex justify-center items-center bg-white"
-            style={{ height: "16mm" }}
+            className="mt-2 -mx-2 flex justify-center items-center bg-white"
+            style={{ height: "16mm", width: "calc(100% + 1rem)" }}
           >
             <svg
               ref={barcodeRef}
-              style={{ maxWidth: "90%", maxHeight: "100%" }}
+              style={{ maxWidth: "96%", maxHeight: "100%" }}
             />
           </div>
         </div>

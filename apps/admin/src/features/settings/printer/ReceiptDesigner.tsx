@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Printer } from 'lucide-react';
@@ -92,6 +93,22 @@ export const ReceiptDesigner = () => {
         );
     }
 
+    const receiptProps = {
+        cart: PREVIEW_CART,
+        total: PREVIEW_TOTAL,
+        paymentMethod: 'cash',
+        date: new Date(),
+        receiptNo: 'TR-00123',
+        cashierName: 'Ahmet Yilmaz',
+        headerText,
+        address,
+        phone,
+        footerText,
+        taxRate: Number(taxRate) || 0,
+        showLogo,
+        logoUrl: logoUrl || undefined,
+    };
+
     return (
         <div className="p-8 space-y-6">
             <div className="flex items-center justify-between">
@@ -163,23 +180,17 @@ export const ReceiptDesigner = () => {
 
                 {/* Live Preview - POS'ta gerçekte basılan fiş bileşeninin aynısı */}
                 <div className="bg-zinc-100 p-8 rounded-lg border border-zinc-200 flex justify-center">
-                    <Receipt
-                        cart={PREVIEW_CART}
-                        total={PREVIEW_TOTAL}
-                        paymentMethod="cash"
-                        date={new Date()}
-                        receiptNo="TR-00123"
-                        cashierName="Ahmet Yilmaz"
-                        headerText={headerText}
-                        address={address}
-                        phone={phone}
-                        footerText={footerText}
-                        taxRate={Number(taxRate) || 0}
-                        showLogo={showLogo}
-                        logoUrl={logoUrl || undefined}
-                    />
+                    <Receipt {...receiptProps} />
                 </div>
             </div>
+
+            {/* Gerçek "Test Yazdır" çıktısı: #print-root'a portallanır (bkz.
+                index.html ve index.css @media print) — bu sayfa düzeninden
+                tamamen izole, gerçek POS yazdırma yolunun aynısı. */}
+            {createPortal(
+                <Receipt {...receiptProps} />,
+                document.getElementById('print-root') ?? document.body,
+            )}
         </div>
     );
 };

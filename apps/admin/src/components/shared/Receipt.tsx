@@ -55,6 +55,10 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
     // margin:0 kullanılıyordu — bu, tarayıcının barkodun başlangıcını/bitişini
     // ayırt etmesi için gereken "sessiz bölge"yi (quiet zone) tamamen
     // kaldırıyordu ve barkodun okunmamasının asıl sebebi buydu.
+    // width/height burada sadece SVG'nin İÇ modül oranını belirliyor — asıl
+    // görünen boyut, altta svg'ye verilen width:100%;height:100% ile fişin
+    // tam genişliğine (45mm) esnetiliyor; bu yüzden fiş numarasının uzunluğu
+    // ne olursa olsun barkod her zaman kullanılabilir tüm genişliği kaplıyor.
     useEffect(() => {
       if (barcodeRef.current && receiptNo) {
         try {
@@ -62,7 +66,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             format: "CODE128",
             lineColor: "#000",
             width: 1.3,
-            height: 38,
+            height: 46,
             displayValue: true,
             fontSize: 10,
             fontOptions: "bold",
@@ -95,19 +99,20 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
       // çıktısında kullanılıyor; ekrana özel görsel süslemeler (gölge, min
       // yükseklik) çağıran tarafın sarmalayıcısında olmalı, yoksa yazdırma
       // çıktısının boyu/boşluğu yanlış çıkar.
-      // Not: text-stroke ile birlikte tüm satırları font-black/font-semibold
-      // yapmak "silik" sorununu aşırı düzeltip yazıyı kalın/bulanık hale
-      // getirdi. font-medium/font-bold dengesine geri çekildi, text-stroke
-      // kaldırıldı (barkodun altındaki SVG metnine miras kalıp onu da
-      // kalınlaştırıyordu).
+      // Fişin gerçek fiziksel yan genişliği 45mm (80mm değil) — daha önce
+      // 80mm için tasarlanmış içerik 45mm'lik kağıda yazıcı tarafından
+      // sıkıştırılıp basılıyordu; bu da hem yazının orantısız kalınlaşmasına
+      // hem eğri/çarpık göründüğüne hem de barkodun küçülüp okunmaz hale
+      // gelmesine yol açıyordu. Tüm ölçüler 45mm'ye göre yeniden ayarlandı.
       <div
         ref={ref}
-        className="w-[80mm] bg-white text-black font-mono text-[12px] leading-tight p-2 mx-auto"
+        className="w-[45mm] bg-white text-black font-mono leading-tight p-2 mx-auto"
+        style={{ fontSize: "2.1mm" }}
       >
         {/* Header */}
         <div className="text-center mb-2">
           {showLogoResolved && (
-            <div className="mx-auto mb-2 h-16 w-16 flex items-center justify-center overflow-hidden">
+            <div className="mx-auto mb-1 h-10 w-10 flex items-center justify-center overflow-hidden">
               {logoUrl ? (
                 <img
                   src={logoUrl}
@@ -115,29 +120,33 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
                   className="w-full h-full object-contain grayscale"
                 />
               ) : (
-                <div className="h-10 w-10 rounded-full border border-black/20 flex items-center justify-center text-[8px]">
+                <div
+                  className="h-8 w-8 rounded-full border border-black/20 flex items-center justify-center"
+                  style={{ fontSize: "1.6mm" }}
+                >
                   LOGO
                 </div>
               )}
             </div>
           )}
-          <h1 className="text-base font-bold text-black uppercase tracking-wider">
+          <h1
+            className="font-bold text-black uppercase tracking-wide"
+            style={{ fontSize: "3mm" }}
+          >
             {header}
           </h1>
           {addressLines.map((line) => (
-            <p key={line} className="text-[10px] mt-1 font-medium">
+            <p key={line} className="mt-1 font-medium">
               {line}
             </p>
           ))}
-          <p className="text-[10px] font-medium">Tel: {phoneText}</p>
-          <p className="text-[10px] font-medium">
-            Mersis: 1234567890123456
-          </p>
+          <p className="font-medium">Tel: {phoneText}</p>
+          <p className="font-medium">Mersis: 1234567890123456</p>
         </div>
 
         {/* Info Block */}
         <div className="border-b border-black border-dashed my-2"></div>
-        <div className="space-y-1 text-[11px] font-medium">
+        <div className="space-y-1 font-medium">
           <div className="flex justify-between">
             <span>Tarih:</span>
             <span>
@@ -164,9 +173,14 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           {cart.map((item) => {
             const multiplier = item.lineType === "RETURN" ? -1 : 1;
             return (
-              <div key={item.id} className="mb-1 text-[11px]">
-                <div className="font-bold truncate">{item.name}</div>
-                <div className="flex justify-between pl-2 text-[10px] font-medium">
+              <div key={item.id} className="mb-1">
+                <div
+                  className="font-bold truncate"
+                  style={{ fontSize: "2.3mm" }}
+                >
+                  {item.name}
+                </div>
+                <div className="flex justify-between pl-2 font-medium">
                   <span>
                     {item.quantity} x {item.price.toFixed(2)}
                   </span>
@@ -181,20 +195,23 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
 
         {/* Totals */}
         <div className="border-t border-black border-dashed my-2 pt-2">
-          <div className="flex justify-between text-sm font-bold">
+          <div
+            className="flex justify-between font-bold"
+            style={{ fontSize: "2.6mm" }}
+          >
             <span>TOPLAM:</span>
             <span>
               {total.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} TL
             </span>
           </div>
-          <div className="flex justify-between text-[10px] mt-1 font-medium">
+          <div className="flex justify-between mt-1 font-medium">
             <span>KDV (%{rate}):</span>
             <span>{taxAmount.toFixed(2)} TL</span>
           </div>
         </div>
 
         {/* Payment Type */}
-        <div className="border-t border-black border-dashed my-2 pt-2 text-[11px] font-medium">
+        <div className="border-t border-black border-dashed my-2 pt-2 font-medium">
           <div className="flex justify-between uppercase">
             <span>Odeme Tipi:</span>
             <span>
@@ -208,17 +225,18 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-4 text-[10px] font-medium space-y-1">
+        <div className="text-center mt-4 font-medium space-y-1">
           <p>{footer}</p>
           <p>Degisim icin fis ibrazi zorunludur.</p>
           <p>Kiyafetlerde iade yoktur.</p>
-          <div
-            className="mt-2 flex justify-center items-center py-2 bg-white"
-            style={{ height: "16mm" }}
-          >
+          {/* Barkod: fişin tüm kullanılabilir genişliğine (padding hariç
+              45mm) esnetiliyor — fiş numarası kısa/uzun olsa da barkod her
+              zaman büyük ve taranabilir kalır. */}
+          <div className="mt-2 w-full bg-white" style={{ height: "18mm" }}>
             <svg
               ref={barcodeRef}
-              style={{ maxWidth: "92%", maxHeight: "100%" }}
+              style={{ width: "100%", height: "100%" }}
+              preserveAspectRatio="none"
             />
           </div>
         </div>

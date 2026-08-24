@@ -50,17 +50,14 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
   ) => {
     const barcodeRef = useRef<SVGSVGElement>(null);
 
-    // Sipariş numarası artık sistemde HER YERDE (admin Siparişler sayfası,
-    // e-posta, fatura, POS fişi) aynı sadece-rakam formatta üretiliyor
-    // (bkz. api/helpers.util.ts generateOrderNumber — örn. "26082404321"),
-    // bu yüzden receiptNo burada zaten barkoda kodlanabilir uzunlukta.
-    // replace(/\D/g,'') sadece eski (tireli) siparişler veya PaymentModal'daki
-    // "TR-xxxxx" acil durum fallback'i gibi rakam-olmayan karakter içeren
-    // durumlar için bir güvenlik ağı; normal akışta no-op'tur. "Fiş No:"
-    // satırı ve barkod (hem çubuklar hem altındaki yazı) aynı değeri
-    // kullanıyor, yani barkodu okutunca çıkan değer = admin panelindeki
-    // sipariş numarası = fişte yazan Fiş No, hepsi birebir aynı.
-    const displayReceiptNo = receiptNo.replace(/\D/g, "") || receiptNo;
+    // Barkod, Fiş No ile birebir aynı olacak şekilde receiptNo'yu OLDUĞU GİBİ
+    // (örn. "PM-20260824-14907") kodluyor — admin Siparişler sayfasındaki
+    // sipariş numarasıyla da aynı değer (bkz. api/helpers.util.ts
+    // generateOrderNumber). Bu uzunlukta bir CODE128 barkodun 45mm'lik
+    // kağıda sığması için modülleri, sadece-rakam bir formata göre daha
+    // ince çıkar (bkz. aşağıdaki maxWidth güvenlik payı) — bu, "her yerde
+    // aynı tam numara" gereksinimi için bilinçli kabul edilen bir ödün.
+    const displayReceiptNo = receiptNo;
 
     // margin:0 kullanılıyordu — bu, tarayıcının barkodun başlangıcını/bitişini
     // ayırt etmesi için gereken "sessiz bölge"yi (quiet zone) tamamen
@@ -71,7 +68,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           JsBarcode(barcodeRef.current, displayReceiptNo, {
             format: "CODE128",
             lineColor: "#000",
-            width: 1.4,
+            width: 1,
             height: 44,
             displayValue: true,
             fontSize: 10,

@@ -50,23 +50,26 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
   ) => {
     const barcodeRef = useRef<SVGSVGElement>(null);
 
-    // Fiş altındaki barkod: termal yazıcı/okuyucuların güvenilir okuduğu
-    // CODE128 ile gerçek, taranabilir bir barkod (eski dekoratif çizgi deseni değil).
+    // Fiş No formatı "PM-20260824-04321" gibi 18 haneli — bunu CODE128 ile
+    // OLDUĞU GİBİ kodlamak 45mm genişliğe sığması için modülleri (çubukları)
+    // tarayıcının artık ayırt edemeyeceği kadar inceltmeyi gerektiriyordu;
+    // barkodun "okunmuyor" olmasının asıl sebebi buydu. Sadece rakamları
+    // kodluyoruz (CODE128 Code-C ile rakam çiftlerini tek sembolde kodlar,
+    // çok daha az modül) — hem güvenilir modül genişliği hem 45mm'ye doğal
+    // sığma elde ediliyor. Tam fiş no zaten üstte "Fiş No:" satırında yazılı.
+    const barcodeValue = receiptNo.replace(/\D/g, "") || receiptNo;
+
     // margin:0 kullanılıyordu — bu, tarayıcının barkodun başlangıcını/bitişini
     // ayırt etmesi için gereken "sessiz bölge"yi (quiet zone) tamamen
-    // kaldırıyordu ve barkodun okunmamasının asıl sebebi buydu.
-    // width/height burada sadece SVG'nin İÇ modül oranını belirliyor — asıl
-    // görünen boyut, altta svg'ye verilen width:100%;height:100% ile fişin
-    // tam genişliğine (45mm) esnetiliyor; bu yüzden fiş numarasının uzunluğu
-    // ne olursa olsun barkod her zaman kullanılabilir tüm genişliği kaplıyor.
+    // kaldırıyordu, bu da okunmama sebeplerinden biriydi.
     useEffect(() => {
-      if (barcodeRef.current && receiptNo) {
+      if (barcodeRef.current && barcodeValue) {
         try {
-          JsBarcode(barcodeRef.current, receiptNo, {
+          JsBarcode(barcodeRef.current, barcodeValue, {
             format: "CODE128",
             lineColor: "#000",
             width: 1.3,
-            height: 46,
+            height: 40,
             displayValue: true,
             fontSize: 10,
             fontOptions: "bold",
@@ -78,7 +81,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           console.error("Fiş barkodu render hatası:", error);
         }
       }
-    }, [receiptNo]);
+    }, [barcodeValue]);
 
     const header = headerText || "PEYKER MODA";
     const addressLines = (
@@ -229,14 +232,18 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           <p>{footer}</p>
           <p>Degisim icin fis ibrazi zorunludur.</p>
           <p>Kiyafetlerde iade yoktur.</p>
-          {/* Barkod: fişin tüm kullanılabilir genişliğine (padding hariç
-              45mm) esnetiliyor — fiş numarası kısa/uzun olsa da barkod her
-              zaman büyük ve taranabilir kalır. */}
-          <div className="mt-2 w-full bg-white" style={{ height: "18mm" }}>
+          {/* Barkod: doğal (bozulmamış) oranıyla ortalanıyor; max-width/
+              max-height sadece taşarsa oranı KORUYARAK küçültür — zorla
+              yatay/dikey esnetme (önceki preserveAspectRatio="none")
+              çubukların birbirine yakınlaşıp yer yer birleşmesine
+              ("iç içe geçme") yol açıyordu. */}
+          <div
+            className="mt-2 w-full flex justify-center items-center bg-white"
+            style={{ height: "16mm" }}
+          >
             <svg
               ref={barcodeRef}
-              style={{ width: "100%", height: "100%" }}
-              preserveAspectRatio="none"
+              style={{ maxWidth: "100%", maxHeight: "100%" }}
             />
           </div>
         </div>

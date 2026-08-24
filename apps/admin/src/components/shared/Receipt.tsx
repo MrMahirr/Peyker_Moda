@@ -52,10 +52,12 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
 
     // Fiş No (örn. "PM-260824-04321") CODE128 ile OLDUĞU GİBİ kodlanırsa
     // 45mm genişliğe sığması için modülleri (çubukları) tarayıcının artık
-    // ayırt edemeyeceği kadar inceltmek gerekiyordu. Sadece rakamları
-    // kodluyoruz (CODE128 Code-C ile rakam çiftlerini tek sembolde kodlar,
-    // çok daha az modül) — hem güvenilir modül genişliği hem 45mm'ye doğal
-    // sığma elde ediliyor. Tam fiş no zaten üstte "Fiş No:" satırında yazılı.
+    // ayırt edemeyeceği kadar inceltmek gerekiyordu. Çubuklara SADECE
+    // rakamlar kodlanıyor (CODE128 Code-C ile rakam çiftlerini tek sembolde
+    // kodlar, çok daha az modül) — taranabilirlik bundan geliyor. `text`
+    // seçeneği ise çubukların ALTINDA basılan yazıyı, kodlanan değerden
+    // bağımsız olarak tam fiş numarasıyla ("Fiş No:" satırıyla birebir aynı)
+    // gösteriyor — hem okunabilir barkod hem görsel olarak tutarlı numara.
     const barcodeValue = receiptNo.replace(/\D/g, "") || receiptNo;
 
     // margin:0 kullanılıyordu — bu, tarayıcının barkodun başlangıcını/bitişini
@@ -70,6 +72,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             width: 1.4,
             height: 44,
             displayValue: true,
+            text: receiptNo,
             fontSize: 10,
             fontOptions: "bold",
             margin: 8,
@@ -80,7 +83,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           console.error("Fiş barkodu render hatası:", error);
         }
       }
-    }, [barcodeValue]);
+    }, [barcodeValue, receiptNo]);
 
     const header = headerText || "PEYKER MODA";
     const addressLines = (

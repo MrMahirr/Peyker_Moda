@@ -86,7 +86,7 @@ export const BarcodeDisplay: React.FC<BarcodeDisplayProps> = ({
             <div
                 ref={printAreaRef}
                 className="flex flex-col items-center bg-white"
-                style={{ width: `${LABEL_WIDTH_MM}mm`, minHeight: `${LABEL_HEIGHT_MM}mm`, padding: '1.6mm 1.8mm', boxSizing: 'border-box' }}
+                style={{ width: `${LABEL_WIDTH_MM}mm`, minHeight: `${LABEL_HEIGHT_MM}mm`, padding: '1.6mm 2.6mm', boxSizing: 'border-box' }}
             >
                 <div
                     className="w-full text-center font-extrabold tracking-wide text-zinc-900 uppercase"
@@ -95,21 +95,25 @@ export const BarcodeDisplay: React.FC<BarcodeDisplayProps> = ({
                     Peyker Moda
                 </div>
                 <div
-                    className="w-full text-center font-extrabold text-zinc-900 leading-tight"
+                    className="w-full text-center font-black text-black leading-tight"
                     style={{
-                        fontSize: '3.2mm',
+                        fontSize: '3.4mm',
                         marginBottom: '0.8mm',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        WebkitTextStroke: '0.25px currentColor'
                     }}
                 >
                     {productName}
                 </div>
 
                 <div className="w-full flex items-baseline justify-between" style={{ marginBottom: '0.8mm' }}>
-                    <span className="font-bold uppercase text-zinc-900" style={{ fontSize: '2.8mm' }}>
+                    <span
+                        className="font-black uppercase text-black"
+                        style={{ fontSize: '3mm', WebkitTextStroke: '0.25px currentColor' }}
+                    >
                         {variantName || ''}
                     </span>
                     {price !== undefined && (
@@ -120,7 +124,7 @@ export const BarcodeDisplay: React.FC<BarcodeDisplayProps> = ({
                 </div>
 
                 <div className="w-full flex items-center justify-center overflow-hidden" style={{ height: '20mm' }}>
-                    <svg ref={svgRef} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                    <svg ref={svgRef} style={{ maxWidth: '92%', maxHeight: '100%' }} />
                 </div>
             </div>
 

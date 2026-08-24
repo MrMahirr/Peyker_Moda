@@ -1,8 +1,20 @@
-import { forwardRef } from "react";
-import { CartItem } from "@/context/PosContext";
+import { forwardRef, useEffect, useRef } from "react";
+import JsBarcode from "jsbarcode";
+
+// PosContext'teki CartItem bu şekli sağlar (yapısal olarak uyumludur);
+// bileşen paylaşılan olduğu için POS context'ine bağımlı olmamalı.
+export type ReceiptLineType = "SALE" | "RETURN" | "EXCHANGE";
+
+export interface ReceiptLineItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  lineType: ReceiptLineType;
+}
 
 interface ReceiptProps {
-  cart: CartItem[];
+  cart: ReceiptLineItem[];
   total: number;
   paymentMethod: string;
   date: Date;
@@ -16,11 +28,6 @@ interface ReceiptProps {
   showLogo?: boolean;
   logoUrl?: string;
 }
-
-const barcodeBars = Array.from(
-  { length: 40 },
-  (_, index) => (index * 7) % 5 < 2,
-);
 
 export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
   (
@@ -41,6 +48,31 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
     },
     ref,
   ) => {
+    const barcodeRef = useRef<SVGSVGElement>(null);
+
+    // Fiş altındaki barkod: termal yazıcı/okuyucuların güvenilir okuduğu
+    // CODE128 ile gerçek, taranabilir bir barkod (eski dekoratif çizgi deseni değil).
+    useEffect(() => {
+      if (barcodeRef.current && receiptNo) {
+        try {
+          JsBarcode(barcodeRef.current, receiptNo, {
+            format: "CODE128",
+            lineColor: "#000",
+            width: 1.3,
+            height: 34,
+            displayValue: true,
+            fontSize: 10,
+            fontOptions: "bold",
+            margin: 0,
+            textMargin: 2,
+            background: "transparent",
+          });
+        } catch (error) {
+          console.error("Fiş barkodu render hatası:", error);
+        }
+      }
+    }, [receiptNo]);
+
     const header = headerText || "PEYKER MODA";
     const addressLines = (
       address || "Bagdat Caddesi No: 123\nKadikoy / ISTANBUL"
@@ -171,18 +203,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           <p>Degisim icin fis ibrazi zorunludur.</p>
           <p>Kiyafetlerde iade yoktur.</p>
           <div className="mt-2 flex justify-center py-2 bg-white">
-            {/* Barcode Mock */}
-            <div className="flex gap-[2px] h-8 justify-center items-end opacity-80">
-              {barcodeBars.map((isTall, i) => (
-                <div
-                  key={i}
-                  className={`w-[2px] bg-black ${isTall ? "h-full" : "h-3/4"}`}
-                />
-              ))}
-            </div>
-            <p className="text-[9px] mt-1 tracking-[4px]">
-              {receiptNo.replace("TR-", "")}
-            </p>
+            <svg ref={barcodeRef} className="max-w-full" />
           </div>
         </div>
       </div>

@@ -11,7 +11,7 @@ import {
 import { CartItem, usePos } from "@/context/PosContext";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { Receipt } from "./Receipt";
+import { Receipt } from "@/components/shared/Receipt";
 import {
   PaymentMethod as ApiPaymentMethod,
   posService,

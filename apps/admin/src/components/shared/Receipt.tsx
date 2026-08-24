@@ -59,7 +59,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             format: "CODE128",
             lineColor: "#000",
             width: 1.3,
-            height: 34,
+            height: 38,
             displayValue: true,
             fontSize: 10,
             fontOptions: "bold",
@@ -87,14 +87,18 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
     const showLogoResolved = showLogo ?? true;
 
     return (
+      // Not: sabit min-height/box-shadow kasıtlı olarak yok — bu bileşen hem
+      // ekran önizlemesinde hem de #print-root'a portallanan gerçek yazdırma
+      // çıktısında kullanılıyor; ekrana özel görsel süslemeler (gölge, min
+      // yükseklik) çağıran tarafın sarmalayıcısında olmalı, yoksa yazdırma
+      // çıktısının boyu/boşluğu yanlış çıkar.
+      // Termal baskıda ince gövdeli küçük punto metinler silik çıkıyordu;
+      // text-stroke kalıtımlı olduğu için kökte bir kez tanımlanıp tüm
+      // metinlere uygulanıyor (bkz. labelPrint.ts'deki aynı yaklaşım).
       <div
         ref={ref}
-        id="printable-receipt"
         className="w-[80mm] bg-white text-black font-mono text-[12px] leading-tight p-2 mx-auto"
-        style={{
-          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-          minHeight: "100mm", // Visual height for preview
-        }}
+        style={{ WebkitTextStroke: "0.2px currentColor" }}
       >
         {/* Header */}
         <div className="text-center mb-2">
@@ -113,21 +117,23 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
               )}
             </div>
           )}
-          <h1 className="text-base font-bold text-black uppercase tracking-wider">
+          <h1 className="text-base font-black text-black uppercase tracking-wider">
             {header}
           </h1>
           {addressLines.map((line) => (
-            <p key={line} className="text-[10px] mt-1">
+            <p key={line} className="text-[10px] mt-1 font-semibold">
               {line}
             </p>
           ))}
-          <p className="text-[10px]">Tel: {phoneText}</p>
-          <p className="text-[10px]">Mersis: 1234567890123456</p>
+          <p className="text-[10px] font-semibold">Tel: {phoneText}</p>
+          <p className="text-[10px] font-semibold">
+            Mersis: 1234567890123456
+          </p>
         </div>
 
         {/* Info Block */}
         <div className="border-b border-black border-dashed my-2"></div>
-        <div className="space-y-1 text-[11px]">
+        <div className="space-y-1 text-[11px] font-semibold">
           <div className="flex justify-between">
             <span>Tarih:</span>
             <span>
@@ -155,8 +161,8 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             const multiplier = item.lineType === "RETURN" ? -1 : 1;
             return (
               <div key={item.id} className="mb-1 text-[11px]">
-                <div className="font-bold truncate">{item.name}</div>
-                <div className="flex justify-between pl-2 text-[10px]">
+                <div className="font-black truncate">{item.name}</div>
+                <div className="flex justify-between pl-2 text-[10px] font-semibold">
                   <span>
                     {item.quantity} x {item.price.toFixed(2)}
                   </span>
@@ -171,20 +177,20 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
 
         {/* Totals */}
         <div className="border-t border-black border-dashed my-2 pt-2">
-          <div className="flex justify-between text-sm font-bold">
+          <div className="flex justify-between text-sm font-black">
             <span>TOPLAM:</span>
             <span>
               {total.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} TL
             </span>
           </div>
-          <div className="flex justify-between text-[10px] mt-1">
+          <div className="flex justify-between text-[10px] mt-1 font-semibold">
             <span>KDV (%{rate}):</span>
             <span>{taxAmount.toFixed(2)} TL</span>
           </div>
         </div>
 
         {/* Payment Type */}
-        <div className="border-t border-black border-dashed my-2 pt-2 text-[11px]">
+        <div className="border-t border-black border-dashed my-2 pt-2 text-[11px] font-semibold">
           <div className="flex justify-between uppercase">
             <span>Odeme Tipi:</span>
             <span>
@@ -198,12 +204,18 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-4 text-[10px] space-y-1">
+        <div className="text-center mt-4 text-[10px] font-semibold space-y-1">
           <p>{footer}</p>
           <p>Degisim icin fis ibrazi zorunludur.</p>
           <p>Kiyafetlerde iade yoktur.</p>
-          <div className="mt-2 flex justify-center py-2 bg-white">
-            <svg ref={barcodeRef} className="max-w-full" />
+          <div
+            className="mt-2 flex justify-center items-center py-2 bg-white"
+            style={{ height: "14mm" }}
+          >
+            <svg
+              ref={barcodeRef}
+              style={{ maxWidth: "92%", maxHeight: "100%" }}
+            />
           </div>
         </div>
       </div>

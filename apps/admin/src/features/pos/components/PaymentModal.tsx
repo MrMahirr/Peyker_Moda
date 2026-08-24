@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import {
   CreditCard,
@@ -173,75 +174,77 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
   const change = Math.max(0, Number(receivedAmount) - total);
 
   if (isSuccess) {
+    const receiptProps = {
+      cart: receiptCart,
+      total,
+      paymentMethod,
+      date: new Date(),
+      receiptNo,
+      cashierName: user ? `${user.firstName} ${user.lastName}` : "Kasiyer",
+      headerText: receiptSettings?.receiptHeader,
+      address: receiptSettings?.receiptAddress,
+      phone: receiptSettings?.receiptPhone,
+      footerText: receiptSettings?.receiptFooter,
+      taxRate: receiptSettings?.receiptTaxRate,
+      showLogo: receiptSettings?.receiptShowLogo,
+      logoUrl: receiptSettings?.storeLogo,
+    };
+
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4">
-        <div className="w-full max-w-lg h-[90vh] sm:h-auto max-h-[90vh] flex flex-col bg-zinc-100 rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20 print-reset">
-          {/* Success Header */}
-          <div className="bg-white p-8 text-center shrink-0 shadow-sm relative z-10">
-            <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-500 ring-4 ring-emerald-50/50">
-              <CheckCircle2 className="h-8 w-8" />
-            </div>
-            <h2 className="text-2xl font-black text-zinc-900 tracking-tight">
-              Ödeme Tamamlandı!
-            </h2>
-            <p className="text-[13px] font-medium text-zinc-500 mt-1 mb-6">
-              Satış belgesi oluşturuldu ve kaydedildi.
-            </p>
+      <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg h-[90vh] sm:h-auto max-h-[90vh] flex flex-col bg-zinc-100 rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+            {/* Success Header */}
+            <div className="bg-white p-8 text-center shrink-0 shadow-sm relative z-10">
+              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-500 ring-4 ring-emerald-50/50">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+              <h2 className="text-2xl font-black text-zinc-900 tracking-tight">
+                Ödeme Tamamlandı!
+              </h2>
+              <p className="text-[13px] font-medium text-zinc-500 mt-1 mb-6">
+                Satış belgesi oluşturuldu ve kaydedildi.
+              </p>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="secondary"
-                onClick={handlePrint}
-                className="h-12 flex-1 font-bold text-[13px] bg-zinc-100 border-transparent hover:bg-zinc-200"
-              >
-                <Printer className="mr-2 h-4 w-4 text-zinc-500" />
-                Fişi Gör/Yazdır
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleClose}
-                className="h-12 flex-1 font-bold text-[13px] bg-zinc-900 hover:bg-zinc-800 text-white border-transparent"
-              >
-                Yeni Satış <ArrowRight className="ml-2 h-4 w-4 opacity-70" />
-              </Button>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={handlePrint}
+                  className="h-12 flex-1 font-bold text-[13px] bg-zinc-100 border-transparent hover:bg-zinc-200"
+                >
+                  <Printer className="mr-2 h-4 w-4 text-zinc-500" />
+                  Fişi Gör/Yazdır
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleClose}
+                  className="h-12 flex-1 font-bold text-[13px] bg-zinc-900 hover:bg-zinc-800 text-white border-transparent"
+                >
+                  Yeni Satış <ArrowRight className="ml-2 h-4 w-4 opacity-70" />
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {/* Receipt Preview Area (Scrollable) */}
-          <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-zinc-100/80 bg-blend-soft-light hide-scrollbar print-reset">
-            {/*
-              .print-reset (bkz. index.css @media print): bu sarmalayıcıdaki
-              scale-95 dönüşümü ve overflow-hidden, global @media print kuralının
-              #printable-receipt'e uyguladığı position:absolute için konteyner
-              (containing block) oluşturup fişi bu kutunun (içerik olmadığı için
-              0 yükseklikteki) sınırlarına kırpıyordu — "boş fiş" basılmasının
-              asıl sebebi buydu. Not: Tailwind'in print: varyantı bu projedeki
-              Tailwind v4 kurulumunda derlenmiyor (compiled CSS'te hiç yok),
-              o yüzden düz CSS sınıfı kullanılıyor.
-            */}
-            <div className="shadow-2xl rounded-sm overflow-hidden pointer-events-none select-none origin-top transition-transform scale-95 border border-zinc-200/50 print-reset">
-              <Receipt
-                cart={receiptCart}
-                total={total}
-                paymentMethod={paymentMethod}
-                date={new Date()}
-                receiptNo={receiptNo}
-                cashierName={
-                  user ? `${user.firstName} ${user.lastName}` : "Kasiyer"
-                }
-                headerText={receiptSettings?.receiptHeader}
-                address={receiptSettings?.receiptAddress}
-                phone={receiptSettings?.receiptPhone}
-                footerText={receiptSettings?.receiptFooter}
-                taxRate={receiptSettings?.receiptTaxRate}
-                showLogo={receiptSettings?.receiptShowLogo}
-                logoUrl={receiptSettings?.storeLogo}
-              />
+            {/* Receipt Preview Area (Scrollable) — sadece görsel önizleme,
+                gerçek yazdırma çıktısı değil (aşağıdaki portal'a bakın). */}
+            <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-zinc-100/80 bg-blend-soft-light hide-scrollbar">
+              <div className="shadow-2xl rounded-sm overflow-hidden pointer-events-none select-none origin-top transition-transform scale-95 border border-zinc-200/50">
+                <Receipt {...receiptProps} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Gerçek yazdırma çıktısı: #print-root'a portallanır (bkz. index.html
+            ve index.css @media print). Bu, yukarıdaki dekoratif önizleme
+            sarmalayıcısının (scale/overflow/scroll) yazdırma sırasında yol
+            açtığı kırpma/boşluk sorunlarından tamamen izole tutar. */}
+        {createPortal(
+          <Receipt {...receiptProps} />,
+          document.getElementById("print-root") ?? document.body,
+        )}
+      </>
     );
   }
 

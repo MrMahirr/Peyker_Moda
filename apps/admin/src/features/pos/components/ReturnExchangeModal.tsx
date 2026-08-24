@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import {
@@ -77,6 +77,7 @@ export const ReturnExchangeModal = ({
 }: ReturnExchangeModalProps) => {
   const { addReturnItem } = usePos();
   const { user } = useAuth();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [foundOrder, setFoundOrder] = useState<OrderDetail | null>(null);
   const [existingReturns, setExistingReturns] = useState<PosReturn[]>([]);
@@ -108,7 +109,15 @@ export const ReturnExchangeModal = ({
       setReference("");
       setSelectedQuantities({});
       setItemReasons({});
+      return;
     }
+
+    // Modal açılır açılmaz arama kutusuna odaklan — aksi halde fiziksel
+    // barkod okuyucu ile fiş taranınca hiçbir input odaklı olmadığı için
+    // klavye tuşları hiçbir yere gitmiyor, taramayı sadece POS'un genel
+    // (window seviyesindeki) barkod dinleyicisi yakalayıp yanlışlıkla
+    // "ürün ekle" olarak yorumluyordu (bkz. usePosHotkeys.ts).
+    searchInputRef.current?.focus();
   }, [isOpen]);
 
   const returnedByVariant = useMemo(() => {
@@ -336,6 +345,7 @@ export const ReturnExchangeModal = ({
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
             <Input
+              ref={searchInputRef}
               placeholder="Fiş no, barkod veya müşteri telefonu"
               className="pl-10 h-11 bg-white border-zinc-200/80"
               value={searchQuery}

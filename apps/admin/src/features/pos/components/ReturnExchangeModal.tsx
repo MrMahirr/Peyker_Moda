@@ -177,11 +177,35 @@ export const ReturnExchangeModal = ({
     setItemReasons({});
 
     try {
-      const result = await ordersService.getAll({ search: query, limit: 5 });
-      const orders = result.data || [];
+      let result = await ordersService.getAll({ search: query, limit: 5 });
+      let orders = result.data || [];
+
+      // Fiş barkodu taranınca sadece rakamlar gelir (örn. "26082404321"),
+      // ama gerçek fiş no'da tire var ("PM-260824-04321") — düz "contains"
+      // araması bunu bulamaz. Sorgu tamamen 11 haneli rakamsa (PM-YYMMDD-NNNNN
+      // formatının rakam kısmı), tireli halini yeniden kurup fallback olarak
+      // deniyoruz. Doğrudan arama (telefon/isim/tireli fiş no dahil) zaten
+      // önce denendiği için bu, yanlış pozitif riski taşımıyor.
+      const digitsOnly = query.replace(/\D/g, "");
+      const reconstructed =
+        orders.length === 0 && /^\d{11}$/.test(digitsOnly)
+          ? `PM-${digitsOnly.slice(0, 6)}-${digitsOnly.slice(6)}`
+          : null;
+
+      if (reconstructed) {
+        result = await ordersService.getAll({
+          search: reconstructed,
+          limit: 5,
+        });
+        orders = result.data || [];
+      }
+
       const order =
-        orders.find((candidate) => candidate.orderNumber === query) ||
-        orders[0];
+        orders.find(
+          (candidate) =>
+            candidate.orderNumber === query ||
+            candidate.orderNumber === reconstructed,
+        ) || orders[0];
 
       if (!order) {
         toast.error("Sipariş bulunamadı.", { className: "font-medium" });

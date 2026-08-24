@@ -9,23 +9,21 @@ export function generateRandomString(length: number = 32): string {
 
 /**
  * Generate order number
- * Format: YYMMDDXXXXX (11 haneli, sadece rakam — önek/tire yok)
+ * Format: PM-YYYYMMDD-XXXXX (örn. "PM-20260824-14907")
  * Not: Bu değer sistemde HER YERDE (admin Siparişler sayfası, POS fişi,
- * fiş barkodu, e-postalar, faturalar) aynı şekilde kullanılıyor — ayrı bir
- * "kısaltılmış görünüm" yok. Sadece rakamlardan oluşması iki sebepten:
- * (1) POS fişinin 45mm'lik termal barkodunun güvenilir taranabilmesi için
- * kısa olması gerekiyor, (2) fiş üzerindeki barkodu okutunca çıkan değerin,
- * Fiş No'da ve admin panelindeki sipariş numarasında yazan değerle birebir
- * aynı olması gerekiyor — harf/tire içeren bir format bu ikisini birbirinden
- * ayırırdı.
+ * fiş barkodu, e-postalar, faturalar) aynı şekilde, OLDUĞU GİBİ kullanılıyor —
+ * ayrı bir "kısaltılmış görünüm" yok. Fiş barkodu da bu tam değeri kodluyor
+ * (bkz. Receipt.tsx); 45mm'lik termal kağıtta bu uzunlukta bir CODE128
+ * barkodun modülleri kısa/rakam-only bir formata göre daha ince çıkar —
+ * bu, format seçilirken bilinçli olarak kabul edilen bir ödün.
  */
 export function generateOrderNumber(): string {
   const date = new Date();
-  const dateStr = date.toISOString().slice(2, 10).replace(/-/g, '');
+  const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
   const random = Math.floor(Math.random() * 100000)
     .toString()
     .padStart(5, '0');
-  return `${dateStr}${random}`;
+  return `PM-${dateStr}-${random}`;
 }
 
 /**

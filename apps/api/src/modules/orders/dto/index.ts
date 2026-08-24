@@ -109,7 +109,7 @@ export class OrderQueryDto {
   limit?: number;
 
   @ApiPropertyOptional({
-    example: '26082404321',
+    example: 'PM-20260824-14907',
     description: 'Sipariş numarası ile arama',
   })
   @IsString()

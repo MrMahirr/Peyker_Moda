@@ -50,16 +50,16 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
   ) => {
     const barcodeRef = useRef<SVGSVGElement>(null);
 
-    // Fiş No (örn. "PM-260824-04321") CODE128 ile OLDUĞU GİBİ kodlanırsa
-    // 45mm genişliğe sığması için modülleri (çubukları) tarayıcının artık
-    // ayırt edemeyeceği kadar inceltmek gerekiyordu. Çubuklara SADECE
-    // rakamlar kodlanıyor (CODE128 Code-C ile rakam çiftlerini tek sembolde
-    // kodlar, çok daha az modül) — taranabilirlik bundan geliyor.
-    // "Fiş No:" satırı da AYNI kısaltılmış değeri gösteriyor (aşağıda), böylece
-    // barkodu okutunca çıkan değer, fişte yazan Fiş No ile birebir eşleşiyor —
-    // önceki `text` override'ı (barkod altındaki yazıyı tam numarayla
-    // değiştirme) kafa karıştırıcıydı çünkü taranan değerle görünen değer
-    // farklıydı; artık ikisi de aynı kısaltılmış numara.
+    // Sipariş numarası artık sistemde HER YERDE (admin Siparişler sayfası,
+    // e-posta, fatura, POS fişi) aynı sadece-rakam formatta üretiliyor
+    // (bkz. api/helpers.util.ts generateOrderNumber — örn. "26082404321"),
+    // bu yüzden receiptNo burada zaten barkoda kodlanabilir uzunlukta.
+    // replace(/\D/g,'') sadece eski (tireli) siparişler veya PaymentModal'daki
+    // "TR-xxxxx" acil durum fallback'i gibi rakam-olmayan karakter içeren
+    // durumlar için bir güvenlik ağı; normal akışta no-op'tur. "Fiş No:"
+    // satırı ve barkod (hem çubuklar hem altındaki yazı) aynı değeri
+    // kullanıyor, yani barkodu okutunca çıkan değer = admin panelindeki
+    // sipariş numarası = fişte yazan Fiş No, hepsi birebir aynı.
     const displayReceiptNo = receiptNo.replace(/\D/g, "") || receiptNo;
 
     // margin:0 kullanılıyordu — bu, tarayıcının barkodun başlangıcını/bitişini

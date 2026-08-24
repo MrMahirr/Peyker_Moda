@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Printer, Minus, Plus } from 'lucide-react';
 import { BarcodeDisplay } from './BarcodeDisplay';
+import { renderLabelHtml, LABEL_PRINT_STYLES, BARCODE_RENDER_OPTIONS, JSBARCODE_CDN_URL } from './labelPrint';
 
 export interface BarcodePrintItem {
     id: string;
@@ -42,23 +43,13 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
         const printWindow = window.open('', '_blank');
         if (!printWindow) return;
 
-        // Generate HTML for all copies of all items
+        // Her kopya için etiket HTML'i üret (her etiket 45x45mm, kendi fiziksel sayfası)
         let labelsHtml = '';
-        
+
         items.forEach(item => {
             const itemCount = copies[item.id] || 0;
             for (let i = 0; i < itemCount; i++) {
-                labelsHtml += `
-                    <div class="label">
-                        <div class="store-name">PEYKER MODA</div>
-                        <div class="product-name">${item.productName}</div>
-                        ${item.variantName ? `<div class="variant-name">${item.variantName}</div>` : ''}
-                        <div class="barcode-container">
-                            <svg class="barcode-svg" data-barcode="${item.barcode}"></svg>
-                        </div>
-                        ${item.price !== undefined ? `<div class="price">${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: item.currency || 'TRY' }).format(item.price)}</div>` : ''}
-                    </div>
-                `;
+                labelsHtml += renderLabelHtml(item);
             }
         });
 
@@ -66,107 +57,18 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
             <html>
                 <head>
                     <title>Toplu Barkod Yazdir</title>
-                    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-                    <style>
-                        @page { size: A4 portrait; margin: 10mm; }
-                        body { 
-                            margin: 0; 
-                            padding: 0;
-                            font-family: system-ui, -apple-system, sans-serif;
-                            background: white;
-                            display: flex;
-                            flex-wrap: wrap;
-                            align-content: flex-start;
-                        }
-                        .label {
-                            /* A4 (210mm) - 20mm margin = 190mm. 190 / 4 = 47.5mm */
-                            width: 47mm; 
-                            height: 27mm;
-                            border: 1px dashed #ccc;
-                            padding: 2mm;
-                            box-sizing: border-box;
-                            text-align: center;
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: center;
-                            overflow: hidden;
-                            page-break-inside: avoid;
-                            margin: 0.25mm;
-                        }
-                        .store-name {
-                            font-size: 8px;
-                            font-weight: 900;
-                            text-transform: uppercase;
-                            letter-spacing: 0.5px;
-                            margin-bottom: 2px;
-                        }
-                        .product-name {
-                            font-size: 9px;
-                            font-weight: 700;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            max-width: 100%;
-                            line-height: 1.2;
-                            margin-bottom: 1px;
-                        }
-                        .variant-name {
-                            font-size: 7px;
-                            color: #333;
-                            line-height: 1.2;
-                        }
-                        .barcode-container {
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            margin: 2px 0;
-                        }
-                        .barcode-svg {
-                            height: 12mm;
-                        }
-                        .price {
-                            font-size: 11px;
-                            font-weight: 800;
-                            line-height: 1;
-                        }
-                        
-                        @media print {
-                            .label {
-                                border: none; /* Hide dashed border on actual print */
-                            }
-                        }
-                    </style>
+                    <script src="${JSBARCODE_CDN_URL}"></script>
+                    <style>${LABEL_PRINT_STYLES}</style>
                 </head>
                 <body>
                     ${labelsHtml}
                     <script>
                         window.onload = () => {
-                            // Render barcodes
                             document.querySelectorAll('.barcode-svg').forEach(svg => {
                                 const barcode = svg.getAttribute('data-barcode');
-                                try {
-                                    JsBarcode(svg, barcode, {
-                                        format: 'EAN13',
-                                        width: 1.5,
-                                        height: 30,
-                                        displayValue: true,
-                                        fontSize: 10,
-                                        margin: 0
-                                    });
-                                } catch(e) {
-                                    JsBarcode(svg, barcode, {
-                                        format: 'CODE128',
-                                        width: 1.2,
-                                        height: 30,
-                                        displayValue: true,
-                                        fontSize: 10,
-                                        margin: 0
-                                    });
-                                }
+                                JsBarcode(svg, barcode, ${JSON.stringify(BARCODE_RENDER_OPTIONS)});
                             });
-                            
-                            // Print after a short delay for rendering
+
                             setTimeout(() => {
                                 window.print();
                                 setTimeout(() => window.close(), 500);

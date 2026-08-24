@@ -1,10 +1,19 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Ticket, Printer } from 'lucide-react';
+import { Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { settingsService } from '../services/settings.service';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { Receipt, ReceiptLineItem } from '@/components/shared/Receipt';
+
+// Ayarlar sayfasındaki önizleme, POS'ta gerçekte basılan fişle birebir aynı
+// bileşeni (Receipt) kullanır — böylece "Test Yazdır" gerçek çıktıyı yansıtır.
+const PREVIEW_CART: ReceiptLineItem[] = [
+    { id: 'preview-1', name: 'Keten Gomlek (M)', price: 450, quantity: 1, lineType: 'SALE' },
+    { id: 'preview-2', name: 'Kot Pantolon (32)', price: 600, quantity: 2, lineType: 'SALE' },
+];
+const PREVIEW_TOTAL = PREVIEW_CART.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
 export const ReceiptDesigner = () => {
     const [headerText, setHeaderText] = useState('Peyker Moda');
@@ -47,22 +56,6 @@ export const ReceiptDesigner = () => {
             isMounted = false;
         };
     }, []);
-
-    // Mock calculations based on tax rate
-    const { subTotal, taxAmount, total } = useMemo(() => {
-        const rate = parseFloat(taxRate) || 0;
-        // Example base amount is 1650 pure, but let's assume items include tax or exclude tax logic.
-        // Let's assume the mock items total (1650) is the subtotal (base).
-        const baseAmount = 1650;
-        const tax = (baseAmount * rate) / 100;
-        const finalTotal = baseAmount + tax;
-
-        return {
-            subTotal: baseAmount.toFixed(2),
-            taxAmount: tax.toFixed(2),
-            total: finalTotal.toFixed(2)
-        };
-    }, [taxRate]);
 
     const handleSave = async () => {
         setSaving(true);
@@ -168,65 +161,23 @@ export const ReceiptDesigner = () => {
                     </div>
                 </div>
 
-                {/* Live Preview */}
+                {/* Live Preview - POS'ta gerçekte basılan fiş bileşeninin aynısı */}
                 <div className="bg-zinc-100 p-8 rounded-lg border border-zinc-200 flex justify-center">
-                    <div id="printable-receipt" className="bg-white w-[300px] shadow-sm p-4 text-xs font-mono space-y-4">
-                        <div className="text-center space-y-2 border-b border-dashed border-zinc-300 pb-4">
-                            {showLogo && (
-                                <div className="mx-auto h-16 w-16 bg-white rounded-full flex items-center justify-center overflow-hidden">
-                                    {logoUrl ? (
-                                        <img src={logoUrl} alt="Store Logo" className="w-full h-full object-contain" />
-                                    ) : (
-                                        <Ticket className="w-6 h-6 text-zinc-400" />
-                                    )}
-                                </div>
-                            )}
-                            <h2 className="font-bold text-lg">{headerText}</h2>
-                            <div className="whitespace-pre-wrap">{address}</div>
-                            <p>Tel: {phone}</p>
-                        </div>
-
-                        <div className="space-y-2 border-b border-dashed border-zinc-300 pb-4">
-                            <div className="flex justify-between">
-                                <span>Tarih: 22.01.2024</span>
-                                <span>Saat: 14:30</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Fis No: 00123</span>
-                                <span>Kasiyer: Ahmet</span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2 pb-4 border-b border-dashed border-zinc-300">
-                            <div className="flex justify-between">
-                                <span>1 x Keten Gomlek (M)</span>
-                                <span>450.00 tl</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>2 x Kot Pantolon (32)</span>
-                                <span>1200.00 tl</span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-1 font-bold">
-                            <div className="flex justify-between">
-                                <span>ARA TOPLAM</span>
-                                <span>{subTotal} tl</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>KDV (%{taxRate})</span>
-                                <span>{taxAmount} tl</span>
-                            </div>
-                            <div className="flex justify-between text-base">
-                                <span>GENEL TOPLAM</span>
-                                <span>{total} tl</span>
-                            </div>
-                        </div>
-
-                        <div className="text-center pt-4 text-zinc-500">
-                            <p>{footerText}</p>
-                        </div>
-                    </div>
+                    <Receipt
+                        cart={PREVIEW_CART}
+                        total={PREVIEW_TOTAL}
+                        paymentMethod="cash"
+                        date={new Date()}
+                        receiptNo="TR-00123"
+                        cashierName="Ahmet Yilmaz"
+                        headerText={headerText}
+                        address={address}
+                        phone={phone}
+                        footerText={footerText}
+                        taxRate={Number(taxRate) || 0}
+                        showLogo={showLogo}
+                        logoUrl={logoUrl || undefined}
+                    />
                 </div>
             </div>
         </div>

@@ -34,11 +34,15 @@ export const LABEL_PRINT_STYLES = `
         -webkit-font-smoothing: antialiased;
         text-rendering: optimizeLegibility;
     }
+    /* Yatay padding kasıtlı olarak dikeyden geniş: gerçek termal yazıcının
+       basılabilir genişliği, tanımlı 45mm etiket genişliğinden birkaç mm dar
+       kalabiliyor (kafa hizalaması/sensör payı) — içerik tam kenara dayanınca
+       sağdan/soldan taşıyordu. Bu boşluk güvenlik payı sağlıyor. */
     .label {
         width: ${LABEL_WIDTH_MM}mm;
         height: ${LABEL_HEIGHT_MM}mm;
         margin-bottom: ${LABEL_GAP_MM}mm;
-        padding: 1.6mm 1.8mm;
+        padding: 1.6mm 2.6mm;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -60,11 +64,15 @@ export const LABEL_PRINT_STYLES = `
         color: #000;
         margin-bottom: 0.6mm;
     }
+    /* Ürün ismi ve beden termal baskıda silik çıkıyordu: küçük punto + ince harf
+       gövdesi, kenarlardaki anti-alias gri pikselleri termal kafanın toplam
+       koyuluğunu düşürüyordu. font-weight 900 + text-stroke ile gövdeyi
+       kalınlaştırıp gri kenar oranını azaltıyoruz. */
     .product-name {
         width: 100%;
         text-align: center;
-        font-size: 3.2mm;
-        font-weight: 800;
+        font-size: 3.4mm;
+        font-weight: 900;
         line-height: 1.15;
         color: #000;
         margin-bottom: 0.8mm;
@@ -72,6 +80,7 @@ export const LABEL_PRINT_STYLES = `
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        -webkit-text-stroke: 0.25px currentColor;
     }
     .info-row {
         width: 100%;
@@ -81,10 +90,11 @@ export const LABEL_PRINT_STYLES = `
         margin-bottom: 0.8mm;
     }
     .variant-size {
-        font-size: 2.8mm;
-        font-weight: 700;
+        font-size: 3mm;
+        font-weight: 900;
         text-transform: uppercase;
         color: #000;
+        -webkit-text-stroke: 0.25px currentColor;
     }
     .price {
         font-size: 3.6mm;
@@ -100,7 +110,7 @@ export const LABEL_PRINT_STYLES = `
         overflow: hidden;
     }
     .barcode-svg {
-        max-width: 100%;
+        max-width: 92%;
         max-height: 100%;
     }
 `;
@@ -127,7 +137,7 @@ export function renderLabelHtml(item: PrintLabelItem): string {
 // uzunluk/checksum kısıtı yoktur ve termal yazıcılarda çok daha güvenilir okunur.
 export const BARCODE_RENDER_OPTIONS = {
     format: 'CODE128',
-    width: 1.3,
+    width: 1.15,
     height: 60,
     displayValue: true,
     fontSize: 11,

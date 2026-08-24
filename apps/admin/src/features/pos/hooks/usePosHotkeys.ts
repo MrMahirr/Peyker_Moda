@@ -30,6 +30,22 @@ export const usePosHotkeys = ({ onSearchFocus, onPayment, onBarcodeScanned }: Us
                 return;
             }
 
+            // Odaklı bir metin alanı varsa (örn. İade & Değişim modalındaki
+            // fiş/barkod arama kutusu) taramayı buraya bırakıyoruz — bu
+            // window seviyesindeki dinleyici her zaman aktif olduğu için,
+            // odaklı bir input'a yazılan/okutulan her şeyi AYRICA "ürün
+            // barkodu" sanıp yanlışlıkla ürün aramasını da tetikliyordu
+            // (örn. fiş barkodu okutulunca "Ürün bulunamadı" hatası).
+            const active = document.activeElement;
+            const isTypingInField =
+                active instanceof HTMLElement &&
+                (active.tagName === 'INPUT' ||
+                    active.tagName === 'TEXTAREA' ||
+                    active.isContentEditable);
+            if (isTypingInField) {
+                return;
+            }
+
             // 2. Barcode Scanner Detection (Rapid Numeric Input)
             // Scanner acts like a keyboard, sending characters very fast.
             // We ignore special keys and non-printable chars.

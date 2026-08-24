@@ -228,7 +228,7 @@ git commit -m "..."
 git push origin master
 
 # 2. Sunucuda: kodu çek
-ssh -i ~/.ssh/peykermoda_server deploy@45.88.139.52
+ssh -i ~/.ssh/peykermoda_server deploy@*********
 cd /var/www/peyker-app
 git pull origin master
 

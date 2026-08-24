@@ -11,7 +11,10 @@ import {
   OpenSessionDto,
   CloseSessionDto,
 } from './dto';
-import { generateOrderNumber } from '../../common/utils';
+import {
+  generateOrderNumber,
+  generateOrderBarcodeValue,
+} from '../../common/utils';
 import {
   OrderStatus,
   PaymentStatus,
@@ -182,11 +185,13 @@ export class PosService {
 
       // Sipariş numarası
       const orderNumber = await this.generateUniqueOrderNumber(tx);
+      const barcodeValue = await this.generateUniqueBarcodeValue(tx);
 
       // Sipariş ve ödemeleri oluştur
       const order = await tx.order.create({
         data: {
           orderNumber,
+          barcodeValue,
           customerId: saleDto.customerId,
           userId,
           subtotal,
@@ -250,6 +255,7 @@ export class PosService {
       change,
       receipt: {
         orderNumber: result.order.orderNumber,
+        barcodeValue: result.order.barcodeValue,
         items: result.order.items,
         subtotal: result.subtotal,
         discount: result.discountAmount,
@@ -502,5 +508,22 @@ export class PosService {
     }
 
     return orderNumber!;
+  }
+
+  private async generateUniqueBarcodeValue(
+    client: Prisma.TransactionClient | PrismaService = this.prisma,
+  ): Promise<string> {
+    let barcodeValue: string;
+    let exists = true;
+
+    while (exists) {
+      barcodeValue = generateOrderBarcodeValue();
+      const existing = await client.order.findUnique({
+        where: { barcodeValue },
+      });
+      exists = !!existing;
+    }
+
+    return barcodeValue!;
   }
 }

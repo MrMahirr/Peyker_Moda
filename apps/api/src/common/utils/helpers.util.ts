@@ -27,6 +27,27 @@ export function generateOrderNumber(): string {
 }
 
 /**
+ * Generate order barcode value
+ * Format: YYMMDDXXXXX (11 hane, sadece rakam)
+ * Not: orderNumber'ın (PM-YYYYMMDD-NNNNN) görünen/insan-okunur formatından
+ * BİLİNÇLİ OLARAK BAĞIMSIZ, ayrı ve kalıcı bir alan (Order.barcodeValue).
+ * Sipariş oluşturulurken bir kere üretilip DB'ye yazılır; POS fişindeki
+ * barkod bunu kodlar (bkz. Receipt.tsx). Kısa ve sadece rakam olması, 45mm'lik
+ * termal kağıtta CODE128 olarak güvenilir taranabilmesi için gerekli — bu
+ * yüzden orderNumber'ın görünen formatı ileride tekrar değişse bile barkod
+ * tarafı hiç etkilenmez, ve iade/değişim ekranındaki arama artık kırılgan bir
+ * string dönüştürmeye değil, bu alanda birebir eşleşmeye dayanıyor.
+ */
+export function generateOrderBarcodeValue(): string {
+  const date = new Date();
+  const dateStr = date.toISOString().slice(2, 10).replace(/-/g, '');
+  const random = Math.floor(Math.random() * 100000)
+    .toString()
+    .padStart(5, '0');
+  return `${dateStr}${random}`;
+}
+
+/**
  * Generate invoice number
  * Format: INV-YYYYMMDD-XXXXX
  */

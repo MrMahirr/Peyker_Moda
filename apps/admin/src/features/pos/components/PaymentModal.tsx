@@ -43,8 +43,12 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
     null,
   );
 
-  // Store a snapshot of payable sale lines for the receipt.
+  // Store a snapshot of payable sale lines/total for the receipt. `total` is
+  // a live prop derived from the cart context (PosPage's saleTotals.total);
+  // clearCart() below zeroes it out right as the success screen renders, so
+  // without this snapshot the receipt printed "TOPLAM: 0.00 TL".
   const [receiptCart, setReceiptCart] = useState<CartItem[]>([]);
+  const [receiptTotal, setReceiptTotal] = useState(0);
   const [receiptNo, setReceiptNo] = useState("");
 
   useEffect(() => {
@@ -148,6 +152,7 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
         `TR-${Math.floor(Math.random() * 100000)}`;
       setReceiptNo(orderNo);
       setReceiptCart(saleItems);
+      setReceiptTotal(total);
 
       toast.success(`Ödeme Başarılı: ${total.toLocaleString("tr-TR")} ₺`, {
         className: "font-medium py-3 px-4 shadow-xl",
@@ -176,7 +181,7 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
   if (isSuccess) {
     const receiptProps = {
       cart: receiptCart,
-      total,
+      total: receiptTotal,
       paymentMethod,
       date: new Date(),
       receiptNo,

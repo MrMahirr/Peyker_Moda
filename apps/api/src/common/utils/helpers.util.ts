@@ -9,11 +9,14 @@ export function generateRandomString(length: number = 32): string {
 
 /**
  * Generate order number
- * Format: PM-YYYYMMDD-XXXXX
+ * Format: PM-YYMMDD-XXXXX
+ * Not: fiş barkodunun (Receipt.tsx) 45mm'lik termal kağıda güvenilir
+ * taranabilir kalması için sipariş numarası kısa tutuluyor — yıl 4 yerine
+ * 2 haneli.
  */
 export function generateOrderNumber(): string {
   const date = new Date();
-  const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+  const dateStr = date.toISOString().slice(2, 10).replace(/-/g, '');
   const random = Math.floor(Math.random() * 100000)
     .toString()
     .padStart(5, '0');

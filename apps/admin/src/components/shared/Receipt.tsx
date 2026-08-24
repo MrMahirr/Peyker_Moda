@@ -50,10 +50,9 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
   ) => {
     const barcodeRef = useRef<SVGSVGElement>(null);
 
-    // Fiş No formatı "PM-20260824-04321" gibi 18 haneli — bunu CODE128 ile
-    // OLDUĞU GİBİ kodlamak 45mm genişliğe sığması için modülleri (çubukları)
-    // tarayıcının artık ayırt edemeyeceği kadar inceltmeyi gerektiriyordu;
-    // barkodun "okunmuyor" olmasının asıl sebebi buydu. Sadece rakamları
+    // Fiş No (örn. "PM-260824-04321") CODE128 ile OLDUĞU GİBİ kodlanırsa
+    // 45mm genişliğe sığması için modülleri (çubukları) tarayıcının artık
+    // ayırt edemeyeceği kadar inceltmek gerekiyordu. Sadece rakamları
     // kodluyoruz (CODE128 Code-C ile rakam çiftlerini tek sembolde kodlar,
     // çok daha az modül) — hem güvenilir modül genişliği hem 45mm'ye doğal
     // sığma elde ediliyor. Tam fiş no zaten üstte "Fiş No:" satırında yazılı.
@@ -69,7 +68,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             format: "CODE128",
             lineColor: "#000",
             width: 1.3,
-            height: 40,
+            height: 44,
             displayValue: true,
             fontSize: 10,
             fontOptions: "bold",
@@ -236,14 +235,19 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
               max-height sadece taşarsa oranı KORUYARAK küçültür — zorla
               yatay/dikey esnetme (önceki preserveAspectRatio="none")
               çubukların birbirine yakınlaşıp yer yer birleşmesine
-              ("iç içe geçme") yol açıyordu. */}
+              ("iç içe geçme") yol açıyordu. maxWidth %90 (tam %100 değil):
+              yazıcının gerçek basılabilir genişliği kağıdın nominal 45mm'inden
+              biraz dar kalabiliyor (bkz. ürün etiketlerindeki aynı ders) —
+              bu pay, yazıcının barkodu kendi tarafında yeniden ölçeklemek
+              zorunda kalmamasını (ve bu yüzden çubukların bulanıklaşıp
+              birleşmesini) önlüyor. */}
           <div
             className="mt-2 w-full flex justify-center items-center bg-white"
             style={{ height: "16mm" }}
           >
             <svg
               ref={barcodeRef}
-              style={{ maxWidth: "100%", maxHeight: "100%" }}
+              style={{ maxWidth: "90%", maxHeight: "100%" }}
             />
           </div>
         </div>

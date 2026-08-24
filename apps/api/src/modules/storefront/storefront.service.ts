@@ -28,6 +28,7 @@ import {
   getPaginationParams,
   createPaginatedResult,
   generateOrderNumber,
+  generateOrderBarcodeValue,
 } from '../../common/utils';
 import {
   OrderSource,
@@ -1038,6 +1039,7 @@ export class StorefrontService {
     // Sipariş numarası
     const order = await this.prisma.$transaction(async (tx) => {
       const orderNumber = await this.generateUniqueOrderNumber(tx);
+      const barcodeValue = await this.generateUniqueBarcodeValue(tx);
 
       // Müşteri bul veya oluştur
       let customer;
@@ -1074,6 +1076,7 @@ export class StorefrontService {
       const order = await tx.order.create({
         data: {
           orderNumber,
+          barcodeValue,
           customerId: customer.id,
           subtotal: cart.subtotal,
           discountAmount: cart.discount,
@@ -1327,5 +1330,22 @@ export class StorefrontService {
     }
 
     return orderNumber!;
+  }
+
+  private async generateUniqueBarcodeValue(
+    client: Prisma.TransactionClient | PrismaService = this.prisma,
+  ): Promise<string> {
+    let barcodeValue: string;
+    let exists = true;
+
+    while (exists) {
+      barcodeValue = generateOrderBarcodeValue();
+      const existing = await client.order.findUnique({
+        where: { barcodeValue },
+      });
+      exists = !!existing;
+    }
+
+    return barcodeValue!;
   }
 }

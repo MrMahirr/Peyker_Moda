@@ -19,6 +19,14 @@ interface ReceiptProps {
   paymentMethod: string;
   date: Date;
   receiptNo: string;
+  // Order.barcodeValue: orderNumber'ın görünen formatından (PM-YYYYMMDD-NNNNN)
+  // BİLİNÇLİ OLARAK BAĞIMSIZ, kısa ve sadece rakam olan ayrı bir alan (bkz.
+  // api/helpers.util.ts generateOrderBarcodeValue). "Fiş No:" satırı ve admin
+  // panelindeki sipariş numarası hep receiptNo'yu gösterir; barkod ise BUNU
+  // kodlar — böylece hem numara her yerde okunaklı/tam haliyle görünür hem
+  // barkod 45mm'lik termal kağıtta güvenilir taranır. Verilmezse (örn. eski
+  // veri) receiptNo'ya düşer.
+  barcodeValue?: string;
   cashierName: string;
   headerText?: string;
   address?: string;
@@ -37,6 +45,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
       paymentMethod,
       date,
       receiptNo,
+      barcodeValue,
       cashierName,
       headerText,
       address,
@@ -49,26 +58,18 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
     ref,
   ) => {
     const barcodeRef = useRef<SVGSVGElement>(null);
-
-    // Barkod, Fiş No ile birebir aynı olacak şekilde receiptNo'yu OLDUĞU GİBİ
-    // (örn. "PM-20260824-14907") kodluyor — admin Siparişler sayfasındaki
-    // sipariş numarasıyla da aynı değer (bkz. api/helpers.util.ts
-    // generateOrderNumber). Bu uzunlukta bir CODE128 barkodun 45mm'lik
-    // kağıda sığması için modülleri, sadece-rakam bir formata göre daha
-    // ince çıkar (bkz. aşağıdaki maxWidth güvenlik payı) — bu, "her yerde
-    // aynı tam numara" gereksinimi için bilinçli kabul edilen bir ödün.
-    const displayReceiptNo = receiptNo;
+    const encodedBarcodeValue = barcodeValue || receiptNo;
 
     // margin:0 kullanılıyordu — bu, tarayıcının barkodun başlangıcını/bitişini
     // ayırt etmesi için gereken "sessiz bölge"yi (quiet zone) tamamen
     // kaldırıyordu, bu da okunmama sebeplerinden biriydi.
     useEffect(() => {
-      if (barcodeRef.current && displayReceiptNo) {
+      if (barcodeRef.current && encodedBarcodeValue) {
         try {
-          JsBarcode(barcodeRef.current, displayReceiptNo, {
+          JsBarcode(barcodeRef.current, encodedBarcodeValue, {
             format: "CODE128",
             lineColor: "#000",
-            width: 1,
+            width: 1.4,
             height: 44,
             displayValue: true,
             fontSize: 10,
@@ -81,7 +82,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           console.error("Fiş barkodu render hatası:", error);
         }
       }
-    }, [displayReceiptNo]);
+    }, [encodedBarcodeValue]);
 
     const header = headerText || "PEYKER MODA";
     const addressLines = (
@@ -162,7 +163,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           </div>
           <div className="flex justify-between">
             <span>Fis No:</span>
-            <span>{displayReceiptNo}</span>
+            <span>{receiptNo}</span>
           </div>
           <div className="flex justify-between">
             <span>Kasiyer:</span>

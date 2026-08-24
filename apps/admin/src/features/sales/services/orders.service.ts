@@ -28,6 +28,7 @@ export interface OrderItemVariant {
 export interface Order {
   id: string;
   orderNumber: string;
+  barcodeValue: string;
   status:
     | "PENDING"
     | "CONFIRMED"

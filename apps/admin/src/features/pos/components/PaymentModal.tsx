@@ -50,6 +50,9 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
   const [receiptCart, setReceiptCart] = useState<CartItem[]>([]);
   const [receiptTotal, setReceiptTotal] = useState(0);
   const [receiptNo, setReceiptNo] = useState("");
+  // Order.barcodeValue: orderNumber'ın görünen formatından (PM-...) bağımsız,
+  // kısa ve sadece rakam olan ayrı bir alan — fiş barkodu bunu kodluyor.
+  const [receiptBarcodeValue, setReceiptBarcodeValue] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -151,6 +154,9 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
         result.order?.orderNumber ||
         `TR-${Math.floor(Math.random() * 100000)}`;
       setReceiptNo(orderNo);
+      setReceiptBarcodeValue(
+        result.receipt?.barcodeValue || result.order?.barcodeValue || "",
+      );
       setReceiptCart(saleItems);
       setReceiptTotal(total);
 
@@ -185,6 +191,7 @@ export const PaymentModal = ({ isOpen, onClose, total }: PaymentModalProps) => {
       paymentMethod,
       date: new Date(),
       receiptNo,
+      barcodeValue: receiptBarcodeValue,
       cashierName: user ? `${user.firstName} ${user.lastName}` : "Kasiyer",
       headerText: receiptSettings?.receiptHeader,
       address: receiptSettings?.receiptAddress,

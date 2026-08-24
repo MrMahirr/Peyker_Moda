@@ -15,6 +15,7 @@ import {
   getPaginationParams,
   createPaginatedResult,
   generateOrderNumber,
+  generateOrderBarcodeValue,
 } from '../../common/utils';
 import {
   OrderSource,
@@ -110,6 +111,10 @@ export class OrdersService {
         {
           OR: [
             { orderNumber: { contains: query.search, mode: 'insensitive' } },
+            // Fiş barkodu taranınca gelen değer birebir bu alanda tutuluyor
+            // (bkz. Order.barcodeValue) — orderNumber'ın görünen formatından
+            // bağımsız, tam eşleşme.
+            { barcodeValue: query.search },
             {
               customer: {
                 is: {
@@ -259,6 +264,7 @@ export class OrdersService {
   async create(createOrderDto: CreateOrderDto, userId: string) {
     // Sipariş numarası oluştur
     const orderNumber = await this.generateUniqueOrderNumber();
+    const barcodeValue = await this.generateUniqueBarcodeValue();
 
     // Stok kontrolü ve toplam hesaplama
     let subtotal = 0;
@@ -300,6 +306,7 @@ export class OrdersService {
     const order = await this.prisma.order.create({
       data: {
         orderNumber,
+        barcodeValue,
         customerId: createOrderDto.customerId,
         userId,
         subtotal,
@@ -480,5 +487,24 @@ export class OrdersService {
     }
 
     return orderNumber!;
+  }
+
+  /**
+   * Benzersiz fiş/barkod değeri oluştur (bkz. helpers.util.ts
+   * generateOrderBarcodeValue — orderNumber'dan bağımsız, ayrı bir alan)
+   */
+  private async generateUniqueBarcodeValue(): Promise<string> {
+    let barcodeValue: string;
+    let exists = true;
+
+    while (exists) {
+      barcodeValue = generateOrderBarcodeValue();
+      const existing = await this.prisma.order.findUnique({
+        where: { barcodeValue },
+      });
+      exists = !!existing;
+    }
+
+    return barcodeValue!;
   }
 }

@@ -93,6 +93,9 @@ async function generateTestData() {
     const order = await prisma.order.create({
       data: {
         orderNumber: `ORD-${randomString(6).toUpperCase()}`,
+        // Order.barcodeValue: benzersiz, sadece rakam. Seed script'i tek
+        // seferde çalıştığı için Date.now() + döngü indeksi yeterli.
+        barcodeValue: `${Date.now()}${i}`.slice(-11).padStart(11, '0'),
         customerId: customer.id,
         userId: adminUser?.id,
         status: randomElement([OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.SHIPPED, OrderStatus.DELIVERED]),

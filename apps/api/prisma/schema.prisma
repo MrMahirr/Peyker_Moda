@@ -263,6 +263,7 @@ model Favorite {
 model Order {
   id                String        @id @default(uuid())
   orderNumber       String        @unique
+  barcodeValue      String        @unique
   customerId        String?
   userId            String?
   status            OrderStatus   @default(PENDING)

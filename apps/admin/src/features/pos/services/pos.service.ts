@@ -88,10 +88,12 @@ export interface CreateSaleDto {
 export interface SaleResult {
   order?: {
     orderNumber?: string;
+    barcodeValue?: string;
   };
   change?: number;
   receipt?: {
     orderNumber?: string;
+    barcodeValue?: string;
   };
 }
 

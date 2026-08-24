@@ -54,25 +54,26 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
     // 45mm genişliğe sığması için modülleri (çubukları) tarayıcının artık
     // ayırt edemeyeceği kadar inceltmek gerekiyordu. Çubuklara SADECE
     // rakamlar kodlanıyor (CODE128 Code-C ile rakam çiftlerini tek sembolde
-    // kodlar, çok daha az modül) — taranabilirlik bundan geliyor. `text`
-    // seçeneği ise çubukların ALTINDA basılan yazıyı, kodlanan değerden
-    // bağımsız olarak tam fiş numarasıyla ("Fiş No:" satırıyla birebir aynı)
-    // gösteriyor — hem okunabilir barkod hem görsel olarak tutarlı numara.
-    const barcodeValue = receiptNo.replace(/\D/g, "") || receiptNo;
+    // kodlar, çok daha az modül) — taranabilirlik bundan geliyor.
+    // "Fiş No:" satırı da AYNI kısaltılmış değeri gösteriyor (aşağıda), böylece
+    // barkodu okutunca çıkan değer, fişte yazan Fiş No ile birebir eşleşiyor —
+    // önceki `text` override'ı (barkod altındaki yazıyı tam numarayla
+    // değiştirme) kafa karıştırıcıydı çünkü taranan değerle görünen değer
+    // farklıydı; artık ikisi de aynı kısaltılmış numara.
+    const displayReceiptNo = receiptNo.replace(/\D/g, "") || receiptNo;
 
     // margin:0 kullanılıyordu — bu, tarayıcının barkodun başlangıcını/bitişini
     // ayırt etmesi için gereken "sessiz bölge"yi (quiet zone) tamamen
     // kaldırıyordu, bu da okunmama sebeplerinden biriydi.
     useEffect(() => {
-      if (barcodeRef.current && barcodeValue) {
+      if (barcodeRef.current && displayReceiptNo) {
         try {
-          JsBarcode(barcodeRef.current, barcodeValue, {
+          JsBarcode(barcodeRef.current, displayReceiptNo, {
             format: "CODE128",
             lineColor: "#000",
             width: 1.4,
             height: 44,
             displayValue: true,
-            text: receiptNo,
             fontSize: 10,
             fontOptions: "bold",
             margin: 8,
@@ -83,7 +84,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           console.error("Fiş barkodu render hatası:", error);
         }
       }
-    }, [barcodeValue, receiptNo]);
+    }, [displayReceiptNo]);
 
     const header = headerText || "PEYKER MODA";
     const addressLines = (
@@ -164,7 +165,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           </div>
           <div className="flex justify-between">
             <span>Fis No:</span>
-            <span>{receiptNo}</span>
+            <span>{displayReceiptNo}</span>
           </div>
           <div className="flex justify-between">
             <span>Kasiyer:</span>

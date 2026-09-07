@@ -13,7 +13,7 @@ export function generateRandomString(length: number = 32): string {
  * Not: Bu değer sistemde HER YERDE (admin Siparişler sayfası, POS fişi,
  * fiş barkodu, e-postalar, faturalar) aynı şekilde, OLDUĞU GİBİ kullanılıyor —
  * ayrı bir "kısaltılmış görünüm" yok. Fiş barkodu da bu tam değeri kodluyor
- * (bkz. Receipt.tsx); 45mm'lik termal kağıtta bu uzunlukta bir CODE128
+ * (bkz. Receipt.tsx); 58mm'lik termal kağıtta bu uzunlukta bir CODE128
  * barkodun modülleri kısa/rakam-only bir formata göre daha ince çıkar —
  * bu, format seçilirken bilinçli olarak kabul edilen bir ödün.
  */
@@ -32,7 +32,7 @@ export function generateOrderNumber(): string {
  * Not: orderNumber'ın (PM-YYYYMMDD-NNNNN) görünen/insan-okunur formatından
  * BİLİNÇLİ OLARAK BAĞIMSIZ, ayrı ve kalıcı bir alan (Order.barcodeValue).
  * Sipariş oluşturulurken bir kere üretilip DB'ye yazılır; POS fişindeki
- * barkod bunu kodlar (bkz. Receipt.tsx). Kısa ve sadece rakam olması, 45mm'lik
+ * barkod bunu kodlar (bkz. Receipt.tsx). Kısa ve sadece rakam olması, 58mm'lik
  * termal kağıtta CODE128 olarak güvenilir taranabilmesi için gerekli — bu
  * yüzden orderNumber'ın görünen formatı ileride tekrar değişse bile barkod
  * tarafı hiç etkilenmez, ve iade/değişim ekranındaki arama artık kırılgan bir

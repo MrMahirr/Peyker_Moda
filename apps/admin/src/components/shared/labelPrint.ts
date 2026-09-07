@@ -1,7 +1,7 @@
-// Termal yazıcıdaki fiziksel etiket: 45mm x 45mm, rulo üzerinde etiketler arası 4mm (0.4cm) boşluk.
-// @page boyutu bu yüzden 45mm x 49mm olarak tanımlanır; alttaki 4mm basılmayan (etiketler arası) boşluktur.
+// Termal yazıcıdaki fiziksel etiket: 58mm x 45mm, rulo üzerinde etiketler arası 4mm (0.4cm) boşluk.
+// @page boyutu bu yüzden 58mm x 49mm olarak tanımlanır; alttaki 4mm basılmayan (etiketler arası) boşluktur.
 // Bu değer değişirse hem tek hem toplu yazdırma otomatik olarak güncellenir.
-export const LABEL_WIDTH_MM = 45;
+export const LABEL_WIDTH_MM = 58;
 export const LABEL_HEIGHT_MM = 45;
 export const LABEL_GAP_MM = 4;
 
@@ -35,7 +35,7 @@ export const LABEL_PRINT_STYLES = `
         text-rendering: optimizeLegibility;
     }
     /* Yatay padding kasıtlı olarak dikeyden geniş: gerçek termal yazıcının
-       basılabilir genişliği, tanımlı 45mm etiket genişliğinden birkaç mm dar
+       basılabilir genişliği, tanımlı 58mm etiket genişliğinden birkaç mm dar
        kalabiliyor (kafa hizalaması/sensör payı) — içerik tam kenara dayanınca
        sağdan/soldan taşıyordu. Bu boşluk güvenlik payı sağlıyor. */
     .label {

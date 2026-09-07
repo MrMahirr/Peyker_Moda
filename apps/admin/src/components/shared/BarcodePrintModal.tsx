@@ -43,7 +43,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
         const printWindow = window.open('', '_blank');
         if (!printWindow) return;
 
-        // Her kopya için etiket HTML'i üret (her etiket 58x45mm, kendi fiziksel sayfası)
+        // Her kopya için etiket HTML'i üret (her etiket 45x58mm dikey, kendi fiziksel sayfası)
         let labelsHtml = '';
 
         items.forEach(item => {

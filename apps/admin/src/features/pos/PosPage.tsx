@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PosProductGrid } from "./components/ProductGrid";
 import { PaymentModal } from "./components/PaymentModal";
 import { ReturnExchangeModal } from "./components/ReturnExchangeModal";
-import { Minus, Plus, RotateCcw, ShoppingCart, X, Banknote } from "lucide-react";
+import { Minus, Plus, RotateCcw, ShoppingCart, X, Banknote, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { CashDrawer } from "./components/CashDrawer";
@@ -150,6 +150,51 @@ export const PosPage = () => {
     },
   });
 
+  const handleOpenCashDrawer = useCallback(() => {
+    // Yazıcıdan kağıt çıkarmadan kasayı açmak için, yazıcı sürücüsünün
+    // "Kasa Çekmecesi" (Cash Drawer) özelliğini tetikleyen, 
+    // içinde görünmez karakter olan veya özel 'control' fontu kullanan bir iframe yazdırıyoruz.
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+    
+    // POS yazıcılarının sürücüleri, bir sayfa yazdırıldığında (sayfa boyutu ne olursa olsun)
+    // çekmeceyi açacak şekilde yapılandırılmış olmalıdır (örn: Open Drawer Before Print).
+    // Fiş kağıdı harcamamak için çok küçük (1mm) bir sayfa gönderiyoruz.
+    const content = `
+      <html>
+        <head>
+          <style>
+            @page { margin: 0; size: 1mm 1mm; }
+            body { margin: 0; padding: 0; font-family: 'control', sans-serif; font-size: 1px; color: white; }
+          </style>
+        </head>
+        <body>A</body>
+      </html>
+    `;
+    
+    if (iframe.contentWindow) {
+      iframe.contentWindow.document.open();
+      iframe.contentWindow.document.write(content);
+      iframe.contentWindow.document.close();
+      
+      iframe.contentWindow.focus();
+      try {
+        iframe.contentWindow.print();
+      } catch (e) {
+        console.error("Kasa açma komutu gönderilemedi:", e);
+      }
+    }
+    
+    setTimeout(() => {
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+    }, 1000);
+    
+    toast.success("Kasa açıldı komutu gönderildi", { className: "font-medium" });
+  }, []);
+
   return (
     <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden bg-zinc-50">
       <div className="w-[70%] h-full">
@@ -193,6 +238,16 @@ export const PosPage = () => {
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-white border-zinc-200/80 hover:bg-zinc-50 text-zinc-700 font-medium"
+                onClick={handleOpenCashDrawer}
+                title="Yazıcı komutu ile kasayı açar"
+              >
+                <Unlock className="h-3.5 w-3.5 mr-1.5" />
+                Kasayı Aç
+              </Button>
               <Button
                 variant="secondary"
                 size="sm"

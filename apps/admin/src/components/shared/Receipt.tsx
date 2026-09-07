@@ -74,7 +74,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             displayValue: true,
             fontSize: 10,
             fontOptions: "bold",
-            margin: 8,
+            margin: 0,
             textMargin: 2,
             background: "transparent",
           });
@@ -94,7 +94,8 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
     const phoneText = phone || "(0216) 123 45 67";
     const footer = footerText || "*** IYI GUNLER DILERIZ ***";
     const rate = typeof taxRate === "number" ? taxRate : 10;
-    const taxAmount = (total * rate) / 100;
+    const taxFreeTotal = total / (1 + rate / 100);
+    const taxAmount = total - taxFreeTotal;
     const showLogoResolved = showLogo ?? true;
 
     return (
@@ -243,11 +244,11 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
               ölçekleyip çubukları bulanıklaştırıp birleştirmesini önlüyor. */}
           <div
             className="mt-2 -mx-2 flex justify-center items-center bg-white"
-            style={{ height: "16mm", width: "calc(100% + 1rem)" }}
+            style={{ width: "calc(100% + 1rem)" }}
           >
             <svg
               ref={barcodeRef}
-              style={{ maxWidth: "96%", maxHeight: "100%" }}
+              style={{ width: "100%", height: "auto" }}
             />
           </div>
         </div>

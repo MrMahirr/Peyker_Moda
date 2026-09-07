@@ -51,13 +51,13 @@ const initialState: PosState = {
 
 // Helper: Calculate totals
 export const calculateTotals = (cart: CartItem[]) => {
-  const subtotal = cart.reduce((sum, item) => {
+  const total = cart.reduce((sum, item) => {
     const multiplier = item.lineType === "RETURN" ? -1 : 1;
     return sum + item.price * item.quantity * multiplier;
   }, 0);
   const taxRate = 0.1; // 10% KDV example
-  const tax = subtotal * taxRate;
-  const total = subtotal + tax;
+  const subtotal = total / (1 + taxRate);
+  const tax = total - subtotal;
   return { subtotal, tax, total };
 };
 
@@ -95,7 +95,10 @@ const posReducer = (state: PosState, action: PosAction): PosState => {
         ) {
           return state;
         }
-        newCart[existingItemIndex].quantity += 1;
+        newCart[existingItemIndex] = {
+          ...existingItem,
+          quantity: existingItem.quantity + 1,
+        };
         return { ...state, cart: newCart };
       } else {
         // New item
@@ -114,7 +117,10 @@ const posReducer = (state: PosState, action: PosAction): PosState => {
       if (existingItemIndex > -1) {
         // Item exists in return mode, increment positive quantity.
         const newCart = [...state.cart];
-        newCart[existingItemIndex].quantity += 1;
+        newCart[existingItemIndex] = {
+          ...newCart[existingItemIndex],
+          quantity: newCart[existingItemIndex].quantity + 1,
+        };
         return { ...state, cart: newCart };
       } else {
         // New return item

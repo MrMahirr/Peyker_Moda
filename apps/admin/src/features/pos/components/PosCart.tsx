@@ -35,12 +35,12 @@ export const PosCart = ({
     onChangeQuantity,
     onClear,
 }: PosCartProps) => {
-    const computedSubtotal = items.reduce((sum, item) => {
+    const computedTotal = items.reduce((sum, item) => {
         const multiplier = item.lineType === 'RETURN' ? -1 : 1;
         return sum + item.price * item.quantity * multiplier;
     }, 0);
-    const computedTax = computedSubtotal * (taxRate / 100);
-    const computedTotal = computedSubtotal + computedTax;
+    const computedSubtotal = computedTotal / (1 + taxRate / 100);
+    const computedTax = computedTotal - computedSubtotal;
 
     const displayTotals = totals || {
         subtotal: computedSubtotal,

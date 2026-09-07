@@ -99,6 +99,33 @@ export const PosProductGrid = () => {
             className="w-full h-11 pl-10 pr-4 bg-zinc-50 border border-zinc-200/80 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-zinc-900 placeholder:text-zinc-400 transition-all shadow-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={async (e) => {
+              if (e.key === "Enter" && searchTerm.trim()) {
+                const term = searchTerm.trim();
+                // 1. Önce yüklenmiş ürünler içinde barkod veya SKU ile eşleşme ara
+                let productMatch = products.find(
+                  (p) => p.barcode === term || p.sku === term
+                );
+
+                // 2. Eğer listede yoksa backend'den doğrudan barkod ile sorgula
+                if (!productMatch) {
+                  try {
+                    const fetchedProduct = await posService.getProductByBarcode(term);
+                    if (fetchedProduct) {
+                      productMatch = fetchedProduct;
+                    }
+                  } catch (err) {
+                    // Backend sorgusu başarısız olursa veya ürün yoksa sessizce devam et
+                  }
+                }
+
+                // Eşleşen ürün bulunduysa sepete ekle ve arama kutusunu temizle
+                if (productMatch) {
+                  handleAddToCart(productMatch);
+                  setSearchTerm("");
+                }
+              }
+            }}
             autoFocus
           />
         </div>

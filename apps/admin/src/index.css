@@ -119,8 +119,8 @@ select:disabled {
 @media print {
   @page {
     margin: 0;
-    /* Fişin gerçek fiziksel yan genişliği 45mm (80mm değil) — bkz. Receipt.tsx */
-    size: 45mm auto;
+    /* Fişin gerçek fiziksel yan genişliği 58mm — bkz. Receipt.tsx */
+    size: 58mm auto;
   }
 
   body {

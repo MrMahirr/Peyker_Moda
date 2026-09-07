@@ -24,7 +24,7 @@ interface ReceiptProps {
   // api/helpers.util.ts generateOrderBarcodeValue). "Fiş No:" satırı ve admin
   // panelindeki sipariş numarası hep receiptNo'yu gösterir; barkod ise BUNU
   // kodlar — böylece hem numara her yerde okunaklı/tam haliyle görünür hem
-  // barkod 45mm'lik termal kağıtta güvenilir taranır. Verilmezse (örn. eski
+  // barkod 58mm'lik termal kağıtta güvenilir taranır. Verilmezse (örn. eski
   // veri) receiptNo'ya düşer.
   barcodeValue?: string;
   cashierName: string;
@@ -103,14 +103,10 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
       // çıktısında kullanılıyor; ekrana özel görsel süslemeler (gölge, min
       // yükseklik) çağıran tarafın sarmalayıcısında olmalı, yoksa yazdırma
       // çıktısının boyu/boşluğu yanlış çıkar.
-      // Fişin gerçek fiziksel yan genişliği 45mm (80mm değil) — daha önce
-      // 80mm için tasarlanmış içerik 45mm'lik kağıda yazıcı tarafından
-      // sıkıştırılıp basılıyordu; bu da hem yazının orantısız kalınlaşmasına
-      // hem eğri/çarpık göründüğüne hem de barkodun küçülüp okunmaz hale
-      // gelmesine yol açıyordu. Tüm ölçüler 45mm'ye göre yeniden ayarlandı.
+      // Fişin gerçek fiziksel yan genişliği 58mm — tüm ölçüler buna göre ayarlandı.
       <div
         ref={ref}
-        className="w-[45mm] bg-white text-black font-mono leading-tight p-2 mx-auto"
+        className="w-[58mm] bg-white text-black font-mono leading-tight p-2 mx-auto"
         style={{ fontSize: "2.1mm" }}
       >
         {/* Header */}
@@ -239,13 +235,12 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
               çubukların birbirine yakınlaşıp yer yer birleşmesine
               ("iç içe geçme") yol açıyordu.
               -mx-2 + calc(100% + 1rem): sarmalayıcı, fişin kendi yan
-              padding'ini (p-2 = 8px x2) iptal ederek kağıdın tüm 45mm'ine
+              padding'ini (p-2 = 8px x2) iptal ederek kağıdın tüm 58mm'ine
               yayılıyor — barkoda sağdan/soldan daha fazla alan kalıyor.
               maxWidth %96 (tam %100 değil): yazıcının gerçek basılabilir
-              genişliği kağıdın nominal 45mm'inden biraz dar kalabiliyor
-              (bkz. ürün etiketlerindeki aynı ders) — bu küçük pay, yazıcının
-              barkodu kendi tarafında yeniden ölçekleyip çubukları
-              bulanıklaştırıp birleştirmesini önlüyor. */}
+              genişliği kağıdın nominal 58mm'inden biraz dar kalabiliyor
+              — bu küçük pay, yazıcının barkodu kendi tarafında yeniden
+              ölçekleyip çubukları bulanıklaştırıp birleştirmesini önlüyor. */}
           <div
             className="mt-2 -mx-2 flex justify-center items-center bg-white"
             style={{ height: "16mm", width: "calc(100% + 1rem)" }}

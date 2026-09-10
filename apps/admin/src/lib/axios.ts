@@ -13,6 +13,22 @@ api.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Staging ortamı için HTTP Basic Authentication desteği
+        const basicAuthUser = import.meta.env.VITE_BASIC_AUTH_USER;
+        const basicAuthPass = import.meta.env.VITE_BASIC_AUTH_PASS;
+
+        if (basicAuthUser && basicAuthPass) {
+            const basicAuthToken = btoa(`${basicAuthUser}:${basicAuthPass}`);
+            config.headers['X-Basic-Auth'] = `Basic ${basicAuthToken}`;
+            // XMLHttpRequest ile otomatik basic auth için
+            config.withCredentials = true;
+            config.auth = {
+                username: basicAuthUser,
+                password: basicAuthPass
+            };
+        }
+
         return config;
     },
     (error) => Promise.reject(error)

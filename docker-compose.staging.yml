@@ -12,7 +12,7 @@
 #     --env-file .env.staging up -d postgres redis minio api admin storefront
 #
 # nginx servisi kasıtlı olarak başlatılmaz — production'daki sertleştirilmiş
-# nginx, staging.peykermoda.com / admin.staging.peykermoda.com isteklerini,
+# nginx, staging.peykermoda.com / admin-staging.peykermoda.com isteklerini,
 # aşağıdaki servislerin de üye olduğu paylaşımlı "peyker_shared" Docker
 # ağı üzerinden container adlarıyla proxy_pass eder (bkz. README).
 # Sunucuda bir kere oluşturulmalı: docker network create peyker_shared
